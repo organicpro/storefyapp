@@ -12,7 +12,8 @@ import {
   Trash2, 
   Plus, 
   Save,
-  Instagram
+  Instagram,
+  ExternalLink
 } from 'lucide-react';
 import { StoreConfig } from '../types';
 
@@ -186,9 +187,20 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
           </div>
 
           <div className="p-6 glass-premium rounded-2xl space-y-5">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-1.5 border-b border-white/5 pb-3">
-              <Globe className="w-4.5 h-4.5 text-slate-400" /> Publicacao Netlify
-            </h3>
+            <div className="flex flex-col gap-3 border-b border-white/5 pb-3 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-1.5">
+                <Globe className="w-4.5 h-4.5 text-slate-400" /> Publicacao Netlify
+              </h3>
+              <a
+                href="https://app.netlify.com/user/applications#personal-access-tokens"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-500/25 bg-brand-500/10 px-3 py-2 text-xs font-black text-brand-200 transition hover:bg-brand-500/20"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Pegar token
+              </a>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
