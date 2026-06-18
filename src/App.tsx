@@ -467,22 +467,41 @@ function App() {
         </div>
 
         <main className="flex-1 lg:ml-72">
-          <header className="sticky top-0 z-30 border-b border-white/10 bg-[#030305]/78 px-4 py-3 backdrop-blur-2xl sm:px-6">
-            <div className="flex items-center justify-between gap-3">
+          <header className="sticky top-0 z-30 px-4 py-3 backdrop-blur-2xl sm:px-6">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#08080b]/82 px-3 py-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.03]">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   type="button"
-                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] lg:hidden"
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-200 transition hover:bg-white/[0.08] lg:hidden"
                   onClick={() => setMobileSidebarOpen(true)}
                   aria-label="Abrir menu"
                 >
                   <Menu size={19} />
                 </button>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-500">Storefy</p>
-                  <h1 className="truncate font-display text-lg font-bold text-white sm:text-xl">
-                    {storeConfig.name}
-                  </h1>
+
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-brand-500/20 bg-brand-500/10">
+                    <img
+                      src={storeConfig.logoUrl || STOREFY_LOGO_URL}
+                      alt={storeConfig.name}
+                      className="h-7 w-7 object-contain"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Loja ativa</p>
+                      <span className={`hidden rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] sm:inline-flex ${
+                        storeConfig.status === 'published'
+                          ? 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/20'
+                          : 'bg-white/[0.05] text-slate-400 ring-1 ring-white/10'
+                      }`}>
+                        {storeConfig.status === 'published' ? 'Publicado' : 'Rascunho'}
+                      </span>
+                    </div>
+                    <h1 className="truncate font-display text-base font-bold leading-tight text-white sm:text-lg">
+                      {storeConfig.name}
+                    </h1>
+                  </div>
                 </div>
               </div>
 
@@ -490,7 +509,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => handleNavigate('shop-preview')}
-                  className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-bold text-slate-200 transition hover:bg-white/[0.08] sm:flex"
+                  className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm font-bold text-slate-200 transition hover:border-white/20 hover:bg-white/[0.08] sm:flex"
                 >
                   <ExternalLink size={16} />
                   Preview
@@ -498,7 +517,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => void handlePublishStore()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-2 text-sm font-black text-black shadow-lg shadow-brand-500/20 transition hover:bg-brand-200"
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-sm font-black text-black shadow-lg shadow-brand-500/25 transition hover:bg-brand-200"
                 >
                   <Sparkles size={16} />
                   Publicar
@@ -506,7 +525,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => void handleSignOut()}
-                  className="hidden h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 transition hover:bg-white/[0.08] sm:grid"
+                  className="hidden h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-300 transition hover:border-white/20 hover:bg-white/[0.08] sm:grid"
                   aria-label="Sair"
                   title={session?.user?.email || 'Sair'}
                 >
