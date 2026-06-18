@@ -1,0 +1,555 @@
+[
+  {
+    "id": "physical-1",
+    "name": "Smartwatch para Mulheres (Bluetooth/Fitness)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S7bdef60be47342448cbba584f45ef2b8U.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006813411227.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-2",
+    "name": "Pulseira Magnética 20mm/22mm (Amazfit/GTR)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sfe15d6fa9ad34ae78011bd9ff0185d784.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006997326443.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-3",
+    "name": "Controle Gamepad G6 (Switch/PC/Mobile)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S2408615500f54ac68be74cb51724acbac.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009881248536.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-4",
+    "name": "Smartwatch Masculino (Fitness/Música)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sa55f03d947244a6ab70162288d0d19e3Q.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007709091696.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-5",
+    "name": "Jaqueta Fitness Manga Longa (Yoga/Ginásio)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S2a102c2570624f13a0958d469a5f2e3dY.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008682768784.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-6",
+    "name": "Smartwatch Multifuncional 2026 (Crianças/Adultos)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S83f5083becf7485ea83322ba574b0331K.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005011839761605.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-7",
+    "name": "Smartwatch Esportivo Y68/D20",
+    "imageUrl": "https://ae01.alicdn.com/kf/S46699660cea04d589868fc762c53890e7.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007695095628.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-8",
+    "name": "Pulseira Silicone Apple Watch (Série 1-11/Ultra)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S2810954781a64c54a094928a5b673cbcc.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006759279636.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-9",
+    "name": "Headset P47 Bluetooth 5.0 Stereo",
+    "imageUrl": "https://ae01.alicdn.com/kf/S557fba8e51704347bf25365c9d5ca8f8Z.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010546036557.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-10",
+    "name": "Câmera de Segurança A7 (WiFi/360º/HD)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S1deaf37c58e44796893a6ff6a804d7fbm.png",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005012315564567.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-11",
+    "name": "Relógio Digital Retrô Ouro Rosa",
+    "imageUrl": "https://ae01.alicdn.com/kf/S3d4ab4537e3749eaa225ef9736ceb68ed.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005012397759388.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-12",
+    "name": "Fones Lenovo LP40 TWS Original",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sa0d6d677c5a149199c2c0ef198f49eb5q.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007431129955.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-13",
+    "name": "Smartwatch Keshuyou 2025 (Chamadas/Saúde)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S86f0a7efe74c43e5817a5183e488beecw.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010211702620.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-14",
+    "name": "Tapete de Pelúcia Tie-Dye (Sala/Quarto)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S86b494270acb466ab8951ee5f790c899k.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007727176617.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-15",
+    "name": "Pijama de Seda/Renda Feminino",
+    "imageUrl": "https://ae01.alicdn.com/kf/Se481309d2d92424b9f0a79bc6e7326d11.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007879054168.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-16",
+    "name": "Jaqueta Secagem Rápida Outono 2025",
+    "imageUrl": "https://ae01.alicdn.com/kf/S514e4b5e262f46c09c5ca808efd33176r.png",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010491064307.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-17",
+    "name": "Relógio Digital Simples Masculino (Silicone)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sc9dd2ead14b642658d79b5bcdb59fa682.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009489432468.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-18",
+    "name": "Válvula de Pressão Silicone Divertida",
+    "imageUrl": "https://ae01.alicdn.com/kf/S1deaf37c58e44796893a6ff6a804d7fbm.png",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005012315564567.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-19",
+    "name": "Smartwatch Watch 10 Ultra 49mm (GPS/NFC)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S86f0a7efe74c43e5817a5183e488beecw.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010211702620.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-20",
+    "name": "Chinelos Masculinos EVA Verão",
+    "imageUrl": "https://ae01.alicdn.com/kf/S922b0a47bdcc478597247ec5a741a26bo.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009357002790.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-21",
+    "name": "Fones M10 Bluetooth à Prova d'Água",
+    "imageUrl": "https://ae01.alicdn.com/kf/S6d2c72d674e0491db255be135851f2c0W.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008148860952.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-22",
+    "name": "Conjunto de Joias Prata (51 peças)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S9d536717e48b41c69b8cf1a000aea77d8.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007806183543.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-23",
+    "name": "Conjunto de Relógios Árabes (2/4 peças)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sf5a1fe1e72d741dbbc4f045298b95f1b2.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009708202554.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-24",
+    "name": "Cinta Modeladora Fitness (Queima Gordura)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sf76a13bc33ee4638958b76a752c3f42cK.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006982504378.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-25",
+    "name": "Capa Silicone AirPods Pro",
+    "imageUrl": "https://ae01.alicdn.com/kf/S85e57d13c1cb4a8289195ff37e006d29U.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007532276116.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-26",
+    "name": "Relógio Astronauta Infantil (Touch)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sbc49698b3d6f452b8c93d30c116e9de6q.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006994509654.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-27",
+    "name": "Smartwatch Chamadas/Música iPhone/Android",
+    "imageUrl": "https://ae01.alicdn.com/kf/S86f0a7efe74c43e5817a5183e488beecw.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010211702620.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-28",
+    "name": "Conjunto Relógio + Joias (6 peças)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S69fe043912bb4cdeb26dc2504ab35ba9V.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010419185088.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-29",
+    "name": "Pente de Bambu Natural (Antiestático)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sfd3278c1e6c84d07adccf055406a4b7f1.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009261871587.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-30",
+    "name": "Fones Bluetooth 5.3 Dobráveis",
+    "imageUrl": "https://ae01.alicdn.com/kf/S557fba8e51704347bf25365c9d5ca8f8Z.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010546036557.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-31",
+    "name": "Relógio Eletrônico Quadrado (Moda)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sc9dd2ead14b642658d79b5bcdb59fa682.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009489432468.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-32",
+    "name": "Fita LED RGB (5m/10m/20m/30m)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sc878225485cd4ab0b11252807a2a1f5fp.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005005079019011.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-33",
+    "name": "Microfone de Lapela Sem Fio (iPhone/Android)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sc319ffe36b5a4d67998deaf422bb06bd6.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010621278637.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-34",
+    "name": "Chinelos EVA Design Profissional",
+    "imageUrl": "https://ae01.alicdn.com/kf/S10aa36530eac424aa3d049acc5576bcba.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008170498395.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-35",
+    "name": "Protetor de Tela Lokmat Appllp 4 Pro",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sf831b6e972054e098f2e6c15bcb16924P.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007283535204.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-36",
+    "name": "Fones Lenovo GM2 Pro TWS",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sa0d6d677c5a149199c2c0ef198f49eb5q.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007431129955.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-37",
+    "name": "Conjunto Relógio Love + Borboleta",
+    "imageUrl": "https://ae01.alicdn.com/kf/Scd4bc76c348c4ef4a9d54e64c8340046w.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005011992944856.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-38",
+    "name": "Kit Manicure Elétrico USB",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sfd3278c1e6c84d07adccf055406a4b7f1.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009261871587.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-39",
+    "name": "Smartwatch Militar 2026 (IP67/BT)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sa82a2c18c6d04220b9455c443e3436e47.png",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008464589215.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-40",
+    "name": "Toalhas Premium Macias (1 Pacote)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S9e018d4fbd804e2784f8b12684d65163H.png",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006736492092.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-41",
+    "name": "Conjunto Joias Pérola (86 peças)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S9d536717e48b41c69b8cf1a000aea77d8.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007806183543.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-42",
+    "name": "Relógio LED Orientado ao Amor",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sc9dd2ead14b642658d79b5bcdb59fa682.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009489432468.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-43",
+    "name": "Cartas Pokemon (40/360 pçs)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S1c170707fd304fb79921b62f3e2385daL.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010375388847.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-44",
+    "name": "Lençol de Cama Estampa Coração",
+    "imageUrl": "https://ae01.alicdn.com/kf/S86b494270acb466ab8951ee5f790c899k.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007727176617.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-45",
+    "name": "Relógio Digital LED 2026 Infantil",
+    "imageUrl": "https://ae01.alicdn.com/kf/S44666fd333e845f69b69e8a1cd09726fH.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006114568653.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-46",
+    "name": "Alça de Pulso Subwoofer Resistente",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sc319ffe36b5a4d67998deaf422bb06bd6.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010621278637.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-47",
+    "name": "Smartwatch Y68 D20 (Pulseira/Música)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S8b26dabd770740d886606597442daeaeK.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005012056031340.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-48",
+    "name": "Tênis Corrida Placa Carbono",
+    "imageUrl": "https://ae01.alicdn.com/kf/Seca37513ac994225ba26995802a6eba6n.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010512748039.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-49",
+    "name": "Relógio Digital Elegante (Ouro/Prata)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sbe204e6ec11745918501bbac29dd282fh.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005005994778380.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-50",
+    "name": "Bolsa de Ombro Alça Larga",
+    "imageUrl": "https://ae01.alicdn.com/kf/S727d0c36caae411d8f31f539bacc91ddX.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006635718226.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-51",
+    "name": "Fone Dobrável Bluetooth 5.0",
+    "imageUrl": "https://ae01.alicdn.com/kf/S557fba8e51704347bf25365c9d5ca8f8Z.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010546036557.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-52",
+    "name": "Toalhas Faciais Lã Coral (5 peças)",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010338536169.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-53",
+    "name": "Smartwatch Frequência Cardíaca/Chamadas",
+    "imageUrl": "https://photos.enjoei.com.br/relogio-com-batimentos-cardiacos-passos-calorias-smartwatch-78018960/828xN/czM6Ly9waG90b3MuZW5qb2VpLmNvbS5ici9wcm9kdWN0cy8yNTQ2OTAxMS9kYzhmNzczMmMwM2I4YTRkMjIxNzQxNzgwYzYxNDVlMi5qcGc",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007716457033.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-54",
+    "name": "Óculos de Sol Quadrado Sem Aro",
+    "imageUrl": "http://lojasla.com/cdn/shop/products/oculos-de-sol-feminino-quadrado-em-metal-897506.jpg?v=1694910477",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008468277084.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-55",
+    "name": "Projetor Céu Estrelado USB",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007573820052.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-56",
+    "name": "Mochila Feminina Moda 2022",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007329172807.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-57",
+    "name": "Conjunto Camisola Renda Sexy",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sda59c617b6514786a143feb340f26a2fm.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008461157173.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-58",
+    "name": "Relógio Eletrônico Simples + Joias",
+    "imageUrl": "https://ae01.alicdn.com/kf/S69fe043912bb4cdeb26dc2504ab35ba9V.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010419185088.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-59",
+    "name": "Toalha Banho Algodão Multiuso",
+    "imageUrl": "https://ae01.alicdn.com/kf/S9e018d4fbd804e2784f8b12684d65163H.png",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006736492092.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-60",
+    "name": "Relógio Yikaze Infantil (Silicone)",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sa2fac587ca6d4ebb9624a34b4c55a827Z.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008191585498.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-61",
+    "name": "Chinelos Casal Antiderrapante",
+    "imageUrl": "https://ae01.alicdn.com/kf/S922b0a47bdcc478597247ec5a741a26bo.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009357002790.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-62",
+    "name": "Máquina Cortar Cabelo Vintage T9",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sfd3278c1e6c84d07adccf055406a4b7f1.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005009261871587.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-63",
+    "name": "Bolsa Mensageiro Borla",
+    "imageUrl": "https://ae01.alicdn.com/kf/S5a59be1133c04418bc72194f36bfa879Y.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006946116874.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-64",
+    "name": "Relógio Quartzo Luxo Aço Inoxidável",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sa55d5a84cdf34fa8b7ec2693df5ad6add.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010764122945.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-65",
+    "name": "Película JBL Live Beam 3",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sf926b0422bac409185267e72a373c3e5R.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005011665518983.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-66",
+    "name": "Relógio Hello Kitty Digital",
+    "imageUrl": "https://ae01.alicdn.com/kf/S6d5ceac427e6478eb74cf2143f346366M.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007876093515.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-67",
+    "name": "Mouse Gamer SmailWolf RS8 (10000DPI)",
+    "imageUrl": "https://ae01.alicdn.com/kf/S7737a66aa8694f5ea9690cb8c67d4cb97.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008935336122.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-68",
+    "name": "Fone Gancho Bluetooth 5.2",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sbe0f029f8744409db87220c3e5a2031cq.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005010273187491.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-69",
+    "name": "Vidro Temperado Lenovo Tab M11",
+    "imageUrl": "https://ae01.alicdn.com/kf/Sf831b6e972054e098f2e6c15bcb16924P.jpg",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007283535204.html",
+    "status": "validated-image"
+  },
+  {
+    "id": "physical-70",
+    "name": "Relógio Inteligente Rastreador Fitness",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008061280253.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-71",
+    "name": "Clipe de Cabelo Tubarão (11 peças)",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007523157773.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-72",
+    "name": "Acessórios Stanley Cup (9 peças)",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005007335709104.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-73",
+    "name": "Shorts Corrida Masculino (Camada Única)",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008167768972.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-74",
+    "name": "Relógio Quadrado Borboleta/Nave",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005011992944856.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-75",
+    "name": "Chinelos Nuvem Plataforma",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008170498395.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-76",
+    "name": "Acessórios Stanley Cup Roxo (8 peças)",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008796124357.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-77",
+    "name": "Frascos Plástico Cozinha Selados",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005006116459385.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-78",
+    "name": "Smartwatch Laxasfit Bluetooth Talk",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008464589215.html",
+    "status": "no-confirmed-image"
+  },
+  {
+    "id": "physical-79",
+    "name": "Camiseta + Shorts Urso de Pelúcia",
+    "imageUrl": "",
+    "sourceUrl": "https://pt.aliexpress.com/item/1005008844326362.html",
+    "status": "no-confirmed-image"
+  }
+]

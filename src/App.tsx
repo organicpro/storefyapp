@@ -1,0 +1,671 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Session } from '@supabase/supabase-js';
+import {
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Globe2,
+  HelpCircle,
+  Menu,
+  Plus,
+  Sparkles,
+  Store,
+  LogOut,
+  X
+} from 'lucide-react';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import Wizard from './components/Wizard';
+import ProductCatalog from './components/ProductCatalog';
+import SuppliersList from './components/SuppliersList';
+import MarketingKit from './components/MarketingKit';
+import SettingsView from './components/SettingsView';
+import StorePreview from './components/StorePreview';
+import LoginScreen from './components/LoginScreen';
+import { DEFAULT_STORE_CONFIG, INITIAL_PRODUCTS, INITIAL_SUPPLIERS } from './data';
+import { isSupabaseConfigured, supabase } from './lib/supabase';
+import { loadWorkspace, saveWorkspace } from './lib/workspaceSync';
+import { productFallbackImage } from './productImages';
+import { Product, StoreConfig, Supplier } from './types';
+
+const DATA_VERSION = '2026-06-18-ai-subscriptions-v1';
+const STOREFY_LOGO_URL = 'https://i.imgur.com/nUsczZV.png';
+
+const STORAGE_KEYS = {
+  products: 'storefy.front.products',
+  productsVersion: 'storefy.front.productsVersion',
+  sites: 'storefy.front.sites',
+  activeSiteId: 'storefy.front.activeSiteId',
+  storeConfig: 'storefy.front.config',
+  localAuth: 'storefy.auth.local'
+};
+
+type StoreSite = StoreConfig & { id: string };
+
+function readStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) as T : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function createId(prefix = 'site') {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function makeSite(config: StoreConfig, index = 1): StoreSite {
+  const id = config.id || createId();
+  return {
+    ...DEFAULT_STORE_CONFIG,
+    ...config,
+    id,
+    logoUrl: config.logoUrl || STOREFY_LOGO_URL,
+    name: config.name || `Storefy Loja ${index}`,
+    subdomain: config.subdomain || `storefy-${index}`
+  };
+}
+
+function escapeHtml(value: string | number | undefined) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function buildProductImageMarkup(product: Product) {
+  const isPhysical = product.category === 'Achados Fisicos';
+  const fallback = isPhysical ? '' : product.fallbackImageUrl || productFallbackImage(product);
+  const source = product.imageUrl || fallback;
+
+  if (!source) {
+    return '<div class="no-image">Imagem indisponivel</div>';
+  }
+
+  const onError = fallback
+    ? `this.onerror=null;this.src='${escapeHtml(fallback)}'`
+    : 'this.remove()';
+  const className = isPhysical ? 'photo' : 'logo-img';
+
+  return `<img class="${className}" src="${escapeHtml(source)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="${onError}" />`;
+}
+
+function buildStoreHtml(config: StoreConfig, products: Product[]) {
+  const activeProducts = products.filter(product => product.addedToStore);
+  const categories = Array.from(new Set(activeProducts.map(product => product.category)));
+
+  const productCards = activeProducts.map(product => `
+    <article class="card">
+      <div class="media">${buildProductImageMarkup(product)}</div>
+      <div class="card-body">
+        <span class="pill">${escapeHtml(product.category)}</span>
+        <h3>${escapeHtml(product.name)}</h3>
+        <p>${escapeHtml(product.deliverable)}</p>
+        <ul>
+          ${product.benefits.slice(0, 3).map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}
+        </ul>
+        <div class="buy-row">
+          <strong>R$ ${product.salePrice.toFixed(2).replace('.', ',')}</strong>
+          <a href="#contato">Comprar</a>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  const categoryLinks = categories.map(category => `<span>${escapeHtml(category)}</span>`).join('');
+
+  return `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(config.name)}</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#070707;color:#f7f7f7;font-family:Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}.hero{padding:34px 0 28px;background:radial-gradient(circle at 18% 0%,${escapeHtml(config.primaryColor)}55,transparent 34%),linear-gradient(135deg,#050505,#151515)}.top{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:58px;height:58px;object-fit:contain}.brand strong{font-size:24px}.hero h1{font-size:clamp(34px,6vw,68px);line-height:.95;margin:42px 0 14px;max-width:850px}.hero p{max-width:680px;color:#cbd5e1;font-size:18px}.cats{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.cats span,.pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:18px;padding:34px 0}.card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.28)}.media{height:172px;background:#101010;display:flex;align-items:center;justify-content:center}.media img{width:100%;height:100%}.media img.photo{object-fit:cover}.media img.logo-img{object-fit:contain;padding:28px;background:#050508}.no-image{color:#94a3b8;font-weight:800;font-size:12px}.card-body{padding:16px}.card h3{font-size:17px;line-height:1.22;margin:12px 0 8px}.card p{color:#b6c2d2;font-size:13px;line-height:1.45;min-height:38px}.card ul{list-style:none;margin:12px 0;padding:0;display:grid;gap:7px}.card li{font-size:12px;color:#dce6f7}.card li:before{content:"✓";color:${escapeHtml(config.primaryColor)};font-weight:900;margin-right:6px}.buy-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;margin-top:14px}.buy-row strong{font-size:20px}.buy-row a,.cta{background:${escapeHtml(config.primaryColor)};color:#050505;border-radius:999px;padding:10px 14px;font-weight:900}.contact{padding:38px 0 52px;border-top:1px solid rgba(255,255,255,.1)}.contact-box{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:24px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}@media(max-width:640px){.top{align-items:flex-start}.media{height:150px}.contact-box{display:block}.cta{display:inline-block;margin-top:14px}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="top">
+        <div class="brand"><img src="${escapeHtml(config.logoUrl || STOREFY_LOGO_URL)}" alt="${escapeHtml(config.name)}" /><strong>${escapeHtml(config.name)}</strong></div>
+        <a class="cta" href="#produtos">Ver produtos</a>
+      </div>
+      <h1>${escapeHtml(config.name)} pronta para vender.</h1>
+      <p>${escapeHtml(config.welcomeMessage)}</p>
+      <div class="cats">${categoryLinks}</div>
+    </div>
+  </header>
+  <main id="produtos" class="wrap">
+    <section class="grid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}</section>
+  </main>
+  <footer id="contato" class="contact">
+    <div class="wrap">
+      <div class="contact-box">
+        <div>
+          <h2>Gostou de algum produto?</h2>
+          <p>Entre em contato com a loja para finalizar o pedido.</p>
+        </div>
+        <a class="cta" href="https://wa.me/${escapeHtml(config.whatsapp.replace(/\D/g, ''))}" target="_blank" rel="noreferrer">Chamar loja</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>`;
+}
+
+function downloadHtml(filename: string, html: string) {
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function App() {
+  const [activePage, setActivePage] = useState('dashboard');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [appToast, setAppToast] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
+  const [localAccess, setLocalAccess] = useState(() => readStorage<boolean>(STORAGE_KEYS.localAuth, false));
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    const storedVersion = window.localStorage.getItem(STORAGE_KEYS.productsVersion);
+    return storedVersion === DATA_VERSION
+      ? readStorage<Product[]>(STORAGE_KEYS.products, INITIAL_PRODUCTS)
+      : INITIAL_PRODUCTS;
+  });
+  const [suppliers] = useState<Supplier[]>(INITIAL_SUPPLIERS);
+  const [sites, setSites] = useState<StoreSite[]>(() => {
+    const legacyConfig = readStorage<StoreConfig>(STORAGE_KEYS.storeConfig, DEFAULT_STORE_CONFIG);
+    const storedSites = readStorage<StoreSite[]>(STORAGE_KEYS.sites, []);
+    return storedSites.length ? storedSites.map((site, index) => makeSite(site, index + 1)) : [makeSite(legacyConfig)];
+  });
+  const [activeSiteId, setActiveSiteId] = useState(() => readStorage<string>(STORAGE_KEYS.activeSiteId, ''));
+
+  const storeConfig = useMemo(() => {
+    return sites.find(site => site.id === activeSiteId) || sites[0] || makeSite(DEFAULT_STORE_CONFIG);
+  }, [activeSiteId, sites]);
+
+  useEffect(() => {
+    document.title = 'Storefy | Premium SaaS';
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setAuthReady(true);
+      return;
+    }
+
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setSession(data.session);
+      setAuthReady(true);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession) {
+        window.localStorage.removeItem(STORAGE_KEYS.localAuth);
+        setLocalAccess(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session?.user?.id || workspaceReady) return;
+
+    loadWorkspace(session.user.id).then(workspace => {
+      if (workspace?.products?.length) {
+        setProducts(workspace.products);
+      }
+      if (workspace?.sites?.length) {
+        setSites(workspace.sites.map((site, index) => makeSite(site, index + 1)));
+      }
+      if (workspace?.activeSiteId) {
+        setActiveSiteId(workspace.activeSiteId);
+      }
+      setWorkspaceReady(true);
+    });
+  }, [session?.user?.id, workspaceReady]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
+    window.localStorage.setItem(STORAGE_KEYS.productsVersion, DATA_VERSION);
+  }, [products]);
+
+  useEffect(() => {
+    if (!activeSiteId && sites[0]?.id) {
+      setActiveSiteId(sites[0].id);
+    }
+  }, [activeSiteId, sites]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.sites, JSON.stringify(sites));
+    window.localStorage.setItem(STORAGE_KEYS.activeSiteId, storeConfig.id || '');
+    window.localStorage.setItem(STORAGE_KEYS.storeConfig, JSON.stringify(storeConfig));
+  }, [sites, storeConfig]);
+
+  useEffect(() => {
+    if (!session?.user?.id || !workspaceReady) return;
+
+    const timer = window.setTimeout(() => {
+      void saveWorkspace(session.user.id, {
+        products,
+        sites,
+        activeSiteId: storeConfig.id || activeSiteId
+      });
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [activeSiteId, products, session?.user?.id, sites, storeConfig.id, workspaceReady]);
+
+  const showAppToast = (message: string) => {
+    setAppToast(message);
+    window.setTimeout(() => setAppToast(null), 3200);
+  };
+
+  const handleNavigate = (page: string) => {
+    setActivePage(page);
+    setMobileSidebarOpen(false);
+  };
+
+  const handleLocalAccess = () => {
+    window.localStorage.setItem(STORAGE_KEYS.localAuth, JSON.stringify(true));
+    setLocalAccess(true);
+  };
+
+  const handleSignOut = async () => {
+    if (supabase && session) {
+      await supabase.auth.signOut();
+    }
+    window.localStorage.removeItem(STORAGE_KEYS.localAuth);
+    setLocalAccess(false);
+    setSession(null);
+    setWorkspaceReady(false);
+  };
+
+  const handleToggleAddProduct = (productId: string) => {
+    setProducts(prev => prev.map(product => product.id === productId
+      ? { ...product, addedToStore: !product.addedToStore }
+      : product
+    ));
+  };
+
+  const handleUpdateSalePrice = (productId: string, newPrice: number) => {
+    setProducts(prev => prev.map(product => product.id === productId
+      ? { ...product, salePrice: newPrice }
+      : product
+    ));
+    showAppToast('Preco de venda atualizado.');
+  };
+
+  const handleUpdateProductImage = (productId: string, newUrl: string) => {
+    setProducts(prev => prev.map(product => product.id === productId
+      ? { ...product, imageUrl: newUrl }
+      : product
+    ));
+    showAppToast('Imagem do produto atualizada.');
+  };
+
+  const handleUpdateStoreConfig = (newConfig: StoreConfig) => {
+    setSites(prev => prev.map(site => site.id === storeConfig.id
+      ? makeSite({ ...site, ...newConfig, id: site.id })
+      : site
+    ));
+    showAppToast('Loja atualizada.');
+  };
+
+  const handleCreateSite = () => {
+    const nextIndex = sites.length + 1;
+    const newSite = makeSite({
+      ...DEFAULT_STORE_CONFIG,
+      name: `Storefy Loja ${nextIndex}`,
+      subdomain: `storefy-${nextIndex}`,
+      logoUrl: STOREFY_LOGO_URL
+    }, nextIndex);
+    setSites(prev => [...prev, newSite]);
+    setActiveSiteId(newSite.id);
+    showAppToast('Nova loja criada.');
+  };
+
+  const handleDuplicateSite = () => {
+    const nextIndex = sites.length + 1;
+    const duplicated = makeSite({
+      ...storeConfig,
+      id: createId(),
+      name: `${storeConfig.name} Copia`,
+      subdomain: `${storeConfig.subdomain}-${nextIndex}`,
+      status: 'draft',
+      publishedUrl: undefined,
+      publishedAt: undefined
+    }, nextIndex);
+    setSites(prev => [...prev, duplicated]);
+    setActiveSiteId(duplicated.id);
+    showAppToast('Loja duplicada.');
+  };
+
+  const handlePublishStore = async (): Promise<{ mode: string; url: string }> => {
+    const html = buildStoreHtml(storeConfig, products);
+    const filename = `${storeConfig.subdomain || 'storefy'}-loja.html`;
+
+    try {
+      const response = await fetch('/api/netlify-publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          html,
+          site: storeConfig,
+          products: products.filter(product => product.addedToStore)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const url = data.url || data.deployUrl || `https://${storeConfig.subdomain}.netlify.app`;
+        setSites(prev => prev.map(site => site.id === storeConfig.id
+          ? { ...site, status: 'published', publishedUrl: url, publishedAt: new Date().toISOString() }
+          : site
+        ));
+        showAppToast('Loja publicada.');
+        return { mode: 'netlify', url };
+      }
+    } catch {
+      // Local/offline mode: fall back to the manual HTML flow.
+    }
+
+    downloadHtml(filename, html);
+    setSites(prev => prev.map(site => site.id === storeConfig.id
+      ? { ...site, status: 'published', publishedUrl: filename, publishedAt: new Date().toISOString() }
+      : site
+    ));
+    showAppToast('HTML baixado para publicar no Netlify Drop.');
+    return { mode: 'html', url: filename };
+  };
+
+  if (!authReady) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#030305] text-white">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 shadow-2xl backdrop-blur-xl">
+          <Sparkles className="animate-pulse text-brand-500" size={20} />
+          <span className="text-sm font-bold text-slate-200">Carregando acesso...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session && !localAccess) {
+    return <LoginScreen onLocalAccess={handleLocalAccess} />;
+  }
+
+  if (activePage === 'shop-preview') {
+    return (
+      <StorePreview
+        storeConfig={storeConfig}
+        products={products}
+        onBackToSaaS={() => handleNavigate('dashboard')}
+      />
+    );
+  }
+
+  const activeProductsCount = products.filter(product => product.addedToStore).length;
+
+  return (
+    <div className="min-h-screen bg-[#030305] text-slate-100">
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_0%,rgba(212,175,55,0.10),transparent_32%),radial-gradient(circle_at_75%_15%,rgba(20,184,166,0.08),transparent_28%)]" />
+
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/70"
+            aria-label="Fechar menu"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="relative h-full w-72 max-w-[88vw]">
+            <Sidebar
+              activePage={activePage}
+              onPageChange={handleNavigate}
+              storeName={storeConfig.name}
+              storePrimaryColor={storeConfig.primaryColor}
+              storeLogoUrl={storeConfig.logoUrl}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="relative z-10 flex min-h-screen">
+        <div className="hidden lg:block">
+          <Sidebar
+            activePage={activePage}
+            onPageChange={handleNavigate}
+            storeName={storeConfig.name}
+            storePrimaryColor={storeConfig.primaryColor}
+            storeLogoUrl={storeConfig.logoUrl}
+          />
+        </div>
+
+        <main className="flex-1 lg:ml-72">
+          <header className="sticky top-0 z-30 border-b border-white/10 bg-[#030305]/78 px-4 py-3 backdrop-blur-2xl sm:px-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <button
+                  type="button"
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] lg:hidden"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  aria-label="Abrir menu"
+                >
+                  <Menu size={19} />
+                </button>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-500">Storefy</p>
+                  <h1 className="truncate font-display text-lg font-bold text-white sm:text-xl">
+                    {storeConfig.name}
+                  </h1>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('shop-preview')}
+                  className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-bold text-slate-200 transition hover:bg-white/[0.08] sm:flex"
+                >
+                  <ExternalLink size={16} />
+                  Preview
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handlePublishStore()}
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-2 text-sm font-black text-black shadow-lg shadow-brand-500/20 transition hover:bg-brand-200"
+                >
+                  <Sparkles size={16} />
+                  Publicar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleSignOut()}
+                  className="hidden h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 transition hover:bg-white/[0.08] sm:grid"
+                  aria-label="Sair"
+                  title={session?.user?.email || 'Sair'}
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div className="p-4 sm:p-6">
+            {activePage === 'dashboard' && (
+              <Dashboard
+                storeConfig={storeConfig}
+                products={products}
+                onNavigate={handleNavigate}
+              />
+            )}
+
+            {activePage === 'wizard' && (
+              <Wizard
+                products={products}
+                storeConfig={storeConfig}
+                onUpdateStoreConfig={handleUpdateStoreConfig}
+                onToggleAddProduct={handleToggleAddProduct}
+                onNavigateToPreview={() => handleNavigate('shop-preview')}
+                onPublishStore={handlePublishStore}
+              />
+            )}
+
+            {activePage === 'stores' && (
+              <section className="space-y-5">
+                <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[0.035] p-5 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-500">Multi sites</p>
+                    <h2 className="mt-2 font-display text-2xl font-bold text-white">Gerencie suas lojas</h2>
+                    <p className="mt-1 max-w-2xl text-sm text-slate-400">
+                      Crie vitrines separadas por nicho, configure dominio, publique e baixe o HTML de cada loja.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCreateSite}
+                      className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-black text-black"
+                    >
+                      <Plus size={16} />
+                      Nova loja
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDuplicateSite}
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-bold text-white"
+                    >
+                      <Copy size={16} />
+                      Duplicar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handlePublishStore()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-2 text-sm font-black text-black"
+                    >
+                      Publicar
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {sites.map(site => {
+                    const isActive = site.id === storeConfig.id;
+                    return (
+                      <button
+                        type="button"
+                        key={site.id}
+                        onClick={() => setActiveSiteId(site.id)}
+                        className={`rounded-2xl border p-4 text-left transition ${
+                          isActive
+                            ? 'border-brand-500/60 bg-brand-500/10'
+                            : 'border-white/10 bg-white/[0.035] hover:bg-white/[0.06]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={site.logoUrl || STOREFY_LOGO_URL}
+                              alt={site.name}
+                              className="h-11 w-11 shrink-0 object-contain"
+                            />
+                            <div className="min-w-0">
+                              <h3 className="truncate font-display text-lg font-bold text-white">{site.name}</h3>
+                              <p className="truncate text-xs text-slate-400">/{site.subdomain}</p>
+                            </div>
+                          </div>
+                          {isActive && <CheckCircle2 className="text-brand-500" size={19} />}
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                          <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
+                            {activeProductsCount} produtos
+                          </span>
+                          <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
+                            {site.status === 'published' ? 'Publicado' : 'Rascunho'}
+                          </span>
+                        </div>
+                        {site.publishedUrl && (
+                          <p className="mt-3 truncate text-xs text-emerald-300">{site.publishedUrl}</p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {activePage === 'products' && (
+              <ProductCatalog
+                products={products}
+                suppliers={suppliers}
+                onToggleAddProduct={handleToggleAddProduct}
+                onUpdateSalePrice={handleUpdateSalePrice}
+                onUpdateProductImage={handleUpdateProductImage}
+              />
+            )}
+
+            {activePage === 'suppliers' && <SuppliersList suppliers={suppliers} />}
+            {activePage === 'marketing' && <MarketingKit storeConfig={storeConfig} />}
+            {activePage === 'settings' && (
+              <SettingsView
+                storeConfig={storeConfig}
+                onUpdateStoreConfig={handleUpdateStoreConfig}
+              />
+            )}
+          </div>
+        </main>
+      </div>
+
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">
+        <button
+          type="button"
+          onClick={() => window.open('https://app.netlify.com/drop', '_blank')}
+          className="hidden items-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 py-2 text-xs font-bold text-slate-300 shadow-2xl backdrop-blur-xl transition hover:bg-white/10 sm:inline-flex"
+        >
+          <Globe2 size={15} />
+          Netlify Drop
+        </button>
+        <button
+          type="button"
+          onClick={() => showAppToast('Configure os dados da loja, selecione produtos e clique em Publicar.')}
+          className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-black/70 text-slate-300 shadow-2xl backdrop-blur-xl transition hover:bg-white/10"
+          aria-label="Ajuda"
+        >
+          <HelpCircle size={18} />
+        </button>
+      </div>
+
+      {appToast && (
+        <div className="fixed left-1/2 top-5 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-2xl border border-white/10 bg-black/90 px-4 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur-xl">
+          <CheckCircle2 size={18} className="text-emerald-400" />
+          {appToast}
+          <button type="button" onClick={() => setAppToast(null)} aria-label="Fechar">
+            <X size={15} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
