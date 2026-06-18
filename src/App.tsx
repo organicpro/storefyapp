@@ -10,6 +10,7 @@ import {
   Sparkles,
   Store,
   LogOut,
+  Trash2,
   X
 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
@@ -366,6 +367,28 @@ function App() {
     showAppToast('Loja duplicada.');
   };
 
+  const handleDeleteSite = (siteId: string) => {
+    const targetSite = sites.find(site => site.id === siteId);
+    if (!targetSite) return;
+
+    if (sites.length <= 1) {
+      showAppToast('Crie outra loja antes de apagar esta.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Apagar a loja "${targetSite.name}"? Esta acao nao pode ser desfeita.`);
+    if (!confirmed) return;
+
+    setSites(prev => {
+      const remainingSites = prev.filter(site => site.id !== siteId);
+      if (siteId === storeConfig.id && remainingSites[0]) {
+        setActiveSiteId(remainingSites[0].id);
+      }
+      return remainingSites;
+    });
+    showAppToast('Loja apagada.');
+  };
+
   const handlePublishStore = async (): Promise<{ mode: string; url: string }> => {
     const html = buildStoreHtml(storeConfig, products);
     const filename = `${storeConfig.subdomain || 'storefy'}-loja.html`;
@@ -598,10 +621,8 @@ function App() {
                   {sites.map(site => {
                     const isActive = site.id === storeConfig.id;
                     return (
-                      <button
-                        type="button"
+                      <article
                         key={site.id}
-                        onClick={() => setActiveSiteId(site.id)}
                         className={`rounded-2xl border p-4 text-left transition ${
                           isActive
                             ? 'border-brand-500/60 bg-brand-500/10'
@@ -633,7 +654,30 @@ function App() {
                         {site.publishedUrl && (
                           <p className="mt-3 truncate text-xs text-emerald-300">{site.publishedUrl}</p>
                         )}
-                      </button>
+                        <div className="mt-4 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+                          <button
+                            type="button"
+                            onClick={() => setActiveSiteId(site.id)}
+                            className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                              isActive
+                                ? 'bg-brand-500 text-black'
+                                : 'border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]'
+                            }`}
+                          >
+                            {isActive ? 'Atual' : 'Abrir loja'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSite(site.id)}
+                            disabled={sites.length <= 1}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                            title={sites.length <= 1 ? 'Crie outra loja antes de apagar esta.' : 'Apagar loja'}
+                          >
+                            <Trash2 size={14} />
+                            Apagar
+                          </button>
+                        </div>
+                      </article>
                     );
                   })}
                 </div>
