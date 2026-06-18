@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
-  Globe2,
   HelpCircle,
   Menu,
   Plus,
@@ -401,7 +400,7 @@ function App() {
       ? { ...site, status: 'published', publishedUrl: filename, publishedAt: new Date().toISOString() }
       : site
     ));
-    showAppToast('HTML baixado para publicar no Netlify Drop.');
+    showAppToast('HTML baixado. Publique esse arquivo na Netlify para gerar o link netlify.app.');
     return { mode: 'html', url: filename };
   };
 
@@ -533,6 +532,7 @@ function App() {
                 storeConfig={storeConfig}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onToggleAddProduct={handleToggleAddProduct}
+                onUpdateSalePrice={handleUpdateSalePrice}
                 onNavigateToPreview={() => handleNavigate('shop-preview')}
                 onPublishStore={handlePublishStore}
               />
@@ -644,14 +644,6 @@ function App() {
       </div>
 
       <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">
-        <button
-          type="button"
-          onClick={() => window.open('https://app.netlify.com/drop', '_blank')}
-          className="hidden items-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 py-2 text-xs font-bold text-slate-300 shadow-2xl backdrop-blur-xl transition hover:bg-white/10 sm:inline-flex"
-        >
-          <Globe2 size={15} />
-          Netlify Drop
-        </button>
         <button
           type="button"
           onClick={() => showAppToast('Configure os dados da loja, selecione produtos e clique em Publicar.')}

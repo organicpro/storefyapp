@@ -31,7 +31,9 @@ export default function MarketingKit({ storeConfig }: MarketingKitProps) {
     }, 3500);
   };
 
-  const fullDomain = `https://${storeConfig.subdomain}.storefy.app`;
+  const fullDomain = storeConfig.publishedUrl?.startsWith('http')
+    ? storeConfig.publishedUrl
+    : 'Cole aqui o link netlify.app da loja publicada';
 
   const kits = [
     {
@@ -133,7 +135,7 @@ export default function MarketingKit({ storeConfig }: MarketingKitProps) {
             <div className="space-y-1.5">
               <h4 className="text-xs font-bold text-white">Imprima e espalhe fisicamente</h4>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Ótima tática para colar em faculdades, padarias e pontos de encontros gamers de amigos. O código leva direto ao link do subdomain: {storeConfig.subdomain}.storefy.app
+                Ótima tática para colar em faculdades, padarias e pontos de encontros gamers de amigos. O código leva direto ao link publicado da sua loja.
               </p>
             </div>
             

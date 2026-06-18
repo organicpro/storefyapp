@@ -129,7 +129,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
                     required
                   />
                   <span className="absolute right-3 text-xs text-slate-400 font-bold select-none font-mono">
-                    .storefy.app
+                    .html
                   </span>
                 </div>
               </div>

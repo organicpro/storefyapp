@@ -33,6 +33,7 @@ interface WizardProps {
   storeConfig: StoreConfig;
   onUpdateStoreConfig: (newConfig: StoreConfig) => void;
   onToggleAddProduct: (productId: string) => void;
+  onUpdateSalePrice: (productId: string, newPrice: number) => void;
   onNavigateToPreview: () => void;
   onPublishStore: () => Promise<{ mode: string; url: string }>;
 }
@@ -42,6 +43,7 @@ export default function Wizard({
   storeConfig, 
   onUpdateStoreConfig, 
   onToggleAddProduct,
+  onUpdateSalePrice,
   onNavigateToPreview,
   onPublishStore
 }: WizardProps) {
@@ -87,6 +89,11 @@ export default function Wizard({
   const recommendedProducts = products.filter(p => 
     selectedNiche.recommendedSubcategories.includes(p.subcategory)
   );
+
+  const publishedUrl = publishedResult?.mode === 'netlify'
+    ? publishedResult.url
+    : '';
+  const displayStoreLink = publishedUrl || 'Publique para gerar o link netlify.app';
 
   const handleNext = () => {
     if (currentStep === 3) {
@@ -135,15 +142,15 @@ export default function Wizard({
     const result = await onPublishStore();
     setPublishedResult(result);
     setPublishProgress(100);
-    setPublishStatusText(result.mode === 'netlify' ? 'Loja publicada pela API Netlify.' : 'HTML baixado para usar no Netlify Drop.');
+    setPublishStatusText(result.mode === 'netlify' ? 'Loja publicada pela API Netlify.' : 'HTML baixado para publicacao manual na Netlify.');
 
     await new Promise(resolve => setTimeout(resolve, 550));
     setIsPublishing(false);
     setCurrentStep(6);
   };
   const handleCopyLink = () => {
-    const fullLink = `https://${storeSubdomain}.storefy.app`;
-    navigator.clipboard.writeText(fullLink);
+    if (!publishedUrl) return;
+    navigator.clipboard.writeText(publishedUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -158,7 +165,7 @@ export default function Wizard({
   };
 
   const getFacebookPostText = () =>
-    `Pessoal, montei uma vitrine com ofertas de ${selectedNiche.name}. Tem produtos selecionados, atendimento pelo WhatsApp e pedido direto pelo link: https://${storeSubdomain || 'minhaloja'}.storefy.app`;
+    `Pessoal, montei uma vitrine com ofertas de ${selectedNiche.name}. Tem produtos selecionados, atendimento e pedido direto pelo link: ${publishedUrl || 'link da vitrine em breve'}`;
 
   const handleOpenFacebookGroups = async () => {
     await navigator.clipboard.writeText(getFacebookPostText());
@@ -307,43 +314,65 @@ export default function Wizard({
             <span className="font-mono text-slate-400">Exibindo {recommendedProducts.length} recomendações</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[32rem] overflow-y-auto pr-1">
             {recommendedProducts.map((p) => {
               const profit = p.salePrice - p.costPrice;
               return (
                 <div 
                   key={p.id}
-                  className={`p-4 rounded-xl border transition-all duration-300 flex items-center justify-between gap-4 text-left ${
+                  className={`p-4 rounded-xl border transition-all duration-300 text-left ${
                     p.addedToStore 
                       ? 'border-brand-500/80 bg-brand-500/[0.04]' 
                       : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img 
-                      src={p.imageUrl} 
-                      alt={p.name}
-                      referrerPolicy="no-referrer"
-                      className="w-12 h-12 rounded-lg object-cover shrink-0 select-none bg-white/[0.05]"
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-white truncate" title={p.name}>{p.name}</p>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">{p.subcategory} ⬢ Forn: {p.supplier}</p>
-                      <p className="text-[10px] text-emerald-400 font-bold mt-1 font-mono">Margem: R$ {profit.toFixed(2)}</p>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img 
+                        src={p.imageUrl} 
+                        alt={p.name}
+                        referrerPolicy="no-referrer"
+                        className="w-12 h-12 rounded-lg object-cover shrink-0 select-none bg-white/[0.05]"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-white truncate" title={p.name}>{p.name}</p>
+                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">{p.subcategory} - Forn: {p.supplier}</p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => onToggleAddProduct(p.id)}
+                      className={`px-3 py-1.5 rounded-lg font-semibold text-[11px] flex items-center gap-1 shrink-0 cursor-pointer ${
+                        p.addedToStore
+                          ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20'
+                          : 'bg-white text-black hover:bg-slate-200'
+                      }`}
+                    >
+                      {p.addedToStore ? <Trash2 className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                      <span>{p.addedToStore ? 'Remover' : 'Adicionar'}</span>
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => onToggleAddProduct(p.id)}
-                    className={`px-3 py-1.5 rounded-lg font-semibold text-[11px] flex items-center gap-1 shrink-0 cursor-pointer ${
-                      p.addedToStore
-                        ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20'
-                        : 'bg-white text-black hover:bg-slate-200'
-                    }`}
-                  >
-                    {p.addedToStore ? <Trash2 className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                    <span>{p.addedToStore ? 'Remover' : 'Adicionar'}</span>
-                  </button>
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <div className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-2">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Voce paga</p>
+                      <p className="mt-1 text-xs font-bold text-slate-200">R$ {p.costPrice.toFixed(2).replace('.', ',')}</p>
+                    </div>
+                    <label className="rounded-lg border border-brand-500/20 bg-brand-500/10 px-2.5 py-2">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-brand-200">Voce vende</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={p.salePrice}
+                        onChange={(event) => onUpdateSalePrice(p.id, Number(event.target.value))}
+                        className="mt-1 w-full bg-transparent text-xs font-bold text-white outline-none"
+                      />
+                    </label>
+                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-2">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-emerald-200">Lucro</p>
+                      <p className="mt-1 text-xs font-bold text-emerald-300">R$ {profit.toFixed(2).replace('.', ',')}</p>
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -391,18 +420,15 @@ export default function Wizard({
 
             {/* Subdomain Input */}
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Subdomínio Grátis Storefy</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Nome do arquivo / loja</label>
               <div className="relative flex items-center">
                 <input
                   type="text"
                   placeholder="nomedaloja"
                   value={storeSubdomain}
                   onChange={(e) => setStoreSubdomain(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
-                  className="w-full pl-4 pr-32 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 glass-premium-input font-mono"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 glass-premium-input font-mono"
                 />
-                <span className="absolute right-3 text-xs text-slate-450 font-bold select-none font-mono">
-                  .storefy.app
-                </span>
               </div>
             </div>
 
@@ -506,7 +532,7 @@ export default function Wizard({
 
           <div className="space-y-2">
             <h3 className="text-lg font-display font-medium text-white">Pronto para gerar sua vitrine?</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">Se existir uma API Netlify conectada, publicamos automaticamente. Sem API, a Storefy baixa um HTML pronto para arrastar no Netlify Drop.</p>
+            <p className="text-xs text-slate-400 leading-relaxed">Se existir uma API Netlify conectada, publicamos automaticamente. Sem API, a Storefy baixa um HTML pronto para publicar manualmente na Netlify.</p>
           </div>
 
           <button
@@ -564,11 +590,12 @@ export default function Wizard({
             {/* Display domain link */}
             <div className="flex items-center gap-2 p-2 px-3 bg-white/[0.02] border border-white/10 rounded-xl relative">
               <span className="text-xs font-bold text-white truncate flex-1 block text-left">
-                https://{storeSubdomain || 'minhaloja'}.storefy.app
+                {displayStoreLink}
               </span>
               
               <button 
                 onClick={handleCopyLink}
+                disabled={!publishedUrl}
                 className="p-1 px-2.5 rounded-lg bg-white text-black text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
               >
                 <Copy className="w-3 h-3 text-black" />
@@ -577,7 +604,7 @@ export default function Wizard({
             </div>
 
             {publishedResult?.mode === 'html' && (
-              <p className="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">HTML baixado: arraste o arquivo no Netlify Drop para publicar sem configurar API.</p>
+              <p className="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">HTML baixado: publique esse arquivo na Netlify para gerar o link netlify.app.</p>
             )}
 
             <button
@@ -598,7 +625,7 @@ export default function Wizard({
               </h4>
               <p className="text-xs text-slate-450">Coloque isso no link da sua bio do Instagram:</p>
               <div className="p-3 bg-[#06060c] rounded-xl text-slate-300 text-[11px] font-mono select-all border border-white/5">
-                Chaves digitais, gift cards e ofertas selecionadas. Garanta as novidades aqui: https://{storeSubdomain || 'minhaloja'}.storefy.app
+                Chaves digitais, gift cards e ofertas selecionadas. Garanta as novidades aqui: {publishedUrl || 'cole aqui o link netlify.app depois de publicar'}
               </div>
             </div>
 
@@ -609,7 +636,7 @@ export default function Wizard({
               </h4>
               <p className="text-xs text-slate-450">Texto pronto para mandar em grupos de ofertas:</p>
               <div className="p-3 bg-[#06060c] rounded-xl text-slate-300 text-[11px] font-mono select-all border border-white/5">
-                Fala galera! Montei meu catálogo exclusivo de produtos gamers e gift cards com ótimos preços! Dá uma olhada na vitrine: https://{storeSubdomain || 'minhaloja'}.storefy.app
+                Fala galera! Montei meu catálogo exclusivo com ótimos preços! Dá uma olhada na vitrine: {publishedUrl || 'cole aqui o link netlify.app depois de publicar'}
               </div>
             </div>
 
