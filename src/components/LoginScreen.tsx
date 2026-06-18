@@ -90,7 +90,6 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
             </div>
           </div>
 
-          <p className="text-xs text-slate-500">Storefy conectado ao seu Supabase.</p>
         </section>
 
         <section className="flex items-center justify-center px-4 py-8 sm:px-8">
