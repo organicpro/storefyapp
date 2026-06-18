@@ -35,7 +35,7 @@ interface WizardProps {
   onToggleAddProduct: (productId: string) => void;
   onUpdateSalePrice: (productId: string, newPrice: number) => void;
   onNavigateToPreview: () => void;
-  onPublishStore: () => Promise<{ mode: string; url: string }>;
+  onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
 }
 
 export default function Wizard({ 
@@ -54,7 +54,7 @@ export default function Wizard({
   const [publishStatusText, setPublishStatusText] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedFacebookPost, setCopiedFacebookPost] = useState(false);
-  const [publishedResult, setPublishedResult] = useState<{ mode: string; url: string } | null>(null);
+  const [publishedResult, setPublishedResult] = useState<{ mode: string; url: string; error?: string } | null>(null);
 
   // Form states initialized with current config
   const [storeName, setStoreName] = useState(storeConfig.name);
@@ -137,10 +137,19 @@ export default function Wizard({
 
     await new Promise(resolve => setTimeout(resolve, 350));
     setPublishProgress(70);
-    setPublishStatusText('Tentando publicacao via Netlify. Sem API, baixa o HTML pronto...');
+    setPublishStatusText('Tentando publicacao via Netlify...');
 
     const result = await onPublishStore();
     setPublishedResult(result);
+
+    if (result.mode === 'error') {
+      setPublishProgress(100);
+      setPublishStatusText(result.error || 'Falha ao publicar. Confira token e Site ID nas configuracoes.');
+      await new Promise(resolve => setTimeout(resolve, 850));
+      setIsPublishing(false);
+      return;
+    }
+
     setPublishProgress(100);
     setPublishStatusText(result.mode === 'netlify' ? 'Loja publicada pela API Netlify.' : 'HTML baixado para publicacao manual na Netlify.');
 
@@ -614,6 +623,17 @@ export default function Wizard({
               <span>Acessar Vitrine do Cliente</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
+            {publishedUrl && (
+              <a
+                href={publishedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+              >
+                <span>Abrir site ao vivo</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
 
           {/* Marketing Kits widgets */}

@@ -42,6 +42,7 @@ export interface StoreConfig {
   publishedAt?: string;
   netlifyApiToken?: string;
   netlifySiteId?: string;
+  downloadHtmlFallback?: boolean;
 }
 
 export interface Niche {

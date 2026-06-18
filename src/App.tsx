@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
@@ -96,26 +96,45 @@ function buildProductImageMarkup(product: Product) {
 function buildStoreHtml(config: StoreConfig, products: Product[]) {
   const activeProducts = products.filter(product => product.addedToStore);
   const categories = Array.from(new Set(activeProducts.map(product => product.category)));
+  const phone = config.whatsapp.replace(/\D/g, '');
+  const whatsappFor = (product?: Product) => {
+    const text = product
+      ? `OlÃ¡! Quero comprar: ${product.name} - R$ ${product.salePrice.toFixed(2).replace('.', ',')}`
+      : config.welcomeMessage;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  };
 
   const productCards = activeProducts.map(product => `
     <article class="card">
       <div class="media">${buildProductImageMarkup(product)}</div>
       <div class="card-body">
-        <span class="pill">${escapeHtml(product.category)}</span>
+        <div class="meta-row">
+          <span class="pill">${escapeHtml(product.category)}</span>
+          <span class="supplier">${escapeHtml(product.supplier)}</span>
+        </div>
         <h3>${escapeHtml(product.name)}</h3>
         <p>${escapeHtml(product.deliverable)}</p>
         <ul>
           ${product.benefits.slice(0, 3).map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}
         </ul>
         <div class="buy-row">
-          <strong>R$ ${product.salePrice.toFixed(2).replace('.', ',')}</strong>
-          <a href="#contato">Comprar</a>
+          <div>
+            <span>Preco</span>
+            <strong>R$ ${product.salePrice.toFixed(2).replace('.', ',')}</strong>
+          </div>
+          <a href="${escapeHtml(whatsappFor(product))}" target="_blank" rel="noreferrer">Comprar</a>
         </div>
       </div>
     </article>
   `).join('');
 
   const categoryLinks = categories.map(category => `<span>${escapeHtml(category)}</span>`).join('');
+  const faqItems = (config.faq || []).slice(0, 3).map(item => `
+    <details>
+      <summary>${escapeHtml(item.question)}</summary>
+      <p>${escapeHtml(item.answer)}</p>
+    </details>
+  `).join('');
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -124,7 +143,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(config.name)}</title>
   <style>
-    *{box-sizing:border-box}body{margin:0;background:#070707;color:#f7f7f7;font-family:Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}.hero{padding:34px 0 28px;background:radial-gradient(circle at 18% 0%,${escapeHtml(config.primaryColor)}55,transparent 34%),linear-gradient(135deg,#050505,#151515)}.top{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:58px;height:58px;object-fit:contain}.brand strong{font-size:24px}.hero h1{font-size:clamp(34px,6vw,68px);line-height:.95;margin:42px 0 14px;max-width:850px}.hero p{max-width:680px;color:#cbd5e1;font-size:18px}.cats{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.cats span,.pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:18px;padding:34px 0}.card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.28)}.media{height:172px;background:#101010;display:flex;align-items:center;justify-content:center}.media img{width:100%;height:100%}.media img.photo{object-fit:cover}.media img.logo-img{object-fit:contain;padding:28px;background:#050508}.no-image{color:#94a3b8;font-weight:800;font-size:12px}.card-body{padding:16px}.card h3{font-size:17px;line-height:1.22;margin:12px 0 8px}.card p{color:#b6c2d2;font-size:13px;line-height:1.45;min-height:38px}.card ul{list-style:none;margin:12px 0;padding:0;display:grid;gap:7px}.card li{font-size:12px;color:#dce6f7}.card li:before{content:"✓";color:${escapeHtml(config.primaryColor)};font-weight:900;margin-right:6px}.buy-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;margin-top:14px}.buy-row strong{font-size:20px}.buy-row a,.cta{background:${escapeHtml(config.primaryColor)};color:#050505;border-radius:999px;padding:10px 14px;font-weight:900}.contact{padding:38px 0 52px;border-top:1px solid rgba(255,255,255,.1)}.contact-box{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:24px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}@media(max-width:640px){.top{align-items:flex-start}.media{height:150px}.contact-box{display:block}.cta{display:inline-block;margin-top:14px}}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#050507;color:#f8fafc;font-family:Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}.hero{position:relative;overflow:hidden;padding:28px 0 46px;background:radial-gradient(circle at 16% 4%,${escapeHtml(config.primaryColor)}66,transparent 28%),radial-gradient(circle at 86% 10%,rgba(20,184,166,.22),transparent 26%),linear-gradient(135deg,#050505,#0b0d10 58%,#050505)}.hero:after{content:"";position:absolute;inset:auto -10% -45% -10%;height:280px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);transform:rotate(-6deg)}.top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:54px;height:54px;object-fit:contain;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px}.brand strong{font-size:22px;letter-spacing:-.03em}.cta,.buy-row a{display:inline-flex;align-items:center;justify-content:center;background:${escapeHtml(config.primaryColor)};color:#050505;border-radius:999px;padding:12px 16px;font-weight:900;box-shadow:0 16px 38px ${escapeHtml(config.primaryColor)}33}.hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(280px,.92fr);gap:34px;align-items:end;margin-top:52px}.eyebrow{display:inline-flex;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);border-radius:999px;padding:8px 12px;color:#dbeafe;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.hero h1{font-size:clamp(38px,7vw,78px);line-height:.9;margin:18px 0 16px;max-width:850px;letter-spacing:-.06em}.hero p{max-width:680px;color:#cbd5e1;font-size:18px;line-height:1.65}.hero-panel{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);border-radius:28px;padding:22px;backdrop-filter:blur(18px);box-shadow:0 28px 90px rgba(0,0,0,.35)}.hero-panel strong{display:block;font-size:34px;letter-spacing:-.04em}.hero-panel span{display:block;color:#cbd5e1;font-size:13px;line-height:1.55}.cats{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.cats span,.pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.section-title{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:38px 0 18px}.section-title h2{margin:0;font-size:30px;letter-spacing:-.04em}.section-title p{margin:0;color:#94a3b8;font-size:14px}.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 0}.trust div{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:18px;padding:14px;color:#cbd5e1;font-size:13px}.trust b{display:block;color:#fff;margin-bottom:3px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;padding:0 0 34px}.card{border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border-radius:22px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.28);transition:transform .2s,border-color .2s}.card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.24)}.media{height:184px;background:#101010;display:flex;align-items:center;justify-content:center}.media img{width:100%;height:100%}.media img.photo{object-fit:cover}.media img.logo-img{object-fit:contain;padding:30px;background:#050508}.no-image{color:#94a3b8;font-weight:800;font-size:12px}.card-body{padding:16px}.meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.supplier{color:#94a3b8;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.card h3{font-size:18px;line-height:1.16;margin:13px 0 8px;letter-spacing:-.03em}.card p{color:#b6c2d2;font-size:13px;line-height:1.45;min-height:38px}.card ul{list-style:none;margin:12px 0;padding:0;display:grid;gap:7px}.card li{font-size:12px;color:#dce6f7}.card li:before{content:"✓";color:${escapeHtml(config.primaryColor)};font-weight:900;margin-right:6px}.buy-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;margin-top:14px;gap:12px}.buy-row span{display:block;color:#94a3b8;font-size:10px;font-weight:900;text-transform:uppercase}.buy-row strong{display:block;font-size:22px;line-height:1}.contact{padding:38px 0 52px;border-top:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.06),transparent 34%)}.contact-box{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:28px;padding:26px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.faq{display:grid;gap:10px;margin:18px 0 0}.faq details{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:18px;padding:14px}.faq summary{cursor:pointer;font-weight:800}.faq p{color:#cbd5e1;margin:10px 0 0;line-height:1.55}.sticky-buy{position:fixed;right:18px;bottom:18px;z-index:5}@media(max-width:760px){.hero-grid{grid-template-columns:1fr;margin-top:34px}.hero-panel{display:none}.trust{grid-template-columns:1fr}.top{align-items:flex-start}.media{height:156px}.contact-box{display:block}.cta{display:inline-flex;margin-top:14px}.section-title{display:block}.sticky-buy{left:16px;right:16px}.sticky-buy .cta{width:100%}}
   </style>
 </head>
 <body>
@@ -134,13 +153,32 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
         <div class="brand"><img src="${escapeHtml(config.logoUrl || STOREFY_LOGO_URL)}" alt="${escapeHtml(config.name)}" /><strong>${escapeHtml(config.name)}</strong></div>
         <a class="cta" href="#produtos">Ver produtos</a>
       </div>
-      <h1>${escapeHtml(config.name)} pronta para vender.</h1>
-      <p>${escapeHtml(config.welcomeMessage)}</p>
-      <div class="cats">${categoryLinks}</div>
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Vitrine selecionada</span>
+          <h1>${escapeHtml(config.name)} pronta para vender.</h1>
+          <p>Produtos organizados, atendimento direto e compra rapida. Escolha sua oferta e fale com a loja para finalizar.</p>
+          <div class="cats">${categoryLinks}</div>
+        </div>
+        <aside class="hero-panel">
+          <strong>${activeProducts.length}</strong>
+          <span>produtos ativos nesta vitrine, separados por nicho e com atendimento direto.</span>
+          <div class="trust">
+            <div><b>Entrega combinada</b>Receba orientacao pelo atendimento.</div>
+            <div><b>Compra direta</b>Pedido rapido pelo WhatsApp.</div>
+            <div><b>Ofertas curadas</b>Catalogo enxuto e objetivo.</div>
+          </div>
+        </aside>
+      </div>
     </div>
   </header>
   <main id="produtos" class="wrap">
+    <div class="section-title">
+      <h2>Produtos em destaque</h2>
+      <p>Escolha uma oferta e chame a loja para confirmar disponibilidade.</p>
+    </div>
     <section class="grid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}</section>
+    ${faqItems ? `<section class="faq"><div class="section-title"><h2>Dúvidas rápidas</h2><p>Informações importantes antes de comprar.</p></div>${faqItems}</section>` : ''}
   </main>
   <footer id="contato" class="contact">
     <div class="wrap">
@@ -149,10 +187,11 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
           <h2>Gostou de algum produto?</h2>
           <p>Entre em contato com a loja para finalizar o pedido.</p>
         </div>
-        <a class="cta" href="https://wa.me/${escapeHtml(config.whatsapp.replace(/\D/g, ''))}" target="_blank" rel="noreferrer">Chamar loja</a>
+        <a class="cta" href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">Chamar loja</a>
       </div>
     </div>
   </footer>
+  <div class="sticky-buy"><a class="cta" href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">Comprar pelo atendimento</a></div>
 </body>
 </html>`;
 }
@@ -389,33 +428,48 @@ function App() {
     showAppToast('Loja apagada.');
   };
 
-  const handlePublishStore = async (): Promise<{ mode: string; url: string }> => {
+  const handlePublishStore = async (): Promise<{ mode: string; url: string; error?: string }> => {
     const html = buildStoreHtml(storeConfig, products);
     const filename = `${storeConfig.subdomain || 'storefy'}-loja.html`;
+    const hasNetlifyToken = Boolean(storeConfig.netlifyApiToken?.trim());
 
-    try {
-      const response = await fetch('/api/netlify-publish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          html,
-          site: storeConfig,
-          products: products.filter(product => product.addedToStore)
-        })
-      });
-
-      if (response.ok) {
+    if (hasNetlifyToken) {
+      try {
+        const response = await fetch('/api/netlify-publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            html,
+            site: storeConfig,
+            products: products.filter(product => product.addedToStore)
+          })
+        });
         const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Falha ao publicar na Netlify.');
+        }
+
         const url = data.url || data.deployUrl || `https://${storeConfig.subdomain}.netlify.app`;
         setSites(prev => prev.map(site => site.id === storeConfig.id
-          ? { ...site, status: 'published', publishedUrl: url, publishedAt: new Date().toISOString() }
+          ? {
+              ...site,
+              status: 'published',
+              publishedUrl: url,
+              publishedAt: new Date().toISOString(),
+              netlifySiteId: data.siteId || site.netlifySiteId
+            }
           : site
         ));
         showAppToast('Loja publicada.');
         return { mode: 'netlify', url };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Falha ao publicar na Netlify.';
+        if (!storeConfig.downloadHtmlFallback) {
+          showAppToast(message);
+          return { mode: 'error', url: '', error: message };
+        }
       }
-    } catch {
-      // Local/offline mode: fall back to the manual HTML flow.
     }
 
     downloadHtml(filename, html);
@@ -655,17 +709,30 @@ function App() {
                           <p className="mt-3 truncate text-xs text-emerald-300">{site.publishedUrl}</p>
                         )}
                         <div className="mt-4 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
-                          <button
-                            type="button"
-                            onClick={() => setActiveSiteId(site.id)}
-                            className={`rounded-xl px-3 py-2 text-xs font-black transition ${
-                              isActive
-                                ? 'bg-brand-500 text-black'
-                                : 'border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]'
-                            }`}
-                          >
-                            {isActive ? 'Atual' : 'Abrir loja'}
-                          </button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setActiveSiteId(site.id)}
+                              className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                                isActive
+                                  ? 'bg-brand-500 text-black'
+                                  : 'border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]'
+                              }`}
+                            >
+                              {isActive ? 'Atual' : 'Abrir loja'}
+                            </button>
+                            {site.publishedUrl?.startsWith('http') && (
+                              <a
+                                href={site.publishedUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
+                              >
+                                <ExternalLink size={14} />
+                                Ao vivo
+                              </a>
+                            )}
+                          </div>
                           <button
                             type="button"
                             onClick={() => handleDeleteSite(site.id)}

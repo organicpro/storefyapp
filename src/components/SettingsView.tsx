@@ -33,6 +33,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
   const [logoUrl, setLogoUrl] = useState(storeConfig.logoUrl || 'https://i.imgur.com/nUsczZV.png');
   const [netlifyApiToken, setNetlifyApiToken] = useState(storeConfig.netlifyApiToken || '');
   const [netlifySiteId, setNetlifySiteId] = useState(storeConfig.netlifySiteId || '');
+  const [downloadHtmlFallback, setDownloadHtmlFallback] = useState(storeConfig.downloadHtmlFallback ?? false);
   
   // Custom expandable FAQs list
   const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>(
@@ -70,6 +71,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
       instagram,
       netlifyApiToken,
       netlifySiteId,
+      downloadHtmlFallback,
       faq: faqs
     });
     
@@ -184,6 +186,20 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
                 />
               </div>
             </div>
+            <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.025] p-4 text-left">
+              <input
+                type="checkbox"
+                checked={downloadHtmlFallback}
+                onChange={(event) => setDownloadHtmlFallback(event.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-white/20 bg-black accent-brand-500"
+              />
+              <span>
+                <span className="block text-xs font-bold uppercase tracking-wider text-white">Baixar HTML se a publicação falhar</span>
+                <span className="mt-1 block text-[11px] leading-relaxed text-slate-400">
+                  Com token ativo, o padrão é publicar direto e mostrar o link netlify.app. Ative isto só se quiser receber o HTML como plano B.
+                </span>
+              </span>
+            </label>
           </div>
 
           <div className="p-6 glass-premium rounded-2xl space-y-5">
