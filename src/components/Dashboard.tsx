@@ -17,15 +17,16 @@ interface DashboardProps {
   storeConfig: StoreConfig;
   products: Product[];
   onNavigate: (page: string) => void;
+  metricsScope?: string;
 }
 
-export default function Dashboard({ storeConfig, products, onNavigate }: DashboardProps) {
+export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local' }: DashboardProps) {
   // Simple state for filtering feed
   const [metricTimeframe, setMetricTimeframe] = useState<'7d' | '30d' | 'today'>('7d');
-  const salesStorageKey = `storefy.sales.${storeConfig.id || storeConfig.subdomain}`;
+  const salesStorageKey = `storefy.sales.${metricsScope}.${storeConfig.id || storeConfig.subdomain}`;
   const [manualSales, setManualSales] = useState<Array<{ id: string; amount: number; note: string; createdAt: string }>>(() => {
     try {
-      const raw = window.localStorage.getItem(`storefy.sales.${storeConfig.id || storeConfig.subdomain}`);
+      const raw = window.localStorage.getItem(salesStorageKey);
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
@@ -36,15 +37,23 @@ export default function Dashboard({ storeConfig, products, onNavigate }: Dashboa
 
   const productsInStore = products.filter(p => p.addedToStore);
   
-  // Simulated data for metrics based on products count or standard premium SaaS specs
-  const viewsCount = metricTimeframe === 'today' ? 142 : metricTimeframe === '7d' ? 1240 : 4980;
-  const clicksCount = metricTimeframe === 'today' ? 38 : metricTimeframe === '7d' ? 312 : 1120;
-  const conversionsCount = metricTimeframe === 'today' ? 11 : metricTimeframe === '7d' ? 84 : 290;
+  // Real counters start at zero. Manual sales are the first source of dashboard movement.
+  const viewsCount = 0;
+  const clicksCount = 0;
+  const conversionsCount = 0;
   const manualSalesTotal = manualSales.reduce((sum, sale) => sum + sale.amount, 0);
   const manualSalesCount = manualSales.length;
   
-  // Estimated sales is direct profit or total volume. Suppose conversion rate x average item price
-  const estimatedRevenue = (metricTimeframe === 'today' ? 345.90 : metricTimeframe === '7d' ? 2450.00 : 8920.00) + manualSalesTotal;
+  const estimatedRevenue = manualSalesTotal;
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(salesStorageKey);
+      setManualSales(raw ? JSON.parse(raw) : []);
+    } catch {
+      setManualSales([]);
+    }
+  }, [salesStorageKey]);
 
   useEffect(() => {
     window.localStorage.setItem(salesStorageKey, JSON.stringify(manualSales));
@@ -73,13 +82,14 @@ export default function Dashboard({ storeConfig, products, onNavigate }: Dashboa
     totalPotentialMargin += (p.salePrice - p.costPrice);
   });
 
-  const simulatedActivities = [
-    { id: 1, time: 'Há 5 minutos', event: 'Novo contato via WhatsApp', detail: 'Cliente Lucas D. perguntou sobre "Recarga Free Fire"', type: 'conversion', icon: MessageSquare, color: 'text-emerald-400 bg-emerald-500/10' },
-    { id: 2, time: 'Há 22 minutos', event: 'Visualização de Produto', detail: 'Visitante acessou "Spotify Premium Individual - Plano 1 Mês"', type: 'view', icon: Eye, color: 'text-cyan-400 bg-cyan-500/10' },
-    { id: 3, time: 'Há 1 hora', event: 'Preço Voador Editado', detail: 'Você atualizou o preço de venda da licença "Canva Pro Convite"', type: 'edit', icon: ShoppingBag, color: 'text-violet-400 bg-violet-500/10' },
-    { id: 4, time: 'Há 4 horas', event: 'Conversão de Venda Iniciada', detail: 'Cliente Maria S. clicou em Comprar no "Super Pack Templates Notion"', type: 'conversion', icon: MessageSquare, color: 'text-emerald-400 bg-emerald-500/10' },
-    { id: 5, time: 'Há 1 dia', event: 'Sincronização de Catálogo', detail: 'Gamerhub Brasil Ltda atualizou estoque de 8 categorias', type: 'system', icon: Sparkles, color: 'text-amber-400 bg-amber-500/10' }
-  ];
+  const recentActivities = manualSales.slice(0, 5).map(sale => ({
+    id: sale.id,
+    time: new Date(sale.createdAt).toLocaleDateString('pt-BR'),
+    event: 'Venda registrada',
+    detail: `${sale.note} - R$ ${sale.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    icon: DollarSign,
+    color: 'text-emerald-400 bg-emerald-500/10'
+  }));
 
   // Dynamic values for progress indicator
   const hasProducts = productsInStore.length > 0;
@@ -142,7 +152,7 @@ export default function Dashboard({ storeConfig, products, onNavigate }: Dashboa
             </div>
           </div>
           <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            <span className="text-emerald-400 font-bold font-mono">↑ 14.2%</span> em relação ao período anterior
+            <span className="text-emerald-400 font-bold font-mono">0.0%</span> em relação ao período anterior
           </p>
         </div>
 
@@ -159,7 +169,7 @@ export default function Dashboard({ storeConfig, products, onNavigate }: Dashboa
             </div>
           </div>
           <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            <span className="text-emerald-400 font-bold font-mono">↑ 8.3%</span> Taxa de clique: <span className="font-semibold text-white">{(clicksCount/viewsCount * 100).toFixed(1)}%</span>
+            <span className="text-emerald-400 font-bold font-mono">0.0%</span> Taxa de clique: <span className="font-semibold text-white">{viewsCount > 0 ? (clicksCount/viewsCount * 100).toFixed(1) : '0.0'}%</span>
           </p>
         </div>
 
@@ -176,7 +186,7 @@ export default function Dashboard({ storeConfig, products, onNavigate }: Dashboa
             </div>
           </div>
           <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            <span className="text-emerald-400 font-bold font-mono">↑ 21.0%</span> Conversão total: <span className="font-semibold text-white">{((conversionsCount + manualSalesCount)/clicksCount * 100).toFixed(1)}%</span>
+            <span className="text-emerald-400 font-bold font-mono">0.0%</span> Conversão total: <span className="font-semibold text-white">{clicksCount > 0 ? ((conversionsCount + manualSalesCount)/clicksCount * 100).toFixed(1) : '0.0'}%</span>
           </p>
         </div>
 
@@ -361,11 +371,17 @@ export default function Dashboard({ storeConfig, products, onNavigate }: Dashboa
           </div>
 
           <div className="space-y-4">
-            {simulatedActivities.map((act) => {
+            {recentActivities.length === 0 && (
+              <div className="rounded-xl border border-white/10 bg-black/20 p-5 text-sm text-slate-400">
+                Nenhuma atividade ainda. As metricas comecam zeradas e passam a atualizar quando voce registrar vendas ou conectar eventos reais.
+              </div>
+            )}
+
+            {recentActivities.map((act) => {
               const IconComp = act.icon;
               return (
                 <div key={act.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-white/[0.015] transition-all duration-200 border border-transparent hover:border-white/5">
-                  <div className={`p-2.5 rounded-xl shrink-0 ${act.id === 5 ? 'text-amber-400 bg-amber-500/10' : act.color}`}>
+                  <div className={`p-2.5 rounded-xl shrink-0 ${act.color}`}>
                     <IconComp className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">

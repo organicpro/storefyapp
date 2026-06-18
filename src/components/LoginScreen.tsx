@@ -7,8 +7,7 @@ import {
   Lock,
   Mail,
   Sparkles,
-  Store,
-  UserPlus
+  Store
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
@@ -17,18 +16,15 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
-    setMessage('');
 
     if (!isSupabaseConfigured || !supabase) {
       setError('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para ativar o login com Supabase.');
@@ -42,27 +38,12 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
 
     setIsLoading(true);
 
-    const result = mode === 'signin'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              product: 'Storefy'
-            }
-          }
-        });
+    const result = await supabase.auth.signInWithPassword({ email, password });
 
     setIsLoading(false);
 
     if (result.error) {
       setError(result.error.message);
-      return;
-    }
-
-    if (mode === 'signup') {
-      setMessage('Conta criada. Se o Supabase pedir confirmacao, confira o e-mail antes de entrar.');
     }
   };
 
@@ -117,14 +98,14 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-500">
-                  {mode === 'signin' ? 'Login' : 'Criar conta'}
+                  Login
                 </p>
                 <h2 className="mt-1 font-display text-2xl font-black text-white">
-                  {mode === 'signin' ? 'Acesse sua conta' : 'Comece agora'}
+                  Acesse sua conta
                 </h2>
               </div>
               <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-black/30 text-brand-500">
-                {mode === 'signin' ? <Lock size={20} /> : <UserPlus size={20} />}
+                <Lock size={20} />
               </div>
             </div>
 
@@ -160,7 +141,7 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
                     onChange={event => setPassword(event.target.value)}
                     className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-600"
                     placeholder="Sua senha"
-                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -174,30 +155,18 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
               </label>
 
               {error && <p className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
-              {message && <p className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">{message}</p>}
 
               <button
                 type="submit"
                 disabled={isLoading}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 py-4 text-sm font-black text-black transition hover:bg-brand-200 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isLoading ? 'Conectando...' : mode === 'signin' ? 'Entrar' : 'Criar acesso'}
+                {isLoading ? 'Conectando...' : 'Entrar'}
                 <ArrowRight size={18} />
               </button>
             </form>
 
             <div className="mt-5 flex flex-col gap-3 text-center text-sm text-slate-400">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(prev => prev === 'signin' ? 'signup' : 'signin');
-                  setError('');
-                  setMessage('');
-                }}
-                className="font-bold text-slate-200 transition hover:text-brand-200"
-              >
-                {mode === 'signin' ? 'Ainda nao tenho conta' : 'Ja tenho conta'}
-              </button>
               {!isSupabaseConfigured && (
                 <button
                   type="button"

@@ -234,9 +234,15 @@ function App() {
     loadWorkspace(session.user.id).then(workspace => {
       if (workspace?.products?.length) {
         setProducts(workspace.products);
+      } else {
+        setProducts(INITIAL_PRODUCTS);
       }
       if (workspace?.sites?.length) {
         setSites(workspace.sites.map((site, index) => makeSite(site, index + 1)));
+      } else {
+        const cleanSite = makeSite(DEFAULT_STORE_CONFIG);
+        setSites([cleanSite]);
+        setActiveSiteId(cleanSite.id);
       }
       if (workspace?.activeSiteId) {
         setActiveSiteId(workspace.activeSiteId);
@@ -517,6 +523,7 @@ function App() {
                 storeConfig={storeConfig}
                 products={products}
                 onNavigate={handleNavigate}
+                metricsScope={session?.user?.id || 'local'}
               />
             )}
 
