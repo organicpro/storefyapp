@@ -191,13 +191,19 @@ function escapeHtml(value) {
 }
 
 function getStoreProductIds(config, products) {
-  if (Array.isArray(config?.productIds)) {
-    return [...new Set(config.productIds.filter(Boolean))];
-  }
+  const ids = Array.isArray(config?.productIds)
+    ? [...new Set(config.productIds.filter(Boolean))]
+    : [];
 
-  return (products || [])
-    .filter(product => product.addedToStore === true)
-    .map(product => product.id);
+  if (!ids.length) return [];
+
+  const productById = new Map((products || []).map(product => [product.id, product]));
+  const lastSelectedCategory = [...ids].reverse()
+    .map(id => productById.get(id)?.category)
+    .find(Boolean);
+
+  if (!lastSelectedCategory) return ids;
+  return ids.filter(id => productById.get(id)?.category === lastSelectedCategory);
 }
 
 function getSelectedProductsForStore(config, products) {
@@ -560,6 +566,7 @@ async function handlePublish(req, res) {
       status: "published",
       netlifySiteId: siteId,
       netlifySiteName,
+      productIds: getStoreProductIds(siteConfig, products),
       publishedUrl: deploy.url,
       publishedAt,
       lastNetlifyDeployId: deploy.deployId

@@ -93,20 +93,25 @@ function makeSite(config: StoreConfig, index = 1): StoreSite {
     id,
     logoUrl: config.logoUrl || STOREFY_LOGO_URL,
     name: config.name || `Storefy Loja ${index}`,
-    subdomain: config.subdomain || `storefy-${index}`
+    subdomain: config.subdomain || `storefy-${index}`,
+    productIds: Array.isArray(config.productIds) ? config.productIds : []
   };
 }
 
-function getStoreProductIds(config: StoreConfig, products: Product[], siteCount = 1) {
-  if (Array.isArray(config.productIds)) {
-    return Array.from(new Set(config.productIds.filter(Boolean)));
-  }
+function getStoreProductIds(config: StoreConfig, products: Product[]) {
+  const ids = Array.isArray(config.productIds)
+    ? Array.from(new Set(config.productIds.filter(Boolean)))
+    : [];
 
-  if (siteCount <= 1) {
-    return products.filter(product => product.addedToStore).map(product => product.id);
-  }
+  if (!ids.length) return [];
 
-  return [];
+  const productById = new Map(products.map(product => [product.id, product]));
+  const lastSelectedCategory = [...ids].reverse()
+    .map(id => productById.get(id)?.category)
+    .find(Boolean);
+
+  if (!lastSelectedCategory) return ids;
+  return ids.filter(id => productById.get(id)?.category === lastSelectedCategory);
 }
 
 function applyStoreSelection(products: Product[], productIds: string[]) {
@@ -114,10 +119,11 @@ function applyStoreSelection(products: Product[], productIds: string[]) {
   return products.map(product => ({ ...product, addedToStore: selected.has(product.id) }));
 }
 
-function getSelectedProductsForStore(config: StoreConfig, products: Product[], siteCount = 1) {
-  const productIds = getStoreProductIds(config, products, siteCount);
+function getSelectedProductsForStore(config: StoreConfig, products: Product[]) {
+  const productIds = getStoreProductIds(config, products);
   return applyStoreSelection(products, productIds).filter(product => product.addedToStore);
 }
+
 function escapeHtml(value: string | number | undefined) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -341,7 +347,7 @@ function App() {
   }, [activeSiteId, sites]);
 
   const activeStoreProductIds = useMemo(() => {
-    return getStoreProductIds(storeConfig, products, sites.length);
+    return getStoreProductIds(storeConfig, products);
   }, [products, sites.length, storeConfig]);
 
   const storeProducts = useMemo(() => {
@@ -493,15 +499,23 @@ function App() {
   };
 
   const handleToggleAddProduct = (productId: string) => {
+    const targetProduct = products.find(product => product.id === productId);
+    if (!targetProduct) return;
+
     setSites(prev => prev.map((site, index) => {
       if (site.id !== storeConfig.id) return site;
 
-      const currentIds = getStoreProductIds(site, products, prev.length);
-      const nextIds = currentIds.includes(productId)
-        ? currentIds.filter(id => id !== productId)
-        : [...currentIds, productId];
+      const currentIds = getStoreProductIds(site, products);
+      const isSelected = currentIds.includes(productId);
+      const sameCategoryIds = currentIds.filter(id => {
+        const product = products.find(item => item.id === id);
+        return product?.category === targetProduct.category;
+      });
+      const nextIds = isSelected
+        ? sameCategoryIds.filter(id => id !== productId)
+        : [...sameCategoryIds, productId];
 
-      return makeSite({ ...site, productIds: nextIds, status: 'draft' }, index + 1);
+      return makeSite({ ...site, productIds: nextIds, niche: targetProduct.category, status: 'draft' }, index + 1);
     }));
   };
 
@@ -552,7 +566,8 @@ function App() {
       subdomain: `${storeConfig.subdomain}-${nextIndex}`,
       status: 'draft',
       publishedUrl: undefined,
-      publishedAt: undefined
+      publishedAt: undefined,
+      productIds: []
     }, nextIndex);
     setSites(prev => [...prev, duplicated]);
     setActiveSiteId(duplicated.id);
@@ -595,7 +610,7 @@ function App() {
   };
   const handlePublishStore = async (): Promise<{ mode: string; url: string; error?: string }> => {
     const publishConfig: StoreConfig = { ...storeConfig, productIds: activeStoreProductIds };
-    const selectedProducts = getSelectedProductsForStore(publishConfig, products, sites.length);
+    const selectedProducts = getSelectedProductsForStore(publishConfig, products);
 
     if (!selectedProducts.length) {
       const message = 'Selecione pelo menos um produto para publicar esta loja.';
@@ -911,7 +926,7 @@ function App() {
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {sites.map(site => {
                     const isActive = site.id === storeConfig.id;
-                    const siteProductCount = getStoreProductIds(site, products, sites.length).length;
+                    const siteProductCount = getStoreProductIds(site, products).length;
                     return (
                       <article
                         key={site.id}
