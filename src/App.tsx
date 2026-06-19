@@ -238,6 +238,62 @@ function downloadHtml(filename: string, html: string) {
   URL.revokeObjectURL(url);
 }
 
+function HtmlStorePreview({
+  html,
+  storeName,
+  liveUrl,
+  onBackToSaaS
+}: {
+  html: string;
+  storeName: string;
+  liveUrl?: string;
+  onBackToSaaS: () => void;
+}) {
+  return (
+    <div className="min-h-screen bg-[#030305] text-white">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#050508]/90 px-4 py-3 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Preview HTML</p>
+            <h1 className="truncate font-display text-lg font-bold text-white">{storeName}</h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {liveUrl?.startsWith('http') && (
+              <a
+                href={liveUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-xs font-black text-emerald-300 transition hover:bg-emerald-500/20"
+              >
+                <ExternalLink size={15} />
+                Abrir ao vivo
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={onBackToSaaS}
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-slate-200 transition hover:bg-white/[0.08]"
+            >
+              Voltar
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl p-3 sm:p-5">
+        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white shadow-2xl shadow-black/40">
+          <iframe
+            title={`Preview HTML - ${storeName}`}
+            srcDoc={html}
+            className="h-[calc(100vh-116px)] w-full bg-white"
+            sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+          />
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -574,9 +630,10 @@ function App() {
 
   if (activePage === 'shop-preview') {
     return (
-      <StorePreview
-        storeConfig={storeConfig}
-        products={products}
+      <HtmlStorePreview
+        html={buildStoreHtml(storeConfig, products)}
+        storeName={storeConfig.name}
+        liveUrl={storeConfig.publishedUrl}
         onBackToSaaS={() => handleNavigate('dashboard')}
       />
     );

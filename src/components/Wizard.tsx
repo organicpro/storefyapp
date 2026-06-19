@@ -620,7 +620,7 @@ export default function Wizard({
               onClick={onNavigateToPreview}
               className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
             >
-              <span>Acessar Vitrine do Cliente</span>
+              <span>Visualizar HTML gerado</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
             {publishedUrl && (
