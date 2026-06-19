@@ -24,6 +24,7 @@ import StorePreview from './components/StorePreview';
 import LoginScreen from './components/LoginScreen';
 import { DEFAULT_STORE_CONFIG, INITIAL_PRODUCTS, INITIAL_SUPPLIERS } from './data';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
+import { loadPublicStore, PublicStorePayload, savePublicStore } from './lib/publicStores';
 import { loadWorkspace, saveWorkspace } from './lib/workspaceSync';
 import { productFallbackImage } from './productImages';
 import { Product, StoreConfig, Supplier } from './types';
@@ -37,7 +38,8 @@ const STORAGE_KEYS = {
   sites: 'storefy.front.sites',
   activeSiteId: 'storefy.front.activeSiteId',
   storeConfig: 'storefy.front.config',
-  localAuth: 'storefy.auth.local'
+  localAuth: 'storefy.auth.local',
+  publicStores: 'storefy.publicStores'
 };
 
 type StoreSite = StoreConfig & { id: string };
@@ -53,6 +55,34 @@ function readStorage<T>(key: string, fallback: T): T {
 
 function createId(prefix = 'site') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function slugifyStore(value: string) {
+  return String(value || 'loja')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'loja';
+}
+
+function getPublicStorePath(slug: string) {
+  return `/store/${encodeURIComponent(slug)}`;
+}
+
+function getPublicStoreUrl(slug: string) {
+  return `${window.location.origin}${getPublicStorePath(slug)}`;
+}
+
+function readPublicStoresLocal(): Record<string, PublicStorePayload> {
+  return readStorage<Record<string, PublicStorePayload>>(STORAGE_KEYS.publicStores, {});
+}
+
+function savePublicStoreLocal(payload: PublicStorePayload) {
+  const stores = readPublicStoresLocal();
+  stores[payload.slug] = payload;
+  window.localStorage.setItem(STORAGE_KEYS.publicStores, JSON.stringify(stores));
 }
 
 function makeSite(config: StoreConfig, index = 1): StoreSite {
@@ -216,6 +246,15 @@ function App() {
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [localAccess, setLocalAccess] = useState(() => readStorage<boolean>(STORAGE_KEYS.localAuth, false));
   const [workspaceReady, setWorkspaceReady] = useState(false);
+  const publicStoreSlug = useMemo(() => {
+    const match = window.location.pathname.match(/^\/store\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }, []);
+  const [publicStore, setPublicStore] = useState<PublicStorePayload | null>(() => {
+    if (!publicStoreSlug) return null;
+    return readPublicStoresLocal()[publicStoreSlug] || null;
+  });
+  const [publicStoreLoading, setPublicStoreLoading] = useState(Boolean(publicStoreSlug && !publicStore));
 
   const [products, setProducts] = useState<Product[]>(() => {
     const storedVersion = window.localStorage.getItem(STORAGE_KEYS.productsVersion);
@@ -238,6 +277,31 @@ function App() {
   useEffect(() => {
     document.title = 'Storefy | Premium SaaS';
   }, []);
+
+  useEffect(() => {
+    if (!publicStoreSlug) return;
+
+    let mounted = true;
+    const localStore = readPublicStoresLocal()[publicStoreSlug];
+
+    if (localStore) {
+      setPublicStore(localStore);
+      setPublicStoreLoading(false);
+    }
+
+    loadPublicStore(publicStoreSlug).then(remoteStore => {
+      if (!mounted) return;
+      if (remoteStore) {
+        savePublicStoreLocal(remoteStore);
+        setPublicStore(remoteStore);
+      }
+      setPublicStoreLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [publicStoreSlug]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -431,62 +495,67 @@ function App() {
   const handlePublishStore = async (): Promise<{ mode: string; url: string; error?: string }> => {
     const html = buildStoreHtml(storeConfig, products);
     const filename = `${storeConfig.subdomain || 'storefy'}-loja.html`;
-    const hasNetlifyToken = Boolean(storeConfig.netlifyApiToken?.trim());
+    const activeProducts = products.filter(product => product.addedToStore);
+    const slug = slugifyStore(`${storeConfig.subdomain || storeConfig.name}-${storeConfig.id || activeSiteId || createId('store')}`);
+    const publicUrl = getPublicStoreUrl(slug);
+    const publishedAt = new Date().toISOString();
+    const publicConfig: StoreConfig = {
+      ...storeConfig,
+      status: 'published',
+      publishedUrl: publicUrl,
+      publishedAt,
+      publicSlug: slug
+    };
+    const payload: PublicStorePayload = {
+      slug,
+      storeConfig: publicConfig,
+      products: activeProducts.map(product => ({ ...product, addedToStore: true })),
+      updatedAt: publishedAt
+    };
 
-    if (hasNetlifyToken) {
-      try {
-        const response = await fetch('/api/netlify-publish', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            html,
-            site: storeConfig,
-            products: products.filter(product => product.addedToStore)
-          })
-        });
-        const responseText = await response.text();
-        let data: { error?: string; url?: string; deployUrl?: string; siteId?: string } = {};
-
-        try {
-          data = responseText ? JSON.parse(responseText) : {};
-        } catch {
-          throw new Error('A API de publicacao nao respondeu JSON. Confira se a Netlify Function /api/netlify-publish foi publicada.');
-        }
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Falha ao publicar na Netlify.');
-        }
-
-        const url = data.url || data.deployUrl || `https://${storeConfig.subdomain}.netlify.app`;
-        setSites(prev => prev.map(site => site.id === storeConfig.id
-          ? {
-              ...site,
-              status: 'published',
-              publishedUrl: url,
-              publishedAt: new Date().toISOString(),
-              netlifySiteId: data.siteId || site.netlifySiteId
-            }
-          : site
-        ));
-        showAppToast('Loja publicada.');
-        return { mode: 'netlify', url };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Falha ao publicar na Netlify.';
-        if (!storeConfig.downloadHtmlFallback) {
-          showAppToast(message);
-          return { mode: 'error', url: '', error: message };
-        }
-      }
+    savePublicStoreLocal(payload);
+    void savePublicStore(session?.user?.id, payload);
+    if (storeConfig.downloadHtmlFallback) {
+      downloadHtml(filename, html);
     }
 
-    downloadHtml(filename, html);
     setSites(prev => prev.map(site => site.id === storeConfig.id
-      ? { ...site, status: 'published', publishedUrl: filename, publishedAt: new Date().toISOString() }
+      ? { ...site, status: 'published', publishedUrl: publicUrl, publishedAt, publicSlug: slug }
       : site
     ));
-    showAppToast('HTML baixado. Publique esse arquivo na Netlify para gerar o link netlify.app.');
-    return { mode: 'html', url: filename };
+    showAppToast(storeConfig.downloadHtmlFallback ? 'Loja publicada na Storefy e HTML baixado.' : 'Loja publicada dentro da Storefy.');
+    return { mode: 'storefy', url: publicUrl };
   };
+
+  if (publicStoreSlug) {
+    if (publicStoreLoading) {
+      return (
+        <div className="grid min-h-screen place-items-center bg-[#030305] text-white">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 shadow-2xl backdrop-blur-xl">
+            <Sparkles className="animate-pulse text-brand-500" size={20} />
+            <span className="text-sm font-bold text-slate-200">Carregando loja...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (!publicStore) {
+      return (
+        <div className="grid min-h-screen place-items-center bg-[#030305] px-5 text-white">
+          <div className="max-w-md rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center shadow-2xl backdrop-blur-xl">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-brand-500">Storefy</p>
+            <h1 className="mt-3 font-display text-3xl font-bold">Loja nao encontrada</h1>
+            <p className="mt-2 text-sm text-slate-400">Publique novamente essa vitrine para gerar um link ativo.</p>
+            <a href="/" className="mt-6 inline-flex rounded-xl bg-brand-500 px-4 py-2 text-sm font-black text-black">
+              Voltar para Storefy
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    return <StorePreview storeConfig={publicStore.storeConfig} products={publicStore.products} />;
+  }
 
   if (!authReady) {
     return (
@@ -648,7 +717,7 @@ function App() {
                     <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-500">Multi sites</p>
                     <h2 className="mt-2 font-display text-2xl font-bold text-white">Gerencie suas lojas</h2>
                     <p className="mt-1 max-w-2xl text-sm text-slate-400">
-                      Crie vitrines separadas por nicho, configure dominio, publique e baixe o HTML de cada loja.
+                      Crie vitrines separadas por nicho, configure o link publico e publique cada loja dentro da Storefy.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">

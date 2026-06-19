@@ -90,10 +90,10 @@ export default function Wizard({
     selectedNiche.recommendedSubcategories.includes(p.subcategory)
   );
 
-  const publishedUrl = publishedResult?.mode === 'netlify'
+  const publishedUrl = publishedResult?.url?.startsWith('http')
     ? publishedResult.url
     : '';
-  const displayStoreLink = publishedUrl || 'Publique para gerar o link netlify.app';
+  const displayStoreLink = publishedUrl || 'Publique para gerar o link da loja';
 
   const handleNext = () => {
     if (currentStep === 3) {
@@ -129,7 +129,7 @@ export default function Wizard({
   const handlePublishProcess = async () => {
     setIsPublishing(true);
     setPublishProgress(15);
-    setPublishStatusText('Gerando HTML estatico da vitrine...');
+    setPublishStatusText('Gerando vitrine publica...');
 
     await new Promise(resolve => setTimeout(resolve, 350));
     setPublishProgress(45);
@@ -137,21 +137,21 @@ export default function Wizard({
 
     await new Promise(resolve => setTimeout(resolve, 350));
     setPublishProgress(70);
-    setPublishStatusText('Tentando publicacao via Netlify...');
+    setPublishStatusText('Publicando a loja dentro da Storefy...');
 
     const result = await onPublishStore();
     setPublishedResult(result);
 
     if (result.mode === 'error') {
       setPublishProgress(100);
-      setPublishStatusText(result.error || 'Falha ao publicar. Confira token e Site ID nas configuracoes.');
+      setPublishStatusText(result.error || 'Falha ao publicar a vitrine.');
       await new Promise(resolve => setTimeout(resolve, 850));
       setIsPublishing(false);
       return;
     }
 
     setPublishProgress(100);
-    setPublishStatusText(result.mode === 'netlify' ? 'Loja publicada pela API Netlify.' : 'HTML baixado para publicacao manual na Netlify.');
+    setPublishStatusText('Loja publicada dentro da Storefy.');
 
     await new Promise(resolve => setTimeout(resolve, 550));
     setIsPublishing(false);
@@ -541,7 +541,7 @@ export default function Wizard({
 
           <div className="space-y-2">
             <h3 className="text-lg font-display font-medium text-white">Pronto para gerar sua vitrine?</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">Se existir uma API Netlify conectada, publicamos automaticamente. Sem API, a Storefy baixa um HTML pronto para publicar manualmente na Netlify.</p>
+            <p className="text-xs text-slate-400 leading-relaxed">A Storefy gera um link interno ao vivo para você abrir, mostrar e compartilhar. Se ativar nas configurações, ela também baixa o HTML como backup.</p>
           </div>
 
           <button
@@ -612,8 +612,8 @@ export default function Wizard({
               </button>
             </div>
 
-            {publishedResult?.mode === 'html' && (
-              <p className="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">HTML baixado: publique esse arquivo na Netlify para gerar o link netlify.app.</p>
+            {publishedResult?.mode === 'storefy' && (
+              <p className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">Link ao vivo gerado dentro da Storefy. Você pode abrir, copiar e mostrar a loja agora.</p>
             )}
 
             <button
@@ -645,7 +645,7 @@ export default function Wizard({
               </h4>
               <p className="text-xs text-slate-450">Coloque isso no link da sua bio do Instagram:</p>
               <div className="p-3 bg-[#06060c] rounded-xl text-slate-300 text-[11px] font-mono select-all border border-white/5">
-                Chaves digitais, gift cards e ofertas selecionadas. Garanta as novidades aqui: {publishedUrl || 'cole aqui o link netlify.app depois de publicar'}
+                Chaves digitais, gift cards e ofertas selecionadas. Garanta as novidades aqui: {publishedUrl || 'publique a loja para gerar o link ao vivo'}
               </div>
             </div>
 
@@ -656,7 +656,7 @@ export default function Wizard({
               </h4>
               <p className="text-xs text-slate-450">Texto pronto para mandar em grupos de ofertas:</p>
               <div className="p-3 bg-[#06060c] rounded-xl text-slate-300 text-[11px] font-mono select-all border border-white/5">
-                Fala galera! Montei meu catálogo exclusivo com ótimos preços! Dá uma olhada na vitrine: {publishedUrl || 'cole aqui o link netlify.app depois de publicar'}
+                Fala galera! Montei meu catálogo exclusivo com ótimos preços! Dá uma olhada na vitrine: {publishedUrl || 'publique a loja para gerar o link ao vivo'}
               </div>
             </div>
 

@@ -96,7 +96,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
       <div>
         <h1 className="text-3xl font-display font-medium text-white tracking-tight">Configurações Gerais</h1>
         <p className="text-slate-400 text-sm mt-1">
-          Gerencie o subdomínio público, informações de contato, chaves do gateway e design estético da sua vitrine e-commerce.
+          Gerencie o link público, informações de contato e design estético da sua vitrine e-commerce.
         </p>
       </div>
 
@@ -194,9 +194,9 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
                 className="mt-0.5 h-4 w-4 rounded border-white/20 bg-black accent-brand-500"
               />
               <span>
-                <span className="block text-xs font-bold uppercase tracking-wider text-white">Baixar HTML se a publicação falhar</span>
+                <span className="block text-xs font-bold uppercase tracking-wider text-white">Baixar HTML também ao publicar</span>
                 <span className="mt-1 block text-[11px] leading-relaxed text-slate-400">
-                  Com token ativo, o padrão é publicar direto e mostrar o link netlify.app. Ative isto só se quiser receber o HTML como plano B.
+                  A Storefy sempre gera um link interno da loja. Ative isto se também quiser baixar o HTML para usar no Netlify Drop ou guardar como backup.
                 </span>
               </span>
             </label>
@@ -205,33 +205,37 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
           <div className="p-6 glass-premium rounded-2xl space-y-5">
             <div className="flex flex-col gap-3 border-b border-white/5 pb-3 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-1.5">
-                <Globe className="w-4.5 h-4.5 text-slate-400" /> Publicacao Netlify
+                <Globe className="w-4.5 h-4.5 text-slate-400" /> Backup externo
               </h3>
               <a
-                href="https://app.netlify.com/user/applications#personal-access-tokens"
+                href="https://app.netlify.com/drop"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-500/25 bg-brand-500/10 px-3 py-2 text-xs font-black text-brand-200 transition hover:bg-brand-500/20"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                Pegar token
+                Abrir Netlify Drop
               </a>
             </div>
 
+            <p className="text-xs leading-relaxed text-slate-400">
+              O fluxo principal publica a loja dentro da própria Storefy. Use esta área apenas se quiser guardar credenciais antigas ou baixar o HTML para subir manualmente fora do app.
+            </p>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-400 font-mono uppercase tracking-widest">Netlify API Token</label>
+                <label className="text-xs font-bold text-slate-400 font-mono uppercase tracking-widest">Netlify API Token opcional</label>
                 <input
                   type="password"
                   value={netlifyApiToken}
                   onChange={(e) => setNetlifyApiToken(e.target.value)}
-                  placeholder="Cole o token da Netlify"
+                  placeholder="Opcional, nao usado no fluxo principal"
                   className="w-full px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 font-mono glass-premium-input"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-400 font-mono uppercase tracking-widest">Netlify Site ID</label>
+                <label className="text-xs font-bold text-slate-400 font-mono uppercase tracking-widest">Netlify Site ID opcional</label>
                 <input
                   type="text"
                   value={netlifySiteId}

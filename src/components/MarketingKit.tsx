@@ -33,7 +33,7 @@ export default function MarketingKit({ storeConfig }: MarketingKitProps) {
 
   const fullDomain = storeConfig.publishedUrl?.startsWith('http')
     ? storeConfig.publishedUrl
-    : 'Cole aqui o link netlify.app da loja publicada';
+    : 'Publique a loja para gerar o link ao vivo';
 
   const kits = [
     {

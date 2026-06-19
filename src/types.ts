@@ -6,12 +6,12 @@ export interface Product {
   category: MainCategory;
   subcategory: string;
   supplier: string;
-  costPrice: number; // Preço de custo do fornecedor
-  salePrice: number; // Preço de venda configurado pelo usuário para sua loja
+  costPrice: number;
+  salePrice: number;
   imageUrl: string;
   fallbackImageUrl?: string;
   benefits: string[];
-  deliverable: string; // Ex: "Envio Automático", "Acesso via Link", "Gift Card Pin"
+  deliverable: string;
   addedToStore: boolean;
   sourceUrl?: string;
 }
@@ -20,7 +20,7 @@ export interface Supplier {
   id: string;
   name: string;
   rating: number;
-  deliveryRate: string; // Ex: "99.8%"
+  deliveryRate: string;
   category: string;
   productsCount: number;
   featured: boolean;
@@ -31,7 +31,7 @@ export interface StoreConfig {
   name: string;
   whatsapp: string;
   niche: string;
-  primaryColor: string; // Hex color code
+  primaryColor: string;
   logoUrl: string;
   subdomain: string;
   welcomeMessage: string;
@@ -40,6 +40,7 @@ export interface StoreConfig {
   status?: 'draft' | 'published';
   publishedUrl?: string;
   publishedAt?: string;
+  publicSlug?: string;
   netlifyApiToken?: string;
   netlifySiteId?: string;
   downloadHtmlFallback?: boolean;
