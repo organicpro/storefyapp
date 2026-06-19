@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
@@ -544,7 +544,19 @@ function App() {
     });
     showAppToast('Loja apagada.');
   };
+  const getAuthHeaders = async () => {
+    if (!supabase || !session) {
+      throw new Error('Entre com sua conta para publicar pela Netlify.');
+    }
 
+    const { data } = await supabase.auth.getSession();
+    const accessToken = data.session?.access_token;
+    if (!accessToken) {
+      throw new Error('Sessao expirada. Entre novamente para publicar pela Netlify.');
+    }
+
+    return { Authorization: `Bearer ${accessToken}` };
+  };
   const handlePublishStore = async (): Promise<{ mode: string; url: string; error?: string }> => {
     const html = buildStoreHtml(storeConfig, products);
     const filename = `${storeConfig.subdomain || 'storefy'}-loja.html`;
@@ -567,19 +579,65 @@ function App() {
     };
 
     savePublicStoreLocal(payload);
-    void savePublicStore(session?.user?.id, payload);
-    if (storeConfig.downloadHtmlFallback) {
-      downloadHtml(filename, html);
+    await savePublicStore(session?.user?.id, payload);
+
+    if (!session?.user?.id) {
+      const message = 'Conecte sua conta e configure a Netlify antes de publicar.';
+      showAppToast(message);
+      return { mode: 'error', url: '', error: message };
     }
 
-    setSites(prev => prev.map(site => site.id === storeConfig.id
-      ? { ...site, status: 'published', publishedUrl: publicUrl, publishedAt, publicSlug: slug }
-      : site
-    ));
-    showAppToast(storeConfig.downloadHtmlFallback ? 'Loja publicada na Storefy e HTML baixado.' : 'Loja publicada dentro da Storefy.');
-    return { mode: 'storefy', url: publicUrl };
-  };
+    try {
+      await saveWorkspace(session.user.id, {
+        products,
+        sites,
+        activeSiteId: storeConfig.id || activeSiteId
+      });
 
+      const authHeaders = await getAuthHeaders();
+      const response = await fetch(`/api/projects/${encodeURIComponent(storeConfig.id || slug)}/publish/netlify`, {
+        method: 'POST',
+        headers: {
+          ...authHeaders,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          siteName: storeConfig.subdomain || storeConfig.name,
+          html
+        })
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(data?.error || 'Nao foi possivel publicar na Netlify.');
+      }
+
+      const netlifyUrl = data.url || publicUrl;
+      setSites(prev => prev.map(site => site.id === storeConfig.id
+        ? {
+            ...site,
+            status: 'published',
+            publishedUrl: netlifyUrl,
+            publishedAt,
+            publicSlug: slug,
+            netlifySiteId: data.siteId || site.netlifySiteId,
+            lastNetlifyDeployId: data.deployId || site.lastNetlifyDeployId
+          }
+        : site
+      ));
+
+      if (storeConfig.downloadHtmlFallback) {
+        downloadHtml(filename, html);
+      }
+
+      showAppToast('Loja publicada na Netlify.');
+      return { mode: 'netlify', url: netlifyUrl };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Conecte a Netlify nas configuracoes antes de publicar.';
+      showAppToast(message);
+      return { mode: 'error', url: '', error: message };
+    }
+  };
   if (publicStoreSlug) {
     if (publicStoreLoading) {
       return (

@@ -139,7 +139,7 @@ export default function Wizard({
 
     await new Promise(resolve => setTimeout(resolve, 350));
     setPublishProgress(70);
-    setPublishStatusText('Publicando a loja dentro da Storefy...');
+    setPublishStatusText('Publicando a loja na Netlify...');
 
     const result = await onPublishStore();
     setPublishedResult(result);
@@ -153,7 +153,7 @@ export default function Wizard({
     }
 
     setPublishProgress(100);
-    setPublishStatusText('Loja publicada dentro da Storefy.');
+    setPublishStatusText('Loja publicada na Netlify.');
 
     await new Promise(resolve => setTimeout(resolve, 550));
     setIsPublishing(false);
@@ -574,7 +574,7 @@ export default function Wizard({
 
           <div className="space-y-2">
             <h3 className="text-lg font-display font-medium text-white">Pronto para gerar sua vitrine?</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">A Storefy gera um link interno ao vivo para você abrir, mostrar e compartilhar. Se ativar nas configurações, ela também baixa o HTML como backup.</p>
+            <p className="text-xs text-slate-400 leading-relaxed">Com a Netlify conectada, a Storefy envia o site direto para a Netlify e retorna o link publicado. Se ativar nas configurações, também baixa o HTML como backup.</p>
           </div>
 
           <button
@@ -627,7 +627,7 @@ export default function Wizard({
           </div>
 
           <div className="p-5 rounded-2xl bg-[#06060c] border border-white/10 max-w-md mx-auto text-center space-y-4">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Link da sua Vitrine Storefy</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Link da sua vitrine publicada</p>
             
             {/* Display domain link */}
             <div className="flex items-center gap-2 p-2 px-3 bg-white/[0.02] border border-white/10 rounded-xl relative">
@@ -645,8 +645,8 @@ export default function Wizard({
               </button>
             </div>
 
-            {publishedResult?.mode === 'storefy' && (
-              <p className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">Link ao vivo gerado dentro da Storefy. Você pode abrir, copiar e mostrar a loja agora.</p>
+            {publishedResult?.mode === 'netlify' && (
+              <p className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">Site publicado na Netlify. Copie o link e use o preview para conferir o site gerado dentro da Storefy.</p>
             )}
 
             <button

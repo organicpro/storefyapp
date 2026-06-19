@@ -41,8 +41,8 @@ export interface StoreConfig {
   publishedUrl?: string;
   publishedAt?: string;
   publicSlug?: string;
-  netlifyApiToken?: string;
   netlifySiteId?: string;
+  lastNetlifyDeployId?: string;
   downloadHtmlFallback?: boolean;
 }
 

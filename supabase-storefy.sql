@@ -55,3 +55,25 @@ on public.storefy_public_stores
 for update
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
+
+create table if not exists public.storefy_user_integrations (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  provider text not null,
+  encrypted_token text not null,
+  token_iv text not null,
+  token_tag text not null,
+  token_last4 text not null,
+  account_email text,
+  account_name text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, provider)
+);
+
+alter table public.storefy_user_integrations enable row level security;
+
+drop policy if exists "storefy_user_integrations_no_client_select" on public.storefy_user_integrations;
+drop policy if exists "storefy_user_integrations_no_client_insert" on public.storefy_user_integrations;
+drop policy if exists "storefy_user_integrations_no_client_update" on public.storefy_user_integrations;
+drop policy if exists "storefy_user_integrations_no_client_delete" on public.storefy_user_integrations;
