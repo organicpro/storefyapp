@@ -3,6 +3,16 @@ const { createClient } = require("@supabase/supabase-js");
 
 const NETLIFY_API = "https://api.netlify.com/api/v1";
 
+function normalizeNetlifyToken(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^NETLIFY(?:_AUTH)?_TOKEN\s*=\s*/i, "")
+    .replace(/^Bearer\s+/i, "")
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
 function json(res, status, payload) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json");
@@ -114,10 +124,11 @@ function decryptSecret(data) {
 }
 
 async function netlifyJson(pathname, token, options = {}) {
+  const cleanToken = normalizeNetlifyToken(token);
   const response = await fetch(`${NETLIFY_API}${pathname}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${cleanToken}`,
       ...(options.headers || {})
     }
   });
@@ -132,16 +143,32 @@ async function netlifyJson(pathname, token, options = {}) {
 }
 
 async function validateNetlifyToken(token) {
-  if (!token || typeof token !== "string" || token.trim().length < 12) {
+  const cleanToken = normalizeNetlifyToken(token);
+  if (!cleanToken || cleanToken.length < 12) {
     throw new Error("Token Netlify invalido.");
   }
 
-  const data = await netlifyJson("/user", token.trim());
-  return {
-    accountName: data.full_name || data.name || data.login || data.slug || "",
-    email: data.email || "",
-    raw: data
-  };
+  try {
+    const data = await netlifyJson("/user", cleanToken);
+    return {
+      accountName: data.full_name || data.name || data.login || data.slug || "",
+      email: data.email || "",
+      token: cleanToken,
+      raw: data
+    };
+  } catch {
+    try {
+      await netlifyJson("/sites?per_page=1", cleanToken);
+      return {
+        accountName: "Netlify",
+        email: "",
+        token: cleanToken,
+        raw: { fallbackValidated: true }
+      };
+    } catch {
+      throw new Error("Token Netlify invalido.");
+    }
+  }
 }
 
 function slugify(value) {
@@ -293,6 +320,7 @@ async function createNetlifySite(token, name) {
 }
 
 async function deployHtmlToNetlify({ token, siteId, html, title }) {
+  const cleanToken = normalizeNetlifyToken(token);
   const url = new URL(`${NETLIFY_API}/sites/${siteId}/deploys`);
   url.searchParams.set("production", "true");
   if (title) url.searchParams.set("title", title);
@@ -305,7 +333,7 @@ async function deployHtmlToNetlify({ token, siteId, html, title }) {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${cleanToken}`,
       "Content-Type": "application/zip"
     },
     body: zip
@@ -361,7 +389,7 @@ async function handleValidate(req, res) {
       ok: true,
       accountName: account.accountName,
       email: account.email,
-      tokenLast4: String(token).slice(-4)
+      tokenLast4: account.token.slice(-4)
     });
   } catch (error) {
     return json(res, 400, { ok: false, error: error.message || "Token Netlify invalido." });
@@ -373,8 +401,8 @@ async function handleSave(req, res) {
     if (req.method !== "POST") return json(res, 405, { error: "Metodo nao permitido." });
     const { supabase, user } = await getAuthedUser(req);
     const { token } = await readBody(req);
-    const cleanToken = String(token || "").trim();
-    const account = await validateNetlifyToken(cleanToken);
+    const account = await validateNetlifyToken(token);
+    const cleanToken = account.token;
     const encrypted = encryptSecret(cleanToken);
 
     const { error } = await supabase

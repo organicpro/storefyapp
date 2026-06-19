@@ -56,12 +56,17 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
     return { Authorization: `Bearer ${accessToken}` };
   };
 
+  const parseNetlifyJson = async (response: Response) => {
+    const data = await response.json().catch(() => null);
+    if (!data) throw new Error('A API Netlify da Storefy nao respondeu JSON. Faca redeploy do app e confira se as rotas /api estao ativas.');
+    return data;
+  };
   const loadNetlifyStatus = async () => {
     if (!isSupabaseConfigured || !supabase) return;
     try {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/integrations/netlify', { headers });
-      const data = await response.json().catch(() => null);
+      const data = await parseNetlifyJson(response);
       if (response.ok && data?.ok) {
         setNetlifyStatus({
           connected: Boolean(data.connected),
@@ -88,7 +93,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: netlifyToken })
       });
-      const data = await response.json().catch(() => null);
+      const data = await parseNetlifyJson(response);
       if (!response.ok || !data?.ok) throw new Error(data?.error || 'Token Netlify invalido.');
       setNetlifyFeedback(`Conexao validada: ${data.email || data.accountName || 'conta Netlify'} (final ${data.tokenLast4}).`);
     } catch (error) {
@@ -108,7 +113,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
         headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: netlifyToken })
       });
-      const data = await response.json().catch(() => null);
+      const data = await parseNetlifyJson(response);
       if (!response.ok || !data?.ok) throw new Error(data?.error || 'Nao foi possivel salvar a integracao Netlify.');
       setNetlifyStatus({ connected: true, accountName: data.accountName || '', email: data.email || '', tokenLast4: data.tokenLast4 || '' });
       setNetlifyToken('');
@@ -126,7 +131,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
     try {
       const authHeaders = await getAuthHeaders();
       const response = await fetch('/api/integrations/netlify', { method: 'DELETE', headers: authHeaders });
-      const data = await response.json().catch(() => null);
+      const data = await parseNetlifyJson(response);
       if (!response.ok || !data?.ok) throw new Error(data?.error || 'Nao foi possivel remover a integracao Netlify.');
       setNetlifyStatus({ connected: false, accountName: '', email: '', tokenLast4: '' });
       setNetlifyToken('');
