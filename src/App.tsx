@@ -444,7 +444,14 @@ function App() {
             products: products.filter(product => product.addedToStore)
           })
         });
-        const data = await response.json();
+        const responseText = await response.text();
+        let data: { error?: string; url?: string; deployUrl?: string; siteId?: string } = {};
+
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          throw new Error('A API de publicacao nao respondeu JSON. Confira se a Netlify Function /api/netlify-publish foi publicada.');
+        }
 
         if (!response.ok) {
           throw new Error(data.error || 'Falha ao publicar na Netlify.');

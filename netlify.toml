@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/netlify-publish"
+  to = "/.netlify/functions/netlify-publish"
+  status = 200
