@@ -241,12 +241,10 @@ function downloadHtml(filename: string, html: string) {
 function HtmlStorePreview({
   html,
   storeName,
-  liveUrl,
   onBackToSaaS
 }: {
   html: string;
   storeName: string;
-  liveUrl?: string;
   onBackToSaaS: () => void;
 }) {
   return (
@@ -254,21 +252,10 @@ function HtmlStorePreview({
       <header className="sticky top-0 z-20 border-b border-white/10 bg-[#050508]/90 px-4 py-3 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Preview HTML</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Site gerado</p>
             <h1 className="truncate font-display text-lg font-bold text-white">{storeName}</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {liveUrl?.startsWith('http') && (
-              <a
-                href={liveUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-xs font-black text-emerald-300 transition hover:bg-emerald-500/20"
-              >
-                <ExternalLink size={15} />
-                Abrir ao vivo
-              </a>
-            )}
             <button
               type="button"
               onClick={onBackToSaaS}
@@ -283,7 +270,7 @@ function HtmlStorePreview({
       <main className="mx-auto max-w-7xl p-3 sm:p-5">
         <div className="overflow-hidden rounded-3xl border border-white/10 bg-white shadow-2xl shadow-black/40">
           <iframe
-            title={`Preview HTML - ${storeName}`}
+            title={`Site gerado - ${storeName}`}
             srcDoc={html}
             className="h-[calc(100vh-116px)] w-full bg-white"
             sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
@@ -296,6 +283,8 @@ function HtmlStorePreview({
 
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
+  const [previewReturnPage, setPreviewReturnPage] = useState('dashboard');
+  const [previewWizardStep, setPreviewWizardStep] = useState(1);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [appToast, setAppToast] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -449,6 +438,14 @@ function App() {
   const handleNavigate = (page: string) => {
     setActivePage(page);
     setMobileSidebarOpen(false);
+  };
+
+  const handleOpenGeneratedSite = (returnPage = activePage, wizardStep?: number) => {
+    setPreviewReturnPage(returnPage);
+    if (wizardStep) {
+      setPreviewWizardStep(wizardStep);
+    }
+    handleNavigate('shop-preview');
   };
 
   const handleLocalAccess = () => {
@@ -633,8 +630,7 @@ function App() {
       <HtmlStorePreview
         html={buildStoreHtml(storeConfig, products)}
         storeName={storeConfig.name}
-        liveUrl={storeConfig.publishedUrl}
-        onBackToSaaS={() => handleNavigate('dashboard')}
+        onBackToSaaS={() => handleNavigate(previewReturnPage)}
       />
     );
   }
@@ -718,7 +714,7 @@ function App() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => handleNavigate('shop-preview')}
+                  onClick={() => handleOpenGeneratedSite(activePage)}
                   className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm font-bold text-slate-200 transition hover:border-white/20 hover:bg-white/[0.08] sm:flex"
                 >
                   <ExternalLink size={16} />
@@ -762,7 +758,8 @@ function App() {
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onToggleAddProduct={handleToggleAddProduct}
                 onUpdateSalePrice={handleUpdateSalePrice}
-                onNavigateToPreview={() => handleNavigate('shop-preview')}
+                initialStep={previewWizardStep}
+                onNavigateToPreview={(returnStep) => handleOpenGeneratedSite('wizard', returnStep)}
                 onPublishStore={handlePublishStore}
               />
             )}
@@ -854,17 +851,6 @@ function App() {
                             >
                               {isActive ? 'Atual' : 'Abrir loja'}
                             </button>
-                            {site.publishedUrl?.startsWith('http') && (
-                              <a
-                                href={site.publishedUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
-                              >
-                                <ExternalLink size={14} />
-                                Ao vivo
-                              </a>
-                            )}
                           </div>
                           <button
                             type="button"

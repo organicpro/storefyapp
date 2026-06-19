@@ -34,7 +34,8 @@ interface WizardProps {
   onUpdateStoreConfig: (newConfig: StoreConfig) => void;
   onToggleAddProduct: (productId: string) => void;
   onUpdateSalePrice: (productId: string, newPrice: number) => void;
-  onNavigateToPreview: () => void;
+  initialStep?: number;
+  onNavigateToPreview: (returnStep: number) => void;
   onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
 }
 
@@ -44,10 +45,11 @@ export default function Wizard({
   onUpdateStoreConfig, 
   onToggleAddProduct,
   onUpdateSalePrice,
+  initialStep = 1,
   onNavigateToPreview,
   onPublishStore
 }: WizardProps) {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [selectedNicheId, setSelectedNicheId] = useState(NICHES[0].id);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishProgress, setPublishProgress] = useState(0);
@@ -166,11 +168,42 @@ export default function Wizard({
 
   const getFacebookSearchTerm = () => {
     const nicheName = selectedNiche.name.toLowerCase();
-    if (nicheName.includes('gamer') || nicheName.includes('esports')) return 'grupos gamers ofertas gift cards jogos';
-    if (nicheName.includes('assinaturas')) return 'grupos ofertas streaming assinaturas digitais';
-    if (nicheName.includes('infoprodutos')) return 'grupos emagrecimento renda extra desenvolvimento pessoal';
-    if (nicheName.includes('achados')) return 'grupos achados produtos baratos ofertas';
-    return `${selectedNiche.name} ofertas`;
+    const selectedProducts = products
+      .filter(product => product.addedToStore)
+      .map(product => `${product.name} ${product.subcategory}`.toLowerCase())
+      .join(' ');
+
+    if (nicheName.includes('gamer') || nicheName.includes('esports')) {
+      if (selectedProducts.includes('roblox')) return 'pais roblox contas robux ofertas jogos infantis';
+      if (selectedProducts.includes('free fire')) return 'free fire diamantes guildas jogadores ofertas';
+      if (selectedProducts.includes('call of duty') || selectedProducts.includes('cod')) return 'call of duty warzone jogadores brasileiros ofertas';
+      if (selectedProducts.includes('steam')) return 'pc gamer steam promoções jogos baratos';
+      return 'pc gamer playstation xbox nintendo jogos baratos ofertas';
+    }
+
+    if (nicheName.includes('assinaturas')) {
+      if (selectedProducts.includes('disney') || selectedProducts.includes('netflix') || selectedProducts.includes('prime')) return 'filmes series streaming familias ofertas assinatura';
+      if (selectedProducts.includes('spotify') || selectedProducts.includes('youtube')) return 'musica premium estudantes assinatura barata';
+      if (selectedProducts.includes('canva') || selectedProducts.includes('chatgpt') || selectedProducts.includes('ia')) return 'empreendedores social media canva chatgpt ferramentas ia';
+      return 'economizar assinaturas digitais apps premium ofertas';
+    }
+
+    if (nicheName.includes('infoprodutos')) {
+      if (selectedProducts.includes('emagrec') || selectedProducts.includes('fitness')) return 'receitas saudaveis treino em casa emagrecimento mulheres';
+      if (selectedProducts.includes('renda') || selectedProducts.includes('finan')) return 'renda extra trabalho em casa empreendedores iniciantes';
+      if (selectedProducts.includes('desenvolvimento') || selectedProducts.includes('mente')) return 'produtividade desenvolvimento pessoal habitos disciplina';
+      return 'melhorar rotina ganhar dinheiro aprender online';
+    }
+
+    if (nicheName.includes('achados')) {
+      if (selectedProducts.includes('cozinha') || selectedProducts.includes('casa')) return 'donas de casa decoração cozinha achadinhos úteis';
+      if (selectedProducts.includes('beleza') || selectedProducts.includes('make')) return 'beleza feminina skincare maquiagem achadinhos';
+      if (selectedProducts.includes('pet')) return 'tutores pets cachorros gatos produtos úteis';
+      if (selectedProducts.includes('carro') || selectedProducts.includes('auto')) return 'carros acessórios automotivos motoristas ofertas';
+      return 'achadinhos úteis casa presentes baratos ofertas';
+    }
+
+    return `${selectedNiche.name} ofertas produtos baratos interessados`;
   };
 
   const getFacebookPostText = () =>
@@ -617,23 +650,12 @@ export default function Wizard({
             )}
 
             <button
-              onClick={onNavigateToPreview}
+              onClick={() => onNavigateToPreview(currentStep)}
               className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
             >
-              <span>Visualizar HTML gerado</span>
+              <span>Visualizar site gerado</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
-            {publishedUrl && (
-              <a
-                href={publishedUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
-              >
-                <span>Abrir site ao vivo</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
           </div>
 
           {/* Marketing Kits widgets */}
@@ -666,7 +688,7 @@ export default function Wizard({
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center gap-1">
                     <Facebook className="w-3.5 h-3.5 text-blue-500" /> Grupos do Facebook
                   </h4>
-                  <p className="text-xs text-slate-450 mt-1">Busca grupos relacionados ao nicho e copia uma mensagem pronta para publicar.</p>
+                  <p className="text-xs text-slate-450 mt-1">Busca grupos com alta chance de interesse nos produtos selecionados e copia uma mensagem pronta para publicar.</p>
                 </div>
                 <button
                   onClick={handleOpenFacebookGroups}
