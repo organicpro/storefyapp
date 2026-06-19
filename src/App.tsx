@@ -97,6 +97,27 @@ function makeSite(config: StoreConfig, index = 1): StoreSite {
   };
 }
 
+function getStoreProductIds(config: StoreConfig, products: Product[], siteCount = 1) {
+  if (Array.isArray(config.productIds)) {
+    return Array.from(new Set(config.productIds.filter(Boolean)));
+  }
+
+  if (siteCount <= 1) {
+    return products.filter(product => product.addedToStore).map(product => product.id);
+  }
+
+  return [];
+}
+
+function applyStoreSelection(products: Product[], productIds: string[]) {
+  const selected = new Set(productIds);
+  return products.map(product => ({ ...product, addedToStore: selected.has(product.id) }));
+}
+
+function getSelectedProductsForStore(config: StoreConfig, products: Product[], siteCount = 1) {
+  const productIds = getStoreProductIds(config, products, siteCount);
+  return applyStoreSelection(products, productIds).filter(product => product.addedToStore);
+}
 function escapeHtml(value: string | number | undefined) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -124,7 +145,7 @@ function buildProductImageMarkup(product: Product) {
 }
 
 function buildStoreHtml(config: StoreConfig, products: Product[]) {
-  const activeProducts = products.filter(product => product.addedToStore);
+  const activeProducts = getSelectedProductsForStore(config, products);
   const categories = Array.from(new Set(activeProducts.map(product => product.category)));
   const phone = config.whatsapp.replace(/\D/g, '');
   const whatsappFor = (product?: Product) => {
@@ -319,6 +340,14 @@ function App() {
     return sites.find(site => site.id === activeSiteId) || sites[0] || makeSite(DEFAULT_STORE_CONFIG);
   }, [activeSiteId, sites]);
 
+  const activeStoreProductIds = useMemo(() => {
+    return getStoreProductIds(storeConfig, products, sites.length);
+  }, [products, sites.length, storeConfig]);
+
+  const storeProducts = useMemo(() => {
+    return applyStoreSelection(products, activeStoreProductIds);
+  }, [activeStoreProductIds, products]);
+
   useEffect(() => {
     document.title = 'Storefy | Premium SaaS';
   }, []);
@@ -464,10 +493,16 @@ function App() {
   };
 
   const handleToggleAddProduct = (productId: string) => {
-    setProducts(prev => prev.map(product => product.id === productId
-      ? { ...product, addedToStore: !product.addedToStore }
-      : product
-    ));
+    setSites(prev => prev.map((site, index) => {
+      if (site.id !== storeConfig.id) return site;
+
+      const currentIds = getStoreProductIds(site, products, prev.length);
+      const nextIds = currentIds.includes(productId)
+        ? currentIds.filter(id => id !== productId)
+        : [...currentIds, productId];
+
+      return makeSite({ ...site, productIds: nextIds, status: 'draft' }, index + 1);
+    }));
   };
 
   const handleUpdateSalePrice = (productId: string, newPrice: number) => {
@@ -500,7 +535,8 @@ function App() {
       ...DEFAULT_STORE_CONFIG,
       name: `Storefy Loja ${nextIndex}`,
       subdomain: `storefy-${nextIndex}`,
-      logoUrl: STOREFY_LOGO_URL
+      logoUrl: STOREFY_LOGO_URL,
+      productIds: []
     }, nextIndex);
     setSites(prev => [...prev, newSite]);
     setActiveSiteId(newSite.id);
@@ -558,14 +594,22 @@ function App() {
     return { Authorization: `Bearer ${accessToken}` };
   };
   const handlePublishStore = async (): Promise<{ mode: string; url: string; error?: string }> => {
-    const html = buildStoreHtml(storeConfig, products);
-    const filename = `${storeConfig.subdomain || 'storefy'}-loja.html`;
-    const activeProducts = products.filter(product => product.addedToStore);
+    const publishConfig: StoreConfig = { ...storeConfig, productIds: activeStoreProductIds };
+    const selectedProducts = getSelectedProductsForStore(publishConfig, products, sites.length);
+
+    if (!selectedProducts.length) {
+      const message = 'Selecione pelo menos um produto para publicar esta loja.';
+      showAppToast(message);
+      return { mode: 'error', url: '', error: message };
+    }
+
+    const html = buildStoreHtml(publishConfig, products);
+    const filename = `${slugifyStore(storeConfig.name || storeConfig.subdomain || 'storefy')}-loja.html`;
     const slug = slugifyStore(`${storeConfig.subdomain || storeConfig.name}-${storeConfig.id || activeSiteId || createId('store')}`);
     const publicUrl = getPublicStoreUrl(slug);
     const publishedAt = new Date().toISOString();
     const publicConfig: StoreConfig = {
-      ...storeConfig,
+      ...publishConfig,
       status: 'published',
       publishedUrl: publicUrl,
       publishedAt,
@@ -574,7 +618,7 @@ function App() {
     const payload: PublicStorePayload = {
       slug,
       storeConfig: publicConfig,
-      products: activeProducts.map(product => ({ ...product, addedToStore: true })),
+      products: selectedProducts.map(product => ({ ...product, addedToStore: true })),
       updatedAt: publishedAt
     };
 
@@ -588,9 +632,14 @@ function App() {
     }
 
     try {
+      const sitesForSave = sites.map((site, index) => site.id === storeConfig.id
+        ? makeSite({ ...site, productIds: activeStoreProductIds }, index + 1)
+        : site
+      );
+
       await saveWorkspace(session.user.id, {
         products,
-        sites,
+        sites: sitesForSave,
         activeSiteId: storeConfig.id || activeSiteId
       });
 
@@ -602,7 +651,7 @@ function App() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          siteName: storeConfig.subdomain || storeConfig.name,
+          siteName: storeConfig.name || storeConfig.subdomain,
           html
         })
       });
@@ -620,7 +669,9 @@ function App() {
             publishedUrl: netlifyUrl,
             publishedAt,
             publicSlug: slug,
+            productIds: activeStoreProductIds,
             netlifySiteId: data.siteId || site.netlifySiteId,
+            netlifySiteName: data.siteName || site.netlifySiteName,
             lastNetlifyDeployId: data.deployId || site.lastNetlifyDeployId
           }
         : site
@@ -686,14 +737,12 @@ function App() {
   if (activePage === 'shop-preview') {
     return (
       <HtmlStorePreview
-        html={buildStoreHtml(storeConfig, products)}
+        html={buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)}
         storeName={storeConfig.name}
         onBackToSaaS={() => handleNavigate(previewReturnPage)}
       />
     );
   }
-
-  const activeProductsCount = products.filter(product => product.addedToStore).length;
 
   return (
     <div className="min-h-screen bg-[#030305] text-slate-100">
@@ -803,7 +852,7 @@ function App() {
             {activePage === 'dashboard' && (
               <Dashboard
                 storeConfig={storeConfig}
-                products={products}
+                products={storeProducts}
                 onNavigate={handleNavigate}
                 metricsScope={session?.user?.id || 'local'}
               />
@@ -811,7 +860,7 @@ function App() {
 
             {activePage === 'wizard' && (
               <Wizard
-                products={products}
+                products={storeProducts}
                 storeConfig={storeConfig}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onToggleAddProduct={handleToggleAddProduct}
@@ -862,6 +911,7 @@ function App() {
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {sites.map(site => {
                     const isActive = site.id === storeConfig.id;
+                    const siteProductCount = getStoreProductIds(site, products, sites.length).length;
                     return (
                       <article
                         key={site.id}
@@ -887,7 +937,7 @@ function App() {
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
                           <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
-                            {activeProductsCount} produtos
+                            {siteProductCount} produtos
                           </span>
                           <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
                             {site.status === 'published' ? 'Publicado' : 'Rascunho'}
@@ -930,7 +980,7 @@ function App() {
 
             {activePage === 'products' && (
               <ProductCatalog
-                products={products}
+                products={storeProducts}
                 suppliers={suppliers}
                 onToggleAddProduct={handleToggleAddProduct}
                 onUpdateSalePrice={handleUpdateSalePrice}

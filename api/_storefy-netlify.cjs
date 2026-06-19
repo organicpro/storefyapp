@@ -190,8 +190,25 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function getStoreProductIds(config, products) {
+  if (Array.isArray(config?.productIds)) {
+    return [...new Set(config.productIds.filter(Boolean))];
+  }
+
+  return (products || [])
+    .filter(product => product.addedToStore === true)
+    .map(product => product.id);
+}
+
+function getSelectedProductsForStore(config, products) {
+  const selectedIds = new Set(getStoreProductIds(config, products));
+  return (products || [])
+    .filter(product => selectedIds.has(product.id))
+    .map(product => ({ ...product, addedToStore: true }));
+}
+
 function buildStoreHtml(config, products) {
-  const activeProducts = (products || []).filter(product => product.addedToStore !== false);
+  const activeProducts = getSelectedProductsForStore(config, products);
   const phone = String(config.whatsapp || "").replace(/\D/g, "");
   const whatsappFor = product => {
     const text = product
@@ -317,6 +334,38 @@ async function createNetlifySite(token, name) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name })
   });
+}
+
+async function createNetlifySiteWithPreferredName(token, preferredName) {
+  const baseName = slugify(preferredName);
+  const suffix = Date.now().toString(36).slice(-5);
+  const candidates = [baseName, `${baseName}-2`, `${baseName}-3`, `${baseName}-${suffix}`];
+  let lastError;
+
+  for (const candidate of candidates) {
+    try {
+      const site = await createNetlifySite(token, candidate);
+      return { ...site, storefySiteName: site.name || candidate };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("Nao foi possivel criar o site na Netlify.");
+}
+
+async function updateNetlifySiteName(token, siteId, preferredName) {
+  const name = slugify(preferredName);
+  try {
+    const site = await netlifyJson(`/sites/${encodeURIComponent(siteId)}`, token, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name })
+    });
+    return { ...site, storefySiteName: site.name || name };
+  } catch {
+    return null;
+  }
 }
 
 async function deployHtmlToNetlify({ token, siteId, html, title }) {
@@ -485,19 +534,24 @@ async function handlePublish(req, res) {
     const html = typeof body.html === "string" && body.html.trim()
       ? body.html
       : buildStoreHtml(siteConfig, products);
-    const siteName = slugify(body.siteName || siteConfig.subdomain || siteConfig.name || "storefy");
+    const desiredSiteName = slugify(body.siteName || siteConfig.name || siteConfig.subdomain || "storefy");
     let siteId = body.siteId || siteConfig.netlifySiteId;
+    let netlifySiteName = siteConfig.netlifySiteName || "";
 
     if (!siteId) {
-      const created = await createNetlifySite(token, `${siteName}-${Date.now().toString(36)}`);
+      const created = await createNetlifySiteWithPreferredName(token, desiredSiteName);
       siteId = created.id;
+      netlifySiteName = created.storefySiteName || desiredSiteName;
+    } else if (netlifySiteName !== desiredSiteName) {
+      const renamed = await updateNetlifySiteName(token, siteId, desiredSiteName);
+      if (renamed?.storefySiteName) netlifySiteName = renamed.storefySiteName;
     }
 
     const deploy = await deployHtmlToNetlify({
       token,
       siteId,
       html,
-      title: siteConfig.name || siteName
+      title: siteConfig.name || desiredSiteName
     });
 
     const publishedAt = new Date().toISOString();
@@ -505,6 +559,7 @@ async function handlePublish(req, res) {
       ...siteConfig,
       status: "published",
       netlifySiteId: siteId,
+      netlifySiteName,
       publishedUrl: deploy.url,
       publishedAt,
       lastNetlifyDeployId: deploy.deployId
@@ -528,7 +583,7 @@ async function handlePublish(req, res) {
           .from("storefy_public_stores")
           .update({
             store_config: nextSiteConfig,
-            products: products.filter(product => product.addedToStore),
+            products: getSelectedProductsForStore(nextSiteConfig, products),
             updated_at: publishedAt
           })
           .eq("slug", nextSiteConfig.publicSlug)
@@ -540,7 +595,8 @@ async function handlePublish(req, res) {
       ok: true,
       url: deploy.url,
       deployId: deploy.deployId,
-      siteId
+      siteId,
+      siteName: netlifySiteName || desiredSiteName
     });
   } catch (error) {
     return json(res, error.statusCode || 500, { ok: false, error: error.message || "Erro ao publicar na Netlify." });

@@ -43,7 +43,9 @@ export interface StoreConfig {
   publicSlug?: string;
   netlifySiteId?: string;
   lastNetlifyDeployId?: string;
+  netlifySiteName?: string;
   downloadHtmlFallback?: boolean;
+  productIds?: string[];
 }
 
 export interface Niche {
