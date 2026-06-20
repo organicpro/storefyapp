@@ -145,14 +145,14 @@ export default function ProductCatalog({
             Escolha as melhores ofertas dos fornecedores, veja quanto voce paga e defina o valor de venda da sua vitrine.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 bg-white/[0.03] border border-white/10 px-4 py-2.5 rounded-xl shadow-sm select-none">
+        <div className="storefy-badge storefy-badge-success select-none">
           <CheckCircle className="w-4 h-4 text-emerald-400" />
           <span>{products.filter(p => p.addedToStore).length} produtos ativos na sua vitrine</span>
         </div>
       </div>
 
       {/* Main Filter Panel */}
-      <div className="p-5 rounded-2xl glass-premium space-y-4">
+      <div className="storefy-panel rounded-2xl p-5 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search bar */}
           <div className="relative flex-1">
@@ -222,8 +222,8 @@ export default function ProductCatalog({
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 cursor-pointer ${
                 activeTab === tab
-                  ? 'bg-white text-black font-bold shadow-sm'
-                  : 'bg-white/[0.04] text-slate-300 hover:bg-white/[0.1] border border-white/5'
+                  ? 'storefy-primary-action font-bold shadow-sm'
+                  : 'bg-white/[0.04] text-slate-300 hover:bg-white/[0.1] border border-white/5 hover:border-brand-500/20'
               }`}
             >
               {tab}
@@ -234,7 +234,7 @@ export default function ProductCatalog({
 
       {/* Catalog Grouped Grid */}
       {sortedSubcategories.length === 0 ? (
-        <div className="p-16 rounded-2xl bg-white/[0.02] border border-dashed border-white/10 text-center space-y-3">
+        <div className="storefy-panel p-16 rounded-2xl border-dashed text-center space-y-3">
           <div className="w-12 h-12 bg-white/[0.05] rounded-full flex items-center justify-center mx-auto text-slate-400">
             <Search className="w-5 h-5" />
           </div>
@@ -256,7 +256,7 @@ export default function ProductCatalog({
                     {subcategory}
                   </h2>
                   <div className="w-full h-[1px] bg-white/5" />
-                  <span className="text-xs text-slate-300 font-mono bg-white/[0.05] border border-white/10 px-2 py-0.5 rounded-md whitespace-nowrap">
+                  <span className="storefy-badge storefy-badge-muted whitespace-nowrap">
                     {items.length} {items.length === 1 ? 'item' : 'itens'}
                   </span>
                 </div>
@@ -266,19 +266,25 @@ export default function ProductCatalog({
                   {items.map(product => {
                     // Margin calculations
                     const profitMargin = product.salePrice - product.costPrice;
-                    const profitPercentage = ((profitMargin / product.costPrice) * 100).toFixed(0);
+                    const profitPercentNumber = product.costPrice > 0
+                      ? Math.round((profitMargin / product.costPrice) * 100)
+                      : 0;
+                    const profitPercentage = profitPercentNumber.toFixed(0);
+                    const marginLabel = profitPercentNumber >= 100
+                      ? 'Margem alta'
+                      : profitPercentNumber >= 45
+                      ? 'Boa margem'
+                      : 'Margem segura';
 
                     return (
                       <div 
                         key={product.id}
-                        className={`glass-premium rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col justify-between group ${
-                          product.addedToStore 
-                            ? 'border-brand-500/50 ring-1 ring-brand-500/10 shadow-[0_0_20px_rgba(212,175,55,0.08)] bg-white/[0.04]'
-                            : 'border-white/10 shadow-sm hover:border-white/20'
+                        className={`storefy-card rounded-2xl overflow-hidden flex flex-col justify-between group ${
+                          product.addedToStore ? 'storefy-card-selected' : ''
                         }`}
                       >
                         {/* Upper image and status header */}
-                        <div className="relative h-44 w-full bg-white/[0.01] overflow-hidden select-none">
+                        <div className="storefy-image-frame relative h-48 w-full overflow-hidden select-none">
                           {product.imageUrl && !brokenImageIds.has(product.id) ? (
                             <img
                               src={product.imageUrl}
@@ -300,9 +306,16 @@ export default function ProductCatalog({
 
                           {/* Category and Deliverable Badges */}
                           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
-                            <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-black/80 backdrop-blur-sm rounded-md tracking-wider uppercase font-mono border border-white/5">
+                            <span className="storefy-badge storefy-badge-muted backdrop-blur-sm">
                               {product.subcategory}
                             </span>
+                          </div>
+
+                          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 pointer-events-none">
+                            {product.addedToStore && (
+                              <span className="storefy-badge storefy-badge-success">Selecionado</span>
+                            )}
+                            <span className="storefy-badge storefy-badge-brand">{marginLabel}</span>
                           </div>
 
                           {/* Image Switcher Floating Button */}
@@ -311,19 +324,15 @@ export default function ProductCatalog({
                               setTempImageUrl(product.imageUrl);
                               setEditingImageId(product.id);
                             }}
-                            className="absolute bottom-3 right-3 p-2 bg-white text-black hover:bg-slate-200 rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                            className="absolute bottom-3 right-3 p-2 bg-black/70 text-white hover:bg-brand-500 hover:text-black rounded-xl shadow-sm border border-white/10 transition-all active:scale-95 cursor-pointer backdrop-blur-md"
                             title="Trocar Imagem"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
 
-                          {/* Added state banner */}
+                          {/* Added state tint */}
                           {product.addedToStore && (
-                            <div className="absolute inset-0 bg-brand-500/10 pointer-events-none flex items-center justify-center">
-                              <div className="absolute top-3 right-3 bg-emerald-500 text-white rounded-full p-1 shadow-md">
-                                <Check className="w-3.5 h-3.5 stroke-[3px]" />
-                              </div>
-                            </div>
+                            <div className="absolute inset-0 bg-brand-500/[0.06] pointer-events-none" />
                           )}
                         </div>
 
@@ -346,7 +355,7 @@ export default function ProductCatalog({
                           </div>
 
                           {/* Benefits Bullets */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                          <div className="space-y-1.5 p-3 rounded-xl bg-black/20 border border-white/10">
                             <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-mono">Vantagens & Beneficios</p>
                             <ul className="space-y-1">
                               {product.benefits.slice(0, 3).map((benefit, bIdx) => (
@@ -359,7 +368,7 @@ export default function ProductCatalog({
                           </div>
 
                           {/* Price & Margin Matrix */}
-                          <div className="rounded-2xl bg-black/25 border border-white/10 overflow-hidden">
+                          <div className="rounded-2xl bg-black/30 border border-white/10 overflow-hidden shadow-inner">
                             <div className="grid grid-cols-2 divide-x divide-white/10">
                               <div className="p-3">
                                 <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Voce paga</p>
@@ -422,7 +431,7 @@ export default function ProductCatalog({
                             className={`w-full py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all duration-300 border active:scale-[0.98] cursor-pointer ${
                               product.addedToStore
                                 ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300'
-                                : 'bg-white border-transparent text-black hover:bg-slate-200'
+                                : 'storefy-primary-action border-transparent font-black'
                             }`}
                           >
                             {product.addedToStore ? (
@@ -468,7 +477,7 @@ export default function ProductCatalog({
 
             {/* Simulated file upload */}
             <div className="space-y-4 text-center">
-              <div className="border border-dashed border-white/10 hover:border-indigo-500 hover:bg-white/[0.02] rounded-2xl p-6 transition-all">
+              <div className="border border-dashed border-white/10 hover:border-brand-500 hover:bg-white/[0.02] rounded-2xl p-6 transition-all">
                 <input 
                   type="file" 
                   id="modal-file-upload" 
@@ -479,7 +488,7 @@ export default function ProductCatalog({
                 <label htmlFor="modal-file-upload" className="cursor-pointer space-y-2 block">
                   <div className="w-10 h-10 rounded-full bg-white/[0.05] text-slate-300 border border-white/10 flex items-center justify-center mx-auto">
                     {simulatedFileUploading ? (
-                      <span className="w-5 h-5 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+                      <span className="w-5 h-5 rounded-full border-2 border-brand-500 border-t-transparent animate-spin" />
                     ) : (
                       <Upload className="w-5 h-5" />
                     )}
@@ -503,7 +512,7 @@ export default function ProductCatalog({
                     value={tempImageUrl}
                     onChange={(e) => setTempImageUrl(e.target.value)}
                     placeholder="https://exemplo.com/imagem-produto.png"
-                    className="w-full pl-9 pr-4 py-2 text-xs bg-[#0a0a0f] border border-white/10 text-white placeholder-slate-600 rounded-xl focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full pl-9 pr-4 py-2 text-xs bg-[#0a0a0f] border border-white/10 text-white placeholder-slate-600 rounded-xl focus:outline-none focus:border-brand-500 font-mono"
                   />
                 </div>
               </div>

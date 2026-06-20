@@ -260,12 +260,12 @@ export default function Wizard({
   };
 
   return (
-    <div className="glass-premium rounded-3xl p-6 md:p-8 space-y-8 animate-fade-in">
+    <div className="storefy-panel rounded-3xl p-6 md:p-8 space-y-8 animate-fade-in">
       {/* Progress wizard header */}
       <div className="space-y-4 border-b border-white/5 pb-6 text-left">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-extrabold tracking-widest text-brand-500 font-mono uppercase bg-brand-500/10 border border-brand-500/20 px-2.5 py-0.5 rounded">
+            <span className="storefy-badge storefy-badge-brand">
               ASSISTENTE DE CONFIGURACAO
             </span>
             <h2 className="text-xl font-display font-semibold text-white mt-2">Crie sua Vitrine em Minutos</h2>
@@ -285,9 +285,9 @@ export default function Wizard({
                   onClick={() => st.num <= currentStep && setCurrentStep(st.num)}
                   className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all border shrink-0 z-10 cursor-pointer ${
                     st.num < currentStep
-                      ? 'bg-white border-white text-black shadow-sm'
+                      ? 'bg-brand-500 border-brand-500 text-black shadow-[0_0_24px_rgba(212,175,55,0.18)]'
                       : st.num === currentStep
-                      ? 'bg-white/20 border-white/40 text-white font-extrabold'
+                      ? 'bg-brand-500/15 border-brand-500/55 text-brand-100 font-extrabold shadow-[0_0_24px_rgba(212,175,55,0.12)]'
                       : 'bg-[#0f0f15] border-white/10 text-slate-500 cursor-not-allowed'
                   }`}
                 >
@@ -306,7 +306,7 @@ export default function Wizard({
               <div
                 key={st.num}
                 className={`h-1 rounded-full transition-all duration-300 ${
-                  index < currentStep - 1 ? 'bg-white' : 'bg-white/10'
+                  index < currentStep - 1 ? 'bg-brand-500 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'bg-white/10'
                 }`}
               />
             ))}
@@ -331,14 +331,12 @@ export default function Wizard({
                 <div
                   key={niche.id}
                   onClick={() => setSelectedNicheId(niche.id)}
-                  className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex gap-4 text-left group ${
-                    isSelected
-                      ? 'border-white bg-white/10 ring-4 ring-white/5'
-                      : 'border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.05]'
+                  className={`storefy-card p-5 rounded-2xl cursor-pointer flex gap-4 text-left group ${
+                    isSelected ? 'storefy-card-selected' : ''
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${
-                    isSelected ? 'bg-white text-black shadow-md' : 'bg-white/[0.05] text-slate-300'
+                    isSelected ? 'bg-brand-500 text-black shadow-md' : 'bg-white/[0.05] text-slate-300'
                   }`}>
                     {renderNicheIcon(niche.icon)}
                   </div>
@@ -346,7 +344,7 @@ export default function Wizard({
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-white">{niche.name}</p>
                       {isSelected && (
-                        <span className="w-4.5 h-4.5 rounded-full bg-white text-black flex items-center justify-center p-0.5">
+                        <span className="w-4.5 h-4.5 rounded-full bg-brand-500 text-black flex items-center justify-center p-0.5">
                           <Check className="w-3 h-3 stroke-[3.5px] text-black" />
                         </span>
                       )}
@@ -382,7 +380,7 @@ export default function Wizard({
             </p>
           </div>
 
-          <div className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center justify-between text-xs text-slate-300 font-sans">
+          <div className="storefy-panel p-4 rounded-2xl flex items-center justify-between text-xs text-slate-300 font-sans">
             <span className="font-semibold text-white">Sugestões baseadas no nicho: {selectedNiche.name}</span>
             <span className="font-mono text-slate-400">Exibindo {recommendedProducts.length} recomendações</span>
           </div>
@@ -393,10 +391,8 @@ export default function Wizard({
               return (
                 <div 
                   key={p.id}
-                  className={`p-4 rounded-xl border transition-all duration-300 text-left ${
-                    p.addedToStore 
-                      ? 'border-brand-500/80 bg-brand-500/[0.04]' 
-                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                  className={`storefy-card p-4 rounded-xl text-left ${
+                    p.addedToStore ? 'storefy-card-selected' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -417,7 +413,7 @@ export default function Wizard({
                       className={`px-3 py-1.5 rounded-lg font-semibold text-[11px] flex items-center gap-1 shrink-0 cursor-pointer ${
                         p.addedToStore
                           ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20'
-                          : 'bg-white text-black hover:bg-slate-200'
+                          : 'storefy-primary-action'
                       }`}
                     >
                       {p.addedToStore ? <Trash2 className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -583,7 +579,7 @@ export default function Wizard({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 max-w-5xl mx-auto text-left">
-            <div className="space-y-3 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <div className="storefy-panel space-y-3 rounded-3xl p-5">
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
                 <Paintbrush className="w-3.5 h-3.5 text-brand-500" /> Cor de destaque
               </h4>
@@ -606,7 +602,7 @@ export default function Wizard({
               </div>
             </div>
 
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <div className="storefy-panel space-y-4 rounded-3xl p-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Titulo principal</label>
                 <input
@@ -636,7 +632,7 @@ export default function Wizard({
       {currentStep === 5 && (
         <div className="space-y-6 max-w-md mx-auto text-center py-6">
           <div className="w-16 h-16 bg-white/[0.03] text-white border border-white/10 rounded-full flex items-center justify-center mx-auto shadow-inner">
-            <Sparkles className="w-8 h-8 animate-pulse text-indigo-400" />
+            <Sparkles className="w-8 h-8 animate-pulse text-brand-500" />
           </div>
 
           <div className="space-y-2">
@@ -646,7 +642,7 @@ export default function Wizard({
 
           <button
             onClick={handlePublishProcess}
-            className="w-full py-3 bg-white hover:bg-slate-200 text-black font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 cursor-pointer animate-pulse"
+            className="storefy-primary-action w-full py-3 text-black font-bold text-sm rounded-xl flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
           >
             <span>Publicar</span>
             <ChevronRight className="w-4.5 h-4.5 text-black" />
@@ -658,8 +654,8 @@ export default function Wizard({
       {isPublishing && (
         <div className="fixed inset-0 bg-[#030303]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-[#08080c] text-white rounded-3xl shadow-2xl p-6 text-center space-y-5 border border-white/15">
-            <div className="w-12 h-12 bg-white/[0.05] text-indigo-400 rounded-full flex items-center justify-center mx-auto border border-white/10">
-              <span className="w-6 h-6 rounded-full border-2 border-indigo-450 border-t-transparent animate-spin" />
+            <div className="w-12 h-12 bg-white/[0.05] text-brand-500 rounded-full flex items-center justify-center mx-auto border border-white/10">
+              <span className="w-6 h-6 rounded-full border-2 border-brand-500 border-t-transparent animate-spin" />
             </div>
 
             <div className="space-y-1.5">
@@ -670,7 +666,7 @@ export default function Wizard({
             {/* Custom progress visual bar */}
             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mt-4">
               <div 
-                className="h-full bg-white rounded-full transition-all duration-300"
+                className="h-full bg-brand-500 rounded-full transition-all duration-300 shadow-[0_0_22px_rgba(212,175,55,0.35)]"
                 style={{ width: `${publishProgress}%` }}
               />
             </div>
@@ -693,7 +689,7 @@ export default function Wizard({
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#06060c] border border-white/10 max-w-md mx-auto text-center space-y-4">
+          <div className="storefy-panel p-5 rounded-2xl max-w-md mx-auto text-center space-y-4">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Link da sua vitrine publicada</p>
             
             {/* Display domain link */}
@@ -718,7 +714,7 @@ export default function Wizard({
 
             <button
               onClick={() => onNavigateToPreview(currentStep)}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
+              className="w-full py-2.5 storefy-primary-action text-black text-xs font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
             >
               <span>Visualizar site gerado</span>
               <ExternalLink className="w-3.5 h-3.5" />

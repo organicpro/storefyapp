@@ -242,7 +242,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
           </header>
 
           {/* STRONG HERO */}
-          <div className="relative overflow-hidden py-16 px-6 text-center select-none bg-gradient-to-br from-[#0c0c16] via-[#040408] to-indigo-950/20 text-white border-b border-white/5">
+          <div className="relative overflow-hidden py-16 px-6 text-center select-none bg-gradient-to-br from-[#0c0c16] via-[#040408] to-brand-500/10 text-white border-b border-white/5">
             {/* Ambient liquid glass lights */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-500/10 rounded-full blur-[120px]" style={{ backgroundColor: `${primaryColorHex}15` }} />
             
@@ -304,7 +304,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                   placeholder="Buscar na vitrine..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 border border-white/10 rounded-xl bg-white/[0.03] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-sans"
+                  className="w-full pl-9 pr-4 py-2 border border-white/10 rounded-xl bg-white/[0.03] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 font-sans"
                 />
                 <span className="absolute left-3 inset-y-0 flex items-center text-slate-400">
                   <ShoppingBag className="w-3.5 h-3.5" />
@@ -314,12 +314,12 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
 
             {/* Cards Grid */}
             {activeProducts.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
+              <div className="storefy-panel p-12 text-center rounded-2xl space-y-3">
                 <p className="text-slate-400 text-sm">Este e-commerce digital ainda está vazio.</p>
                 <p className="text-xs text-slate-400">Adicione produtos pelo painel do SaaS Storefy para visualizá-los aqui.</p>
               </div>
             ) : displayProducts.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl bg-white/[0.02] border border-white/10">
+              <div className="storefy-panel p-12 text-center rounded-2xl">
                 <p className="text-slate-400 text-sm">Nenhum produto correspondente nesta categoria.</p>
               </div>
             ) : (
@@ -327,10 +327,10 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                 {displayProducts.map((p) => (
                   <div 
                     key={p.id}
-                    className="bg-white/[0.03] rounded-2xl border border-white/10 shadow-sm hover:border-white/20 hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between group backdrop-blur-xl"
+                    className="storefy-card rounded-2xl overflow-hidden flex flex-col justify-between group backdrop-blur-xl"
                   >
                     {/* Header Image */}
-                    <div className="relative h-40 bg-white/[0.01] overflow-hidden select-none">
+                    <div className="storefy-image-frame relative h-44 overflow-hidden select-none">
                       {p.imageUrl && !brokenImageIds.has(p.id) ? (
                         <img 
                           src={p.imageUrl} 
@@ -350,7 +350,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                         </div>
                       )}
                       
-                      <span className="absolute bottom-3 left-3 text-[9px] uppercase tracking-wider font-mono bg-black/80 text-white rounded px-2 py-0.5 border border-white/5">
+                      <span className="storefy-badge storefy-badge-muted absolute bottom-3 left-3 backdrop-blur-sm">
                         {p.subcategory}
                       </span>
                     </div>
@@ -362,16 +362,16 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                           <span>ENTREGA IMEDIATA</span>
                           <span className="text-slate-500">{p.deliverable}</span>
                         </p>
-                        <h3 className="text-xs font-bold text-white leading-snug line-clamp-2 h-8 group-hover:text-indigo-400 transition-colors">
+                        <h3 className="text-xs font-bold text-white leading-snug line-clamp-2 h-8 group-hover:text-brand-500 transition-colors">
                           {p.name}
                         </h3>
                       </div>
 
                       {/* Benefits preview ticks */}
-                      <ul className="space-y-1 text-[11px] text-slate-300 bg-[#0f0f15]/50 border border-white/5 rounded-xl p-2.5">
+                      <ul className="space-y-1 text-[11px] text-slate-300 bg-black/20 border border-white/10 rounded-xl p-2.5">
                         {p.benefits.slice(0, 2).map((b, bIdx) => (
                           <li key={bIdx} className="flex items-center gap-1 text-slate-300">
-                            <span className="h-1 w-1 bg-indigo-400 rounded-full shrink-0" />
+                            <span className="h-1 w-1 bg-brand-500 rounded-full shrink-0" />
                             <span className="truncate">{b}</span>
                           </li>
                         ))}
@@ -417,7 +417,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                   return (
                     <div 
                       key={fIdx} 
-                      className="bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 overflow-hidden transition-all"
+                      className="storefy-panel rounded-2xl overflow-hidden transition-all hover:border-brand-500/20"
                     >
                       <button
                         onClick={() => setOpenFaqIndex(isOpen ? null : fIdx)}
@@ -442,8 +442,8 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
           <footer className="border-t border-white/5 bg-[#040406] py-10 px-6 mt-16 text-center text-slate-400 text-xs font-medium space-y-3">
             <p className="font-semibold text-slate-300">© 2026 {storeConfig.name}. Todos os direitos reservados.</p>
             <p className="text-[10px] text-slate-400 font-mono">Plataforma E-commerce integrada via WhatsApp.</p>
-            <div className="inline-flex items-center gap-1 bg-white/[0.05] border border-white/10 px-3 py-1 rounded-full text-[10px] text-indigo-300 font-semibold font-mono">
-              <Sparkles className="w-3 h-3 text-indigo-400" />
+            <div className="inline-flex items-center gap-1 bg-white/[0.05] border border-white/10 px-3 py-1 rounded-full text-[10px] text-brand-200 font-semibold font-mono">
+              <Sparkles className="w-3 h-3 text-brand-500" />
               Powered by Storefy SaaS
             </div>
           </footer>
@@ -480,7 +480,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                           <p className="text-slate-400 text-sm">Seu carrinho está vazio.</p>
                           <button
                             onClick={() => setIsCartOpen(false)}
-                            className="text-xs font-bold text-indigo-400 underline cursor-pointer"
+                            className="text-xs font-bold text-brand-500 underline cursor-pointer"
                           >
                             Voltar a explorar vitrine
                           </button>
@@ -555,7 +555,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                           value={customerName}
                           onChange={(e) => setCustomerName(e.target.value)}
                           placeholder="Ex. Gabriel Almeida"
-                          className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e15] border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-indigo-500 font-sans"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e15] border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-brand-500 font-sans"
                         />
                       </div>
 
@@ -567,7 +567,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                           value={customerContact}
                           onChange={(e) => setCustomerContact(e.target.value)}
                           placeholder="Ex. (11) 99999-5555"
-                          className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e15] border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-indigo-500 font-mono"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e15] border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-brand-500 font-mono"
                         />
                       </div>
 
