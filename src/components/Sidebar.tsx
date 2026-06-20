@@ -34,7 +34,7 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
       title: 'Catálogo',
       items: [
         { id: 'products', label: 'Produtos SaaS', icon: ShoppingBag },
-        { id: 'suppliers', label: 'Fornecedores', icon: Users }
+        { id: 'suppliers', label: 'Fornecedores & Links', icon: Users }
       ]
     },
     {

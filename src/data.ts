@@ -130,7 +130,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Conta efootball força 3069",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/conta-efootball-forca-3069"
   },
   {
     "id": "gm-02-conta-efootball-com-musiala-105",
@@ -147,7 +148,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - CONTA EFOOTBALL COM MUSIALA 105",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/conta-efootball-com-musiala-105"
   },
   {
     "id": "gm-03-4500-seguidores-mundial-instagram",
@@ -164,7 +166,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Instagram"
     ],
     "deliverable": "Referencia fornecedor - 4500 SEGUIDORES MUNDIAL INSTAGRAM",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/redes-sociais-promocao-4500-seguidores-mundial-instagram-r-2550-996"
   },
   {
     "id": "gm-04-seguidores-tiktok-a-partir-de-r-4-99",
@@ -181,7 +184,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria TikTok"
     ],
     "deliverable": "Referencia fornecedor - Seguidores TIKTOK a partir de R$ 4,99",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/redes-sociais-promocao-seguidores-tiktok-a-partir-de-r-499-estam-2621"
   },
   {
     "id": "gm-05-2x-steam-keys-aleatorias",
@@ -198,7 +202,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - 2x STEAM KEYS ALEATÓRIAS",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/-2x-steam-keys-aleatorias-jogos-de-ate-r-40000"
   },
   {
     "id": "gm-06-cp-mais-barato-presente",
@@ -215,7 +220,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Call of Duty"
     ],
     "deliverable": "Referencia fornecedor - CP MAIS BARATO + PRESENTE",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/cp-mais-barato-presente-o-mais-barato-do-mercado"
   },
   {
     "id": "gm-07-itens-free-fire-ff-varios",
@@ -232,7 +238,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Itens Free Fire (FF) - Vários",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/free-fire/itens"
   },
   {
     "id": "gm-08-contas-roblox-iniciantes",
@@ -249,7 +256,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Contas Roblox Iniciantes",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/categorias/roblox"
   },
   {
     "id": "gm-09-diamantes-free-fire-100-un",
@@ -266,7 +274,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Diamantes Free Fire 100 un",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/diamantes-ff-100"
   },
   {
     "id": "gm-10-skin-aleatoria-lol",
@@ -283,7 +292,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria League of Legends"
     ],
     "deliverable": "Referencia fornecedor - Skin Aleatória LoL",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/produtos/skin-lol-random"
   },
   {
     "id": "gm-11-produto-economico-valorant-11",
@@ -300,7 +310,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Valorant"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Valorant #11",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=valorant"
   },
   {
     "id": "gm-12-produto-economico-league-of-legends-12",
@@ -317,7 +328,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria League of Legends"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico League of Legends #12",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=league-of-legends"
   },
   {
     "id": "gm-13-produto-economico-efootball-13",
@@ -334,7 +346,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico eFootball #13",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=efootball"
   },
   {
     "id": "gm-14-produto-economico-redes-sociais-14",
@@ -351,7 +364,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Redes Sociais"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Redes Sociais #14",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=redes-sociais"
   },
   {
     "id": "gm-15-produto-economico-steam-15",
@@ -368,7 +382,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Steam #15",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=steam"
   },
   {
     "id": "gm-16-produto-economico-free-fire-16",
@@ -385,7 +400,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Free Fire #16",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=free-fire"
   },
   {
     "id": "gm-17-produto-economico-roblox-17",
@@ -402,7 +418,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Roblox #17",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=roblox"
   },
   {
     "id": "gm-18-produto-economico-minecraft-18",
@@ -419,7 +436,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Minecraft"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Minecraft #18",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=minecraft"
   },
   {
     "id": "gm-19-produto-economico-valorant-19",
@@ -436,7 +454,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Valorant"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Valorant #19",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=valorant"
   },
   {
     "id": "gm-20-produto-economico-league-of-legends-20",
@@ -453,7 +472,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria League of Legends"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico League of Legends #20",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=league-of-legends"
   },
   {
     "id": "gm-21-produto-economico-efootball-21",
@@ -470,7 +490,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico eFootball #21",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=efootball"
   },
   {
     "id": "gm-22-produto-economico-redes-sociais-22",
@@ -487,7 +508,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Redes Sociais"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Redes Sociais #22",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=redes-sociais"
   },
   {
     "id": "gm-23-produto-economico-steam-23",
@@ -504,7 +526,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Steam #23",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=steam"
   },
   {
     "id": "gm-24-produto-economico-free-fire-24",
@@ -521,7 +544,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Free Fire #24",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=free-fire"
   },
   {
     "id": "gm-25-produto-economico-roblox-25",
@@ -538,7 +562,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Roblox #25",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=roblox"
   },
   {
     "id": "gm-26-produto-economico-minecraft-26",
@@ -555,7 +580,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Minecraft"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Minecraft #26",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=minecraft"
   },
   {
     "id": "gm-27-produto-economico-valorant-27",
@@ -572,7 +598,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Valorant"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Valorant #27",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=valorant"
   },
   {
     "id": "gm-28-produto-economico-league-of-legends-28",
@@ -589,7 +616,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria League of Legends"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico League of Legends #28",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=league-of-legends"
   },
   {
     "id": "gm-29-produto-economico-efootball-29",
@@ -606,7 +634,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico eFootball #29",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=efootball"
   },
   {
     "id": "gm-30-produto-economico-redes-sociais-30",
@@ -623,7 +652,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Redes Sociais"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Redes Sociais #30",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=redes-sociais"
   },
   {
     "id": "gm-31-produto-economico-steam-31",
@@ -640,7 +670,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Steam #31",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=steam"
   },
   {
     "id": "gm-32-produto-economico-free-fire-32",
@@ -657,7 +688,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Free Fire #32",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=free-fire"
   },
   {
     "id": "gm-33-produto-economico-roblox-33",
@@ -674,7 +706,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Roblox #33",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=roblox"
   },
   {
     "id": "gm-34-produto-economico-minecraft-34",
@@ -691,7 +724,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Minecraft"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Minecraft #34",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=minecraft"
   },
   {
     "id": "gm-35-produto-economico-valorant-35",
@@ -708,7 +742,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Valorant"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Valorant #35",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=valorant"
   },
   {
     "id": "gm-36-produto-economico-league-of-legends-36",
@@ -725,7 +760,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria League of Legends"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico League of Legends #36",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=league-of-legends"
   },
   {
     "id": "gm-37-produto-economico-efootball-37",
@@ -742,7 +778,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico eFootball #37",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=efootball"
   },
   {
     "id": "gm-38-produto-economico-redes-sociais-38",
@@ -759,7 +796,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Redes Sociais"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Redes Sociais #38",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=redes-sociais"
   },
   {
     "id": "gm-39-produto-economico-steam-39",
@@ -776,7 +814,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Steam #39",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=steam"
   },
   {
     "id": "gm-40-produto-economico-free-fire-40",
@@ -793,7 +832,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Free Fire #40",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=free-fire"
   },
   {
     "id": "gm-41-produto-economico-roblox-41",
@@ -810,7 +850,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Roblox #41",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=roblox"
   },
   {
     "id": "gm-42-produto-economico-minecraft-42",
@@ -827,7 +868,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Minecraft"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Minecraft #42",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=minecraft"
   },
   {
     "id": "gm-43-produto-economico-valorant-43",
@@ -844,7 +886,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Valorant"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Valorant #43",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=valorant"
   },
   {
     "id": "gm-44-produto-economico-league-of-legends-44",
@@ -861,7 +904,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria League of Legends"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico League of Legends #44",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=league-of-legends"
   },
   {
     "id": "gm-45-produto-economico-efootball-45",
@@ -878,7 +922,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico eFootball #45",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=efootball"
   },
   {
     "id": "gm-46-produto-economico-redes-sociais-46",
@@ -895,7 +940,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Redes Sociais"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Redes Sociais #46",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=redes-sociais"
   },
   {
     "id": "gm-47-produto-economico-steam-47",
@@ -912,7 +958,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Steam #47",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=steam"
   },
   {
     "id": "gm-48-produto-economico-free-fire-48",
@@ -929,7 +976,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Free Fire #48",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=free-fire"
   },
   {
     "id": "gm-49-produto-economico-roblox-49",
@@ -946,7 +994,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Roblox #49",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=roblox"
   },
   {
     "id": "gm-50-produto-economico-minecraft-50",
@@ -963,7 +1012,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Minecraft"
     ],
     "deliverable": "Referencia fornecedor - Produto Econômico Minecraft #50",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?nicho=minecraft"
   },
   {
     "id": "gm-51-personagem-alok-free-fire-promo-51",
@@ -980,7 +1030,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Personagem Alok - Free Fire Promo #51",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Personagem+Alok"
   },
   {
     "id": "gm-52-gp-infinito-servico-efootball-promo-52",
@@ -997,7 +1048,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - GP Infinito (Serviço) - eFootball Promo #52",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=GP+Infinito+(Serviço)"
   },
   {
     "id": "gm-53-pets-adopt-me-roblox-promo-53",
@@ -1014,7 +1066,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Pets Adopt Me - Roblox Promo #53",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Pets+Adopt+Me"
   },
   {
     "id": "gm-54-diamantes-100-free-fire-promo-54",
@@ -1031,7 +1084,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Diamantes 100 - Free Fire Promo #54",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Diamantes+100"
   },
   {
     "id": "gm-55-500-curtidas-tiktok-redes-sociais-promo-55",
@@ -1048,7 +1102,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria TikTok"
     ],
     "deliverable": "Referencia fornecedor - 500 Curtidas TikTok - Redes Sociais Promo #55",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=500+Curtidas+TikTok"
   },
   {
     "id": "gm-56-diamantes-100-free-fire-promo-56",
@@ -1065,7 +1120,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Diamantes 100 - Free Fire Promo #56",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Diamantes+100"
   },
   {
     "id": "gm-57-1000-seguidores-instagram-redes-sociais-promo-57",
@@ -1082,7 +1138,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Instagram"
     ],
     "deliverable": "Referencia fornecedor - 1000 Seguidores Instagram - Redes Sociais Promo #57",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=1000+Seguidores+Instagram"
   },
   {
     "id": "gm-58-diamantes-100-free-fire-promo-58",
@@ -1099,7 +1156,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Diamantes 100 - Free Fire Promo #58",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Diamantes+100"
   },
   {
     "id": "gm-59-treinamento-de-jogador-efootball-promo-59",
@@ -1116,7 +1174,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Treinamento de Jogador - eFootball Promo #59",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Treinamento+de+Jogador"
   },
   {
     "id": "gm-60-contas-com-lendas-efootball-promo-60",
@@ -1133,7 +1192,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Contas com Lendas - eFootball Promo #60",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Contas+com+Lendas"
   },
   {
     "id": "gm-61-inscritos-youtube-redes-sociais-promo-61",
@@ -1150,7 +1210,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube"
     ],
     "deliverable": "Referencia fornecedor - Inscritos YouTube - Redes Sociais Promo #61",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Inscritos+YouTube"
   },
   {
     "id": "gm-62-skins-aleatorias-free-fire-promo-62",
@@ -1167,7 +1228,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Skins Aleatórias - Free Fire Promo #62",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Skins+Aleatórias"
   },
   {
     "id": "gm-63-frutas-blox-fruits-roblox-promo-63",
@@ -1184,7 +1246,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Frutas Blox Fruits - Roblox Promo #63",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Frutas+Blox+Fruits"
   },
   {
     "id": "gm-64-cartas-colecionaveis-steam-promo-64",
@@ -1201,7 +1264,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Cartas Colecionáveis - Steam Promo #64",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Cartas+Colecionáveis"
   },
   {
     "id": "gm-65-1000-seguidores-instagram-redes-sociais-promo-65",
@@ -1218,7 +1282,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Instagram"
     ],
     "deliverable": "Referencia fornecedor - 1000 Seguidores Instagram - Redes Sociais Promo #65",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=1000+Seguidores+Instagram"
   },
   {
     "id": "gm-66-gp-infinito-servico-efootball-promo-66",
@@ -1235,7 +1300,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - GP Infinito (Serviço) - eFootball Promo #66",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=GP+Infinito+(Serviço)"
   },
   {
     "id": "gm-67-frutas-blox-fruits-roblox-promo-67",
@@ -1252,7 +1318,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Frutas Blox Fruits - Roblox Promo #67",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Frutas+Blox+Fruits"
   },
   {
     "id": "gm-68-robux-400-roblox-promo-68",
@@ -1269,7 +1336,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Robux 400 - Roblox Promo #68",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Robux+400"
   },
   {
     "id": "gm-69-contas-com-lendas-efootball-promo-69",
@@ -1286,7 +1354,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Contas com Lendas - eFootball Promo #69",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Contas+com+Lendas"
   },
   {
     "id": "gm-70-cartao-presente-r-20-free-fire-promo-70",
@@ -1303,7 +1372,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Cartão Presente R$ 20 - Free Fire Promo #70",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Cartão+Presente+R$+20"
   },
   {
     "id": "gm-71-membros-discord-redes-sociais-promo-71",
@@ -1320,7 +1390,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Discord"
     ],
     "deliverable": "Referencia fornecedor - Membros Discord - Redes Sociais Promo #71",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Membros+Discord"
   },
   {
     "id": "gm-72-gp-infinito-servico-efootball-promo-72",
@@ -1337,7 +1408,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - GP Infinito (Serviço) - eFootball Promo #72",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=GP+Infinito+(Serviço)"
   },
   {
     "id": "gm-73-skins-aleatorias-free-fire-promo-73",
@@ -1354,7 +1426,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Skins Aleatórias - Free Fire Promo #73",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Skins+Aleatórias"
   },
   {
     "id": "gm-74-skins-cs2-steam-promo-74",
@@ -1371,7 +1444,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Skins CS2 - Steam Promo #74",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Skins+CS2"
   },
   {
     "id": "gm-75-diamantes-100-free-fire-promo-75",
@@ -1388,7 +1462,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Diamantes 100 - Free Fire Promo #75",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Diamantes+100"
   },
   {
     "id": "gm-76-key-aleatoria-gold-steam-promo-76",
@@ -1405,7 +1480,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Key Aleatória Gold - Steam Promo #76",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Key+Aleatória+Gold"
   },
   {
     "id": "gm-77-key-aleatoria-gold-steam-promo-77",
@@ -1422,7 +1498,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Key Aleatória Gold - Steam Promo #77",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Key+Aleatória+Gold"
   },
   {
     "id": "gm-78-frutas-blox-fruits-roblox-promo-78",
@@ -1439,7 +1516,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Frutas Blox Fruits - Roblox Promo #78",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Frutas+Blox+Fruits"
   },
   {
     "id": "gm-79-gift-card-r-10-steam-promo-79",
@@ -1456,7 +1534,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Gift Card R$ 10 - Steam Promo #79",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Gift+Card+R$+10"
   },
   {
     "id": "gm-80-inscritos-youtube-redes-sociais-promo-80",
@@ -1473,7 +1552,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube"
     ],
     "deliverable": "Referencia fornecedor - Inscritos YouTube - Redes Sociais Promo #80",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Inscritos+YouTube"
   },
   {
     "id": "gm-81-gift-card-r-10-steam-promo-81",
@@ -1490,7 +1570,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Gift Card R$ 10 - Steam Promo #81",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Gift+Card+R$+10"
   },
   {
     "id": "gm-82-key-aleatoria-gold-steam-promo-82",
@@ -1507,7 +1588,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Key Aleatória Gold - Steam Promo #82",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Key+Aleatória+Gold"
   },
   {
     "id": "gm-83-1000-seguidores-instagram-redes-sociais-promo-83",
@@ -1524,7 +1606,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Instagram"
     ],
     "deliverable": "Referencia fornecedor - 1000 Seguidores Instagram - Redes Sociais Promo #83",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=1000+Seguidores+Instagram"
   },
   {
     "id": "gm-84-robux-400-roblox-promo-84",
@@ -1541,7 +1624,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Robux 400 - Roblox Promo #84",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Robux+400"
   },
   {
     "id": "gm-85-diamantes-100-free-fire-promo-85",
@@ -1558,7 +1642,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Diamantes 100 - Free Fire Promo #85",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Diamantes+100"
   },
   {
     "id": "gm-86-cartas-colecionaveis-steam-promo-86",
@@ -1575,7 +1660,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Cartas Colecionáveis - Steam Promo #86",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Cartas+Colecionáveis"
   },
   {
     "id": "gm-87-1000-seguidores-instagram-redes-sociais-promo-87",
@@ -1592,7 +1678,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Instagram"
     ],
     "deliverable": "Referencia fornecedor - 1000 Seguidores Instagram - Redes Sociais Promo #87",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=1000+Seguidores+Instagram"
   },
   {
     "id": "gm-88-skins-aleatorias-free-fire-promo-88",
@@ -1609,7 +1696,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Free Fire"
     ],
     "deliverable": "Referencia fornecedor - Skins Aleatórias - Free Fire Promo #88",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Skins+Aleatórias"
   },
   {
     "id": "gm-89-inscritos-youtube-redes-sociais-promo-89",
@@ -1626,7 +1714,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube"
     ],
     "deliverable": "Referencia fornecedor - Inscritos YouTube - Redes Sociais Promo #89",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Inscritos+YouTube"
   },
   {
     "id": "gm-90-pets-adopt-me-roblox-promo-90",
@@ -1643,7 +1732,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Pets Adopt Me - Roblox Promo #90",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Pets+Adopt+Me"
   },
   {
     "id": "gm-91-1000-seguidores-instagram-redes-sociais-promo-91",
@@ -1660,7 +1750,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Instagram"
     ],
     "deliverable": "Referencia fornecedor - 1000 Seguidores Instagram - Redes Sociais Promo #91",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=1000+Seguidores+Instagram"
   },
   {
     "id": "gm-92-gift-card-r-10-steam-promo-92",
@@ -1677,7 +1768,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Gift Card R$ 10 - Steam Promo #92",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Gift+Card+R$+10"
   },
   {
     "id": "gm-93-contas-com-lendas-efootball-promo-93",
@@ -1694,7 +1786,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Contas com Lendas - eFootball Promo #93",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Contas+com+Lendas"
   },
   {
     "id": "gm-94-murder-mystery-2-itens-roblox-promo-94",
@@ -1711,7 +1804,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Murder Mystery 2 Itens - Roblox Promo #94",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Murder+Mystery+2+Itens"
   },
   {
     "id": "gm-95-contas-antigas-roblox-promo-95",
@@ -1728,7 +1822,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Roblox"
     ],
     "deliverable": "Referencia fornecedor - Contas Antigas - Roblox Promo #95",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Contas+Antigas"
   },
   {
     "id": "gm-96-membros-discord-redes-sociais-promo-96",
@@ -1745,7 +1840,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Discord"
     ],
     "deliverable": "Referencia fornecedor - Membros Discord - Redes Sociais Promo #96",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Membros+Discord"
   },
   {
     "id": "gm-97-moedas-myclub-efootball-promo-97",
@@ -1762,7 +1858,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Moedas MyClub - eFootball Promo #97",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Moedas+MyClub"
   },
   {
     "id": "gm-98-skins-cs2-steam-promo-98",
@@ -1779,7 +1876,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Steam"
     ],
     "deliverable": "Referencia fornecedor - Skins CS2 - Steam Promo #98",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Skins+CS2"
   },
   {
     "id": "gm-99-moedas-myclub-efootball-promo-99",
@@ -1796,7 +1894,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - Moedas MyClub - eFootball Promo #99",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=Moedas+MyClub"
   },
   {
     "id": "gm-100-gp-infinito-servico-efootball-promo-100",
@@ -1813,7 +1912,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria eFootball"
     ],
     "deliverable": "Referencia fornecedor - GP Infinito (Serviço) - eFootball Promo #100",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/explorar?q=GP+Infinito+(Serviço)"
   },
   {
     "id": "gm-101-disney-premium-1",
@@ -1830,7 +1930,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney+ Premium #1",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-102-spotify-premium-1-mes-2",
@@ -1847,7 +1948,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Premium 1 Mês #2",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-103-crunchyroll-mega-fan-3",
@@ -1864,7 +1966,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Crunchyroll"
     ],
     "deliverable": "Referencia fornecedor - Crunchyroll Mega Fan #3",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Crunchyroll"
   },
   {
     "id": "gm-104-hbo-max-anual-4",
@@ -1881,7 +1984,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria HBO Max"
     ],
     "deliverable": "Referencia fornecedor - HBO Max Anual #4",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=HBO+Max"
   },
   {
     "id": "gm-105-prime-video-30-dias-5",
@@ -1898,7 +2002,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Prime Video"
     ],
     "deliverable": "Referencia fornecedor - Prime Video 30 Dias #5",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Prime+Video"
   },
   {
     "id": "gm-106-paramount-tela-6",
@@ -1915,7 +2020,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Paramount+"
     ],
     "deliverable": "Referencia fornecedor - Paramount+ Tela #6",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Paramount+"
   },
   {
     "id": "gm-107-youtube-premium-1-mes-7",
@@ -1932,7 +2038,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube Premium"
     ],
     "deliverable": "Referencia fornecedor - YouTube Premium 1 Mês #7",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=YouTube+Premium"
   },
   {
     "id": "gm-108-netflix-4k-tela-privada-30-dias-8",
@@ -1949,7 +2056,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Netflix"
     ],
     "deliverable": "Referencia fornecedor - Netflix 4K Tela Privada 30 Dias #8",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Netflix"
   },
   {
     "id": "gm-109-disney-plus-conta-privada-9",
@@ -1966,7 +2074,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney Plus Conta Privada #9",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-110-spotify-premium-1-mes-10",
@@ -1983,7 +2092,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Premium 1 Mês #10",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-111-crunchyroll-anual-11",
@@ -2000,7 +2110,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Crunchyroll"
     ],
     "deliverable": "Referencia fornecedor - Crunchyroll Anual #11",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Crunchyroll"
   },
   {
     "id": "gm-112-hbo-max-tela-privada-12",
@@ -2017,7 +2128,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria HBO Max"
     ],
     "deliverable": "Referencia fornecedor - HBO Max Tela Privada #12",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=HBO+Max"
   },
   {
     "id": "gm-113-prime-video-privado-13",
@@ -2034,7 +2146,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Prime Video"
     ],
     "deliverable": "Referencia fornecedor - Prime Video Privado #13",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Prime+Video"
   },
   {
     "id": "gm-114-paramount-tela-14",
@@ -2051,7 +2164,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Paramount+"
     ],
     "deliverable": "Referencia fornecedor - Paramount+ Tela #14",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Paramount+"
   },
   {
     "id": "gm-115-youtube-premium-convite-familia-15",
@@ -2068,7 +2182,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube Premium"
     ],
     "deliverable": "Referencia fornecedor - YouTube Premium Convite Família #15",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=YouTube+Premium"
   },
   {
     "id": "gm-116-netflix-ultra-hd-16",
@@ -2085,7 +2200,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Netflix"
     ],
     "deliverable": "Referencia fornecedor - Netflix Ultra HD #16",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Netflix"
   },
   {
     "id": "gm-117-disney-assinatura-30-dias-17",
@@ -2102,7 +2218,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney+ Assinatura 30 Dias #17",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-118-spotify-individual-18",
@@ -2119,7 +2236,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Individual #18",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-119-crunchyroll-anual-19",
@@ -2136,7 +2254,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Crunchyroll"
     ],
     "deliverable": "Referencia fornecedor - Crunchyroll Anual #19",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Crunchyroll"
   },
   {
     "id": "gm-120-hbo-max-anual-20",
@@ -2153,7 +2272,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria HBO Max"
     ],
     "deliverable": "Referencia fornecedor - HBO Max Anual #20",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=HBO+Max"
   },
   {
     "id": "gm-121-prime-video-privado-21",
@@ -2170,7 +2290,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Prime Video"
     ],
     "deliverable": "Referencia fornecedor - Prime Video Privado #21",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Prime+Video"
   },
   {
     "id": "gm-122-paramount-30-dias-22",
@@ -2187,7 +2308,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Paramount+"
     ],
     "deliverable": "Referencia fornecedor - Paramount+ 30 Dias #22",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Paramount+"
   },
   {
     "id": "gm-123-youtube-premium-permanente-23",
@@ -2204,7 +2326,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube Premium"
     ],
     "deliverable": "Referencia fornecedor - YouTube Premium Permanente #23",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=YouTube+Premium"
   },
   {
     "id": "gm-124-netflix-conta-compartilhada-24",
@@ -2221,7 +2344,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Netflix"
     ],
     "deliverable": "Referencia fornecedor - Netflix Conta Compartilhada #24",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Netflix"
   },
   {
     "id": "gm-125-disney-assinatura-30-dias-25",
@@ -2238,7 +2362,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney+ Assinatura 30 Dias #25",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-126-spotify-plano-familiar-vaga-26",
@@ -2255,7 +2380,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Plano Familiar (Vaga) #26",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-127-crunchyroll-premium-30-dias-27",
@@ -2272,7 +2398,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Crunchyroll"
     ],
     "deliverable": "Referencia fornecedor - Crunchyroll Premium 30 Dias #27",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Crunchyroll"
   },
   {
     "id": "gm-128-hbo-max-tela-privada-28",
@@ -2289,7 +2416,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria HBO Max"
     ],
     "deliverable": "Referencia fornecedor - HBO Max Tela Privada #28",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=HBO+Max"
   },
   {
     "id": "gm-129-prime-video-privado-29",
@@ -2306,7 +2434,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Prime Video"
     ],
     "deliverable": "Referencia fornecedor - Prime Video Privado #29",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Prime+Video"
   },
   {
     "id": "gm-130-paramount-30-dias-30",
@@ -2323,7 +2452,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Paramount+"
     ],
     "deliverable": "Referencia fornecedor - Paramount+ 30 Dias #30",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Paramount+"
   },
   {
     "id": "gm-131-youtube-premium-convite-familia-31",
@@ -2340,7 +2470,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube Premium"
     ],
     "deliverable": "Referencia fornecedor - YouTube Premium Convite Família #31",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=YouTube+Premium"
   },
   {
     "id": "gm-132-netflix-ultra-hd-32",
@@ -2357,7 +2488,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Netflix"
     ],
     "deliverable": "Referencia fornecedor - Netflix Ultra HD #32",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Netflix"
   },
   {
     "id": "gm-133-disney-star-combo-33",
@@ -2374,7 +2506,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney+ & Star+ Combo #33",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-134-spotify-plano-familiar-vaga-34",
@@ -2391,7 +2524,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Plano Familiar (Vaga) #34",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-135-crunchyroll-fan-1-mes-35",
@@ -2408,7 +2542,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Crunchyroll"
     ],
     "deliverable": "Referencia fornecedor - Crunchyroll Fan 1 Mês #35",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Crunchyroll"
   },
   {
     "id": "gm-136-hbo-max-mobile-36",
@@ -2425,7 +2560,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria HBO Max"
     ],
     "deliverable": "Referencia fornecedor - HBO Max Mobile #36",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=HBO+Max"
   },
   {
     "id": "gm-137-prime-video-conta-completa-37",
@@ -2442,7 +2578,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Prime Video"
     ],
     "deliverable": "Referencia fornecedor - Prime Video Conta Completa #37",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Prime+Video"
   },
   {
     "id": "gm-138-paramount-tela-38",
@@ -2459,7 +2596,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Paramount+"
     ],
     "deliverable": "Referencia fornecedor - Paramount+ Tela #38",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Paramount+"
   },
   {
     "id": "gm-139-youtube-premium-sem-anuncios-39",
@@ -2476,7 +2614,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube Premium"
     ],
     "deliverable": "Referencia fornecedor - YouTube Premium Sem Anúncios #39",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=YouTube+Premium"
   },
   {
     "id": "gm-140-netflix-conta-compartilhada-40",
@@ -2493,7 +2632,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Netflix"
     ],
     "deliverable": "Referencia fornecedor - Netflix Conta Compartilhada #40",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Netflix"
   },
   {
     "id": "gm-141-disney-assinatura-30-dias-41",
@@ -2510,7 +2650,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney+ Assinatura 30 Dias #41",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-142-spotify-premium-permanente-servico-42",
@@ -2527,7 +2668,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Premium Permanente (Serviço) #42",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-143-crunchyroll-anual-43",
@@ -2544,7 +2686,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Crunchyroll"
     ],
     "deliverable": "Referencia fornecedor - Crunchyroll Anual #43",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Crunchyroll"
   },
   {
     "id": "gm-144-hbo-max-tela-privada-44",
@@ -2561,7 +2704,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria HBO Max"
     ],
     "deliverable": "Referencia fornecedor - HBO Max Tela Privada #44",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=HBO+Max"
   },
   {
     "id": "gm-145-amazon-prime-servico-45",
@@ -2578,7 +2722,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Prime Video"
     ],
     "deliverable": "Referencia fornecedor - Amazon Prime (Serviço) #45",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Prime+Video"
   },
   {
     "id": "gm-146-paramount-plus-premium-46",
@@ -2595,7 +2740,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Paramount+"
     ],
     "deliverable": "Referencia fornecedor - Paramount Plus Premium #46",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Paramount+"
   },
   {
     "id": "gm-147-youtube-premium-sem-anuncios-47",
@@ -2612,7 +2758,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria YouTube Premium"
     ],
     "deliverable": "Referencia fornecedor - YouTube Premium Sem Anúncios #47",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=YouTube+Premium"
   },
   {
     "id": "gm-148-netflix-ultra-hd-48",
@@ -2629,7 +2776,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Netflix"
     ],
     "deliverable": "Referencia fornecedor - Netflix Ultra HD #48",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Netflix"
   },
   {
     "id": "gm-149-disney-plus-conta-privada-49",
@@ -2646,7 +2794,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Disney+"
     ],
     "deliverable": "Referencia fornecedor - Disney Plus Conta Privada #49",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Disney+"
   },
   {
     "id": "gm-150-spotify-premium-permanente-servico-50",
@@ -2663,7 +2812,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       "Subcategoria Spotify"
     ],
     "deliverable": "Referencia fornecedor - Spotify Premium Permanente (Serviço) #50",
-    "addedToStore": false
+    "addedToStore": false,
+    "sourceUrl": "https://gamemarket.com.br/jogos/assinaturas?q=Spotify"
   },
   {
     "id": "gm-ai-001-chatgpt-plus-30-dias",
@@ -2681,7 +2831,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Acesso premium ChatGPT por 30 dias",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=ChatGPT"
   },
   {
     "id": "gm-ai-002-gemini-3-pro-2tb-veo-31",
@@ -2699,7 +2849,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Acesso Gemini Pro + 2TB + Veo por 30 dias",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=Google+Veo+/+Gemini"
   },
   {
     "id": "gm-ai-003-super-grok-30-dias",
@@ -2717,7 +2867,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Acesso Super Grok privado por 30 dias",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=Grok+/+xAI"
   },
   {
     "id": "gm-ai-004-gemini-pro-30-dias",
@@ -2735,7 +2885,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Conta privada Gemini Pro por 30 dias",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=Google+Veo+/+Gemini"
   },
   {
     "id": "gm-ai-005-chatgpt-55-plus-email",
@@ -2753,7 +2903,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Acesso ChatGPT Plus privado por e-mail por 30 dias",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=ChatGPT"
   },
   {
     "id": "gm-ai-006-gemini-business-30-dias",
@@ -2771,7 +2921,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Acesso Gemini Business por 30 dias",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=Google+Veo+/+Gemini"
   },
   {
     "id": "gm-ai-007-combo-chatgpt-canva-spotify",
@@ -2789,7 +2939,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "deliverable": "Combo ChatGPT Plus + Canva Pro + Spotify",
     "addedToStore": false,
-    "sourceUrl": "https://gamemarket.com.br/"
+    "sourceUrl": "https://gamemarket.com.br/produtos?q=ChatGPT"
   },
   {
     "id": "gm-151-guia-loja-digital-lucrativa",

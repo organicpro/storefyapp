@@ -1069,7 +1069,7 @@ function App() {
               />
             )}
 
-            {activePage === 'suppliers' && <SuppliersList suppliers={suppliers} />}
+            {activePage === 'suppliers' && <SuppliersList suppliers={suppliers} products={storeProducts} />}
             {activePage === 'marketing' && <MarketingKit storeConfig={storeConfig} />}
             {activePage === 'settings' && (
               <SettingsView

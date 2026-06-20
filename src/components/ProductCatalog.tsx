@@ -16,7 +16,8 @@ import {
   TrendingDown,
   Percent,
   X,
-  FileImage
+  FileImage,
+  ExternalLink
 } from 'lucide-react';
 import { Product, MainCategory, Supplier } from '../types';
 import { productFallbackImage } from '../productImages';
@@ -424,6 +425,18 @@ export default function ProductCatalog({
                               </span>
                             </div>
                           </div>
+
+                          {product.sourceUrl && (
+                            <a
+                              href={product.sourceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="w-full py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all duration-300 border border-white/10 bg-white/[0.04] text-slate-200 hover:border-brand-500/40 hover:bg-brand-500/10 active:scale-[0.98]"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              <span>Abrir link do fornecedor</span>
+                            </a>
+                          )}
 
                           {/* Switch toggle action */}
                           <button

@@ -1,189 +1,343 @@
-import React, { useState } from 'react';
-import { 
-  Users, 
-  Star, 
-  CheckCircle, 
-  Flame, 
-  Compass, 
-  MapPin, 
-  MessageSquare, 
-  ChevronRight, 
+import React, { useMemo, useState } from 'react';
+import {
   Activity,
+  CheckCircle,
+  Copy,
+  ExternalLink,
+  Link as LinkIcon,
+  Search,
   ShieldCheck,
-  Search
+  Star,
+  Tag,
+  Users
 } from 'lucide-react';
-import { Supplier } from '../types';
+import { MainCategory, Product, Supplier } from '../types';
 
 interface SuppliersListProps {
   suppliers: Supplier[];
+  products: Product[];
 }
 
-export default function SuppliersList({ suppliers }: SuppliersListProps) {
+const categoryTabs: Array<MainCategory | 'Todos'> = [
+  'Todos',
+  'Games',
+  'Redes Sociais',
+  'Assinaturas Digitais',
+  'Infoprodutos',
+  'Achados Fisicos'
+];
+
+const formatMoney = (value: number) =>
+  value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const getDomain = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return 'link do fornecedor';
+  }
+};
+
+export default function SuppliersList({ suppliers, products }: SuppliersListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<MainCategory | 'Todos'>('Todos');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const productsWithLinks = useMemo(
+    () => products.filter((product) => Boolean(product.sourceUrl)),
+    [products]
+  );
+
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return productsWithLinks.filter((product) => {
+      if (activeCategory !== 'Todos' && product.category !== activeCategory) return false;
+      if (!query) return true;
+
+      return [product.name, product.supplier, product.category, product.subcategory, product.sourceUrl || '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [activeCategory, productsWithLinks, searchQuery]);
+
+  const supplierSummaries = useMemo(() => {
+    return suppliers.map((supplier) => {
+      const supplierProducts = productsWithLinks.filter((product) => product.supplier === supplier.name);
+      const primaryUrl = supplierProducts[0]?.sourceUrl || 'https://gamemarket.com.br/';
+      return {
+        ...supplier,
+        sourceCount: supplierProducts.length,
+        primaryUrl,
+        primaryDomain: getDomain(primaryUrl)
+      };
+    });
+  }, [productsWithLinks, suppliers]);
 
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => {
-      setToastMessage((prev) => prev === message ? null : prev);
-    }, 3500);
+      setToastMessage((prev) => (prev === message ? null : prev));
+    }, 3200);
   };
 
-  const filteredSuppliers = suppliers.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleCopyLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Link do fornecedor copiado.');
+    } catch {
+      showToast('Nao foi possivel copiar automaticamente. Abra o link e copie pela barra do navegador.');
+    }
+  };
 
   return (
     <div className="space-y-8 animate-fade-in text-left">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-medium text-white tracking-tight">Fornecedores Dropshipping</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Nossa rede exclusiva de distribuidores de chaves digitais homologados com suporte integrado e entrega automatizada.
-        </p>
-      </div>
-
-      {/* Top benefits bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 glass-premium rounded-2xl flex items-start gap-4">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-            <ShieldCheck className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-white">Homologação Garantida</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">Todos os fornecedores passam por auditorias rigorosas de segurança dos PINs.</p>
-          </div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="font-mono text-[11px] font-black uppercase tracking-[0.32em] text-brand-500">Central de fornecedores</p>
+          <h1 className="mt-2 text-3xl font-display font-medium tracking-tight text-white">Links de compra para revenda</h1>
+          <p className="mt-1 max-w-2xl text-sm text-slate-400">
+            Acesse os links dos produtos cadastrados, veja custo, preco de venda e margem antes de comprar no fornecedor.
+          </p>
         </div>
 
-        <div className="p-4 glass-premium rounded-2xl flex items-start gap-4">
-          <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-white">APIs de Alta Performance</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">Latência de resgate inferior a 2 segundos com relatórios em tempo real.</p>
-          </div>
-        </div>
-
-        <div className="p-4 glass-premium rounded-2xl flex items-start gap-4">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
-            <Flame className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-white">Preços de Custo Únicos</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">Parcerias exclusivas que garantem desconto de atacado mesmo comprando por unidade.</p>
-          </div>
+        <div className="storefy-badge storefy-badge-success select-none">
+          <LinkIcon className="h-4 w-4 text-emerald-400" />
+          <span>{productsWithLinks.length} links cadastrados</span>
         </div>
       </div>
 
-      {/* Filter and listing tools */}
-      <div className="p-5 rounded-2xl glass-premium flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <input
-            type="text"
-            placeholder="Pesquisar fornecedor..."
-            className="w-full pl-9 pr-4 py-2 bg-white/[0.02] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 glass-premium-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <span className="absolute left-3 inset-y-0 flex items-center text-slate-400">
-            <Search className="w-3.5 h-3.5" />
-          </span>
-        </div>
-        <span className="text-xs text-slate-400 font-mono font-medium">{filteredSuppliers.length} integradoras carregadas</span>
-      </div>
-
-      {/* Suppliers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredSuppliers.map((s) => (
-          <div 
-            key={s.id} 
-            className="p-5 rounded-2xl glass-premium hover:border-brand-500/30 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group"
-          >
-            {s.featured && (
-              <span className="absolute top-0 right-0 px-3 py-1 bg-brand-500 text-black rounded-bl-xl text-[9px] font-bold uppercase font-mono tracking-wider">
-                Verificado Oficial ⭐
-              </span>
-            )}
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/[0.05] text-slate-300 border border-white/10 flex items-center justify-center font-display font-black text-xl shrink-0">
-                  {s.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-1.5 leading-snug group-hover:text-brand-500 transition-colors">
-                    {s.name}
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 shrink-0 text-slate-500" />
-                    Distribuição Nacional/Global
-                  </p>
-                </div>
-              </div>
-
-              {/* Key supplier statistics */}
-              <div className="grid grid-cols-3 gap-2.5 p-3 rounded-xl bg-white/[0.02] text-xs text-slate-300 border border-white/5 font-mono">
-                <div>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Avaliação</p>
-                  <p className="text-xs font-extrabold text-amber-400 mt-1.5 flex items-center gap-0.5">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    {s.rating}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Taxa Entrega</p>
-                  <p className="text-xs font-extrabold text-emerald-400 mt-1.5 flex items-center gap-0.5">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    {s.deliveryRate}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Catálogo Ativo</p>
-                  <p className="text-xs font-extrabold text-slate-200 mt-1.5">
-                    {s.productsCount} itens
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-xs text-slate-400 leading-relaxed pt-1.5">
-                Especialista na categoria <strong className="text-brand-500">{s.category}</strong>. Integração de tokens automatizada via webhook seguro Storefy em tempo de execução.
-              </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="storefy-panel rounded-2xl p-4">
+          <div className="flex items-start gap-4">
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-emerald-400">
+              <ShieldCheck className="h-5 w-5" />
             </div>
-
-            <div className="mt-5 border-t border-white/5 pt-4 flex gap-2.5">
-              <button 
-                className="flex-1 py-1.5 px-3 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/10 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                onClick={() => showToast(`Iniciando chat com analista de aprovação de ${s.name} para descontos em lote.`)}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Conversar</span>
-              </button>
-              
-              <button 
-                className="flex-1 py-1.5 px-3 bg-white hover:bg-slate-200 text-black rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
-                onClick={() => showToast(`Chave API de ${s.name} ativa em Modo Sandbox pelo backend Storefy!`)}
-              >
-                <span>Acessar Integração</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+            <div>
+              <p className="text-xs font-bold text-white">Compra pelo fornecedor</p>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-400">Links ficam no painel interno e nao aparecem no site publicado.</p>
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="storefy-panel rounded-2xl p-4">
+          <div className="flex items-start gap-4">
+            <div className="rounded-xl border border-brand-500/20 bg-brand-500/10 p-2.5 text-brand-500">
+              <Star className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">Margem visivel</p>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-400">Compare o custo do fornecedor com o valor da sua vitrine.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="storefy-panel rounded-2xl p-4">
+          <div className="flex items-start gap-4">
+            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-2.5 text-cyan-300">
+              <Activity className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">Catalogo organizado</p>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-400">Filtre por nicho, produto, fornecedor ou dominio do link.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Toast Feedback */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-4">
+          <h2 className="flex items-center gap-2 whitespace-nowrap text-lg font-display font-medium text-white">
+            <Users className="h-4 w-4 text-brand-500" />
+            Fornecedores ativos
+          </h2>
+          <div className="h-px w-full bg-white/5" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          {supplierSummaries.map((supplier) => (
+            <article key={supplier.id} className="storefy-card rounded-2xl p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] font-display text-xl font-black text-white">
+                    {supplier.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-bold text-white">{supplier.name}</h3>
+                    <p className="mt-0.5 truncate font-mono text-[10px] text-slate-400">{supplier.primaryDomain}</p>
+                  </div>
+                </div>
+                {supplier.featured && <span className="storefy-badge storefy-badge-brand">Verificado</span>}
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl border border-white/10 bg-black/20 p-3 font-mono text-xs">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Avaliacao</p>
+                  <p className="mt-1.5 flex items-center gap-1 font-black text-amber-400">
+                    <Star className="h-3.5 w-3.5 fill-amber-400" />
+                    {supplier.rating}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Entrega</p>
+                  <p className="mt-1.5 flex items-center gap-1 font-black text-emerald-400">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    {supplier.deliveryRate}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Links</p>
+                  <p className="mt-1.5 font-black text-slate-100">{supplier.sourceCount}</p>
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs leading-relaxed text-slate-400">
+                Categoria principal: <strong className="text-brand-500">{supplier.category}</strong>
+              </p>
+
+              <a
+                href={supplier.primaryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-bold text-white transition-all hover:border-brand-500/40 hover:bg-brand-500/10"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Abrir fornecedor
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="storefy-panel rounded-2xl p-5 space-y-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-display font-medium text-white">
+                <Tag className="h-4 w-4 text-brand-500" />
+                Produtos com link de compra
+              </h2>
+              <p className="mt-1 text-xs text-slate-400">Use esta lista para comprar o item no fornecedor depois que vender na sua loja.</p>
+            </div>
+
+            <div className="relative w-full lg:max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Buscar produto, fornecedor ou dominio..."
+                className="glass-premium-input w-full rounded-xl border border-white/10 bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 border-t border-white/5 pt-4">
+            {categoryTabs.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
+                  activeCategory === category
+                    ? 'storefy-primary-action font-black'
+                    : 'border border-white/5 bg-white/[0.04] text-slate-300 hover:border-brand-500/20 hover:bg-white/[0.08]'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          {filteredProducts.map((product) => {
+            const margin = product.salePrice - product.costPrice;
+            const marginPercent = product.costPrice > 0 ? Math.round((margin / product.costPrice) * 100) : 0;
+            const sourceUrl = product.sourceUrl || '';
+
+            return (
+              <article key={product.id} className="storefy-card rounded-2xl p-4">
+                <div className="flex gap-4">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        className={`h-full w-full ${product.category === 'Achados Fisicos' ? 'object-cover' : 'object-contain p-3'}`}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-slate-500">
+                        <LinkIcon className="h-5 w-5" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="storefy-badge storefy-badge-muted">{product.category}</span>
+                      <span className="storefy-badge storefy-badge-brand">{product.subcategory}</span>
+                    </div>
+                    <h3 className="mt-2 line-clamp-2 text-sm font-bold leading-snug text-white">{product.name}</h3>
+                    <p className="mt-1 truncate font-mono text-[10px] text-slate-500">{getDomain(sourceUrl)}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 divide-x divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-black/25 text-xs">
+                  <div className="p-3">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-slate-500">Voce paga</p>
+                    <p className="mt-1 font-black text-slate-100">{formatMoney(product.costPrice)}</p>
+                  </div>
+                  <div className="p-3">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-slate-500">Voce vende</p>
+                    <p className="mt-1 font-black text-brand-500">{formatMoney(product.salePrice)}</p>
+                  </div>
+                  <div className="p-3">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-slate-500">Lucro</p>
+                    <p className="mt-1 font-black text-emerald-400">{formatMoney(margin)} ({marginPercent}%)</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <a
+                    href={sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="storefy-primary-action inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-black"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Comprar no fornecedor
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyLink(sourceUrl)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-brand-500/30 hover:bg-white/[0.08]"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copiar link
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="storefy-panel rounded-2xl border-dashed p-12 text-center">
+            <LinkIcon className="mx-auto h-8 w-8 text-slate-500" />
+            <h3 className="mt-3 text-sm font-bold text-white">Nenhum link encontrado</h3>
+            <p className="mt-1 text-xs text-slate-400">Tente trocar a categoria ou buscar outro termo.</p>
+          </div>
+        )}
+      </section>
+
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-xl bg-[#0a0a0f] border border-brand-500/20 shadow-2xl flex items-center gap-3 animate-fade-in max-w-xs md:max-w-sm">
-          <div className="w-8 h-8 rounded-full bg-brand-500/10 text-brand-500 border border-brand-500/20 flex items-center justify-center shrink-0">
-            <Activity className="w-4 h-4 animate-pulse text-brand-500" />
+        <div className="fixed bottom-6 right-6 z-50 flex max-w-sm items-center gap-3 rounded-xl border border-brand-500/20 bg-[#0a0a0f] p-4 shadow-2xl animate-fade-in">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-500/20 bg-brand-500/10 text-brand-500">
+            <Activity className="h-4 w-4" />
           </div>
-          <div>
-            <p className="text-xs font-bold text-white leading-normal font-sans">{toastMessage}</p>
-          </div>
+          <p className="text-xs font-bold leading-normal text-white">{toastMessage}</p>
         </div>
       )}
     </div>
