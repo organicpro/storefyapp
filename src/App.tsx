@@ -215,10 +215,18 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   const categories = Array.from(new Set(activeProducts.map(product => product.category)));
   const theme = getStoreTheme(config);
   const heroTitle = config.heroTitle || `${config.name} pronta para vender.`;
-  const heroSubtitle = config.heroSubtitle || 'Produtos organizados, atendimento direto e compra rapida. Escolha sua oferta e fale com a loja para finalizar.';
+  const heroSubtitle = config.heroSubtitle || 'Produtos selecionados, atendimento direto e compra rapida. Escolha sua oferta e fale com a loja para finalizar.';
   const ctaLabel = config.ctaLabel || 'Ver produtos';
   const accentTextColor = getReadableTextColor(config.primaryColor);
   const phone = config.whatsapp.replace(/\D/g, '');
+  const priceFrom = activeProducts.length
+    ? Math.min(...activeProducts.map(product => product.salePrice)).toFixed(2).replace('.', ',')
+    : '0,00';
+  const heroCategoryLabel = categories.slice(0, 2).join(' + ') || 'Ofertas selecionadas';
+  const highlightedProducts = activeProducts.slice(0, 3);
+  const hasPhysicalProducts = activeProducts.some(product => product.category === 'Achados Fisicos');
+  const hasDigitalProducts = activeProducts.some(product => product.category !== 'Achados Fisicos');
+  const productCountLabel = activeProducts.length === 1 ? 'produto selecionado' : 'produtos selecionados';
   const whatsappFor = (product?: Product) => {
     const text = product
       ? `Ola! Quero comprar: ${product.name} - R$ ${product.salePrice.toFixed(2).replace('.', ',')}`
@@ -226,37 +234,78 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   };
 
+  const getPublicDescription = (product: Product) => {
+    if (product.category === 'Achados Fisicos') {
+      return 'Produto escolhido para pedido sob demanda, com confirmacao de disponibilidade pelo atendimento.';
+    }
+    if (product.category === 'Infoprodutos') {
+      return 'Material digital organizado para acesso rapido, com orientacao de uso apos o pedido.';
+    }
+    if (product.category === 'Assinaturas Digitais') {
+      return 'Acesso digital com orientacao de ativacao e suporte direto pelo atendimento da loja.';
+    }
+    return 'Oferta digital selecionada para compra rapida, com atendimento direto para finalizar o pedido.';
+  };
+
+  const getPublicBenefits = (product: Product) => {
+    const safeBenefits = product.benefits.filter(benefit => !/base:|valor de venda|subcategoria/i.test(benefit));
+    const fallbackByCategory: Record<string, string[]> = {
+      'Achados Fisicos': ['Oferta selecionada', 'Pedido sob demanda', 'Atendimento direto'],
+      'Assinaturas Digitais': ['Ativacao orientada', 'Acesso digital', 'Suporte no atendimento'],
+      'Games': ['Entrega combinada', 'Produto gamer', 'Suporte de compra'],
+      'Redes Sociais': ['Servico orientado', 'Pedido conferido', 'Acompanhamento direto'],
+      'Infoprodutos': ['Material digital', 'Acesso rapido', 'Conteudo organizado']
+    };
+    return (safeBenefits.length ? safeBenefits : fallbackByCategory[product.category] || ['Oferta selecionada', 'Atendimento direto', 'Compra rapida']).slice(0, 3);
+  };
+
   const productCards = activeProducts.map(product => `
     <article class="card">
-      <div class="media">${buildProductImageMarkup(product)}</div>
+      <div class="media">
+        <span class="deal-badge">Oferta</span>
+        ${buildProductImageMarkup(product)}
+      </div>
       <div class="card-body">
         <div class="meta-row">
-          <span class="pill">${escapeHtml(product.category)}</span>
-          <span class="supplier">${escapeHtml(product.supplier)}</span>
+          <span class="pill">${escapeHtml(product.subcategory || product.category)}</span>
+          <span class="availability">Disponivel</span>
         </div>
         <h3>${escapeHtml(product.name)}</h3>
-        <p>${escapeHtml(product.deliverable)}</p>
+        <p>${escapeHtml(getPublicDescription(product))}</p>
         <ul>
-          ${product.benefits.slice(0, 3).map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}
+          ${getPublicBenefits(product).map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}
         </ul>
         <div class="buy-row">
           <div>
             <span>Preco</span>
             <strong>R$ ${product.salePrice.toFixed(2).replace('.', ',')}</strong>
           </div>
-          <a href="${escapeHtml(whatsappFor(product))}" target="_blank" rel="noreferrer">Comprar</a>
+          <a href="${escapeHtml(whatsappFor(product))}" target="_blank" rel="noreferrer">Comprar agora</a>
         </div>
       </div>
     </article>
   `).join('');
 
-  const categoryLinks = categories.map(category => `<span>${escapeHtml(category)}</span>`).join('');
+  const categoryLinks = categories.map(category => `<a href="#produtos">${escapeHtml(category)}</a>`).join('');
+  const highlightItems = highlightedProducts.map(product => `
+    <div class="spotlight-item">
+      <span>${escapeHtml(product.subcategory || product.category)}</span>
+      <strong>${escapeHtml(product.name)}</strong>
+      <small>R$ ${product.salePrice.toFixed(2).replace('.', ',')}</small>
+    </div>
+  `).join('');
   const faqItems = (config.faq || []).slice(0, 3).map(item => `
     <details>
       <summary>${escapeHtml(item.question)}</summary>
       <p>${escapeHtml(item.answer)}</p>
     </details>
   `).join('');
+  const offerBadges = [
+    hasDigitalProducts ? 'Entrega digital orientada' : '',
+    hasPhysicalProducts ? 'Achados sob demanda' : '',
+    'Atendimento direto',
+    'Ofertas curadas'
+  ].filter(Boolean).map(item => `<span>${escapeHtml(item)}</span>`).join('');
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -265,9 +314,8 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(config.name)}</title>
   <style>
-    :root{--sf-bg:${escapeHtml(theme.pageBg)};--sf-text:${escapeHtml(theme.text)};--sf-muted:${escapeHtml(theme.muted)};--sf-border:${escapeHtml(theme.border)};--sf-surface:${escapeHtml(theme.surface)};--sf-card:${escapeHtml(theme.card)};}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--sf-bg);color:var(--sf-text);font-family:Inter,Arial,sans-serif}a{color:inherit;text-decoration:none}.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}.hero{position:relative;overflow:hidden;padding:28px 0 46px;background:${escapeHtml(theme.heroBg)}}.hero:after{content:"";position:absolute;inset:auto -10% -45% -10%;height:280px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);transform:rotate(-6deg)}.top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:54px;height:54px;object-fit:contain;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px}.brand strong{font-size:22px;letter-spacing:-.03em}.cta,.buy-row a{display:inline-flex;align-items:center;justify-content:center;background:${escapeHtml(config.primaryColor)};color:${escapeHtml(accentTextColor)};border-radius:999px;padding:12px 16px;font-weight:900;box-shadow:0 16px 38px ${escapeHtml(config.primaryColor)}33}.hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(280px,.92fr);gap:34px;align-items:end;margin-top:52px}.eyebrow{display:inline-flex;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);border-radius:999px;padding:8px 12px;color:#dbeafe;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.hero h1{font-size:clamp(38px,7vw,78px);line-height:.9;margin:18px 0 16px;max-width:850px;letter-spacing:-.06em}.hero p{max-width:680px;color:#cbd5e1;font-size:18px;line-height:1.65}.hero-panel{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);border-radius:28px;padding:22px;backdrop-filter:blur(18px);box-shadow:0 28px 90px rgba(0,0,0,.35)}.hero-panel strong{display:block;font-size:34px;letter-spacing:-.04em}.hero-panel span{display:block;color:#cbd5e1;font-size:13px;line-height:1.55}.cats{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.cats span,.pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.section-title{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:38px 0 18px}.section-title h2{margin:0;font-size:30px;letter-spacing:-.04em}.section-title p{margin:0;color:#94a3b8;font-size:14px}.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 0}.trust div{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:18px;padding:14px;color:#cbd5e1;font-size:13px}.trust b{display:block;color:#fff;margin-bottom:3px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;padding:0 0 34px}.card{border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border-radius:22px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.28);transition:transform .2s,border-color .2s}.card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.24)}.media{height:184px;background:#101010;display:flex;align-items:center;justify-content:center}.media img{width:100%;height:100%}.media img.photo{object-fit:cover}.media img.logo-img{object-fit:contain;padding:30px;background:#050508}.no-image{color:#94a3b8;font-weight:800;font-size:12px}.card-body{padding:16px}.meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.supplier{color:#94a3b8;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.card h3{font-size:18px;line-height:1.16;margin:13px 0 8px;letter-spacing:-.03em}.card p{color:#b6c2d2;font-size:13px;line-height:1.45;min-height:38px}.card ul{list-style:none;margin:12px 0;padding:0;display:grid;gap:7px}.card li{font-size:12px;color:var(--sf-text)}.card li:before{content:"+";color:${escapeHtml(config.primaryColor)};font-weight:900;margin-right:6px}.buy-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;margin-top:14px;gap:12px}.buy-row span{display:block;color:#94a3b8;font-size:10px;font-weight:900;text-transform:uppercase}.buy-row strong{display:block;font-size:22px;line-height:1}.contact{padding:38px 0 52px;border-top:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.06),transparent 34%)}.contact-box{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:28px;padding:26px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.faq{display:grid;gap:10px;margin:18px 0 0}.faq details{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);border-radius:18px;padding:14px}.faq summary{cursor:pointer;font-weight:800}.faq p{color:#cbd5e1;margin:10px 0 0;line-height:1.55}.sticky-buy{position:fixed;right:18px;bottom:18px;z-index:5}@media(max-width:760px){.hero-grid{grid-template-columns:1fr;margin-top:34px}.hero-panel{display:none}.trust{grid-template-columns:1fr}.top{align-items:flex-start}.media{height:156px}.contact-box{display:block}.cta{display:inline-flex;margin-top:14px}.section-title{display:block}.sticky-buy{left:16px;right:16px}.sticky-buy .cta{width:100%}}
-      body{background:var(--sf-bg);color:var(--sf-text)}.hero p,.section-title p,.card p{color:var(--sf-muted)}.hero-panel,.contact-box{background:var(--sf-surface);border-color:var(--sf-border)}.card{position:relative;display:flex;flex-direction:column;min-height:100%;background:var(--sf-card);border-color:var(--sf-border);box-shadow:0 24px 72px rgba(0,0,0,.32)}.card:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 35%,rgba(255,255,255,.04));opacity:0;transition:opacity .22s}.card:hover:before{opacity:1}.card-body{display:flex;flex-direction:column;flex:1}.card h3,.card li,.buy-row strong{color:var(--sf-text)}.supplier,.buy-row span{color:var(--sf-muted)}.buy-row{margin-top:auto}.media{height:196px;background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),#050507}.pill{background:var(--sf-surface);border-color:var(--sf-border);color:var(--sf-text)}.trust div,.faq details{background:var(--sf-surface);border-color:var(--sf-border)}
+    :root{--sf-bg:${escapeHtml(theme.pageBg)};--sf-text:${escapeHtml(theme.text)};--sf-muted:${escapeHtml(theme.muted)};--sf-border:${escapeHtml(theme.border)};--sf-surface:${escapeHtml(theme.surface)};--sf-card:${escapeHtml(theme.card)};--sf-accent:${escapeHtml(config.primaryColor)};--sf-accent-text:${escapeHtml(accentTextColor)}}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--sf-bg);color:var(--sf-text);font-family:Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}.hero{position:relative;overflow:hidden;padding:22px 0 34px;background:${escapeHtml(theme.heroBg)};border-bottom:1px solid var(--sf-border)}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.08),transparent 24%,transparent 68%,rgba(255,255,255,.05));pointer-events:none}.top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:52px;height:52px;object-fit:contain;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:7px}.brand strong{font-size:20px;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cta,.buy-row a{display:inline-flex;align-items:center;justify-content:center;background:var(--sf-accent);color:var(--sf-accent-text);border-radius:999px;padding:12px 16px;font-weight:900;box-shadow:0 18px 42px ${escapeHtml(config.primaryColor)}3d;transition:transform .18s,filter .18s}.cta:hover,.buy-row a:hover{transform:translateY(-1px);filter:saturate(1.05)}.hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:34px;align-items:end;margin-top:46px}.eyebrow{display:inline-flex;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.075);border-radius:999px;padding:8px 12px;color:#e2e8f0;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.hero h1{font-size:clamp(40px,7vw,82px);line-height:.88;margin:16px 0 16px;max-width:850px;letter-spacing:-.06em}.hero p{max-width:690px;color:var(--sf-muted);font-size:18px;line-height:1.65}.cats{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}.cats a,.pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.hero-panel{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:28px;padding:22px;backdrop-filter:blur(18px);box-shadow:0 28px 90px rgba(0,0,0,.38)}.hero-panel strong{display:block;font-size:40px;letter-spacing:-.05em}.hero-panel span{display:block;color:var(--sf-muted);font-size:13px;line-height:1.55}.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.trust div{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);border-radius:16px;padding:12px;color:var(--sf-muted);font-size:12px}.trust b{display:block;color:var(--sf-text);margin-bottom:4px}.mini-banner{position:relative;z-index:3;margin-top:-20px}.mini-banner-inner{border:1px solid var(--sf-border);background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.045));border-radius:28px;padding:18px;display:grid;grid-template-columns:1.15fr .85fr;gap:18px;box-shadow:0 24px 80px rgba(0,0,0,.28);backdrop-filter:blur(16px)}.mini-banner h2{margin:6px 0 6px;font-size:28px;letter-spacing:-.04em}.mini-banner p{margin:0;color:var(--sf-muted);line-height:1.55}.banner-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.banner-badges span{border:1px solid var(--sf-border);background:rgba(0,0,0,.18);border-radius:999px;padding:8px 10px;color:var(--sf-text);font-size:11px;font-weight:800}.spotlight{display:grid;gap:10px}.spotlight-item{border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.18);border-radius:18px;padding:12px}.spotlight-item span{display:block;color:var(--sf-muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.1em}.spotlight-item strong{display:block;margin-top:5px;font-size:13px;line-height:1.25}.spotlight-item small{display:block;margin-top:6px;color:var(--sf-accent);font-weight:900}.value-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px auto}.value-card{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:22px;padding:16px}.value-card span{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:12px;background:var(--sf-accent);color:var(--sf-accent-text);font-weight:900}.value-card b{display:block;margin-top:12px}.value-card p{margin:5px 0 0;color:var(--sf-muted);font-size:13px;line-height:1.5}.section-title{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:38px 0 18px}.section-title h2{margin:0;font-size:32px;letter-spacing:-.04em}.section-title p{margin:0;color:var(--sf-muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;padding:0 0 34px}.card{position:relative;display:flex;flex-direction:column;min-height:100%;border:1px solid var(--sf-border);background:var(--sf-card);border-radius:24px;overflow:hidden;box-shadow:0 24px 72px rgba(0,0,0,.32);transition:transform .2s,border-color .2s}.card:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 34%,rgba(255,255,255,.04));opacity:0;transition:opacity .22s}.card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.25)}.card:hover:before{opacity:1}.media{position:relative;height:202px;background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),#050507;display:flex;align-items:center;justify-content:center;overflow:hidden}.media img{width:100%;height:100%;transition:transform .25s}.card:hover .media img{transform:scale(1.035)}.media img.photo{object-fit:cover}.media img.logo-img{object-fit:contain;padding:30px;background:#050508}.deal-badge{position:absolute;left:12px;top:12px;z-index:2;background:var(--sf-accent);color:var(--sf-accent-text);border-radius:999px;padding:7px 10px;font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.08em}.no-image{color:#94a3b8;font-weight:800;font-size:12px}.card-body{padding:17px;display:flex;flex-direction:column;flex:1}.meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.availability{color:#86efac;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.card h3{font-size:18px;line-height:1.16;margin:13px 0 8px;letter-spacing:-.03em;color:var(--sf-text)}.card p{color:var(--sf-muted);font-size:13px;line-height:1.45;min-height:56px;margin:0}.card ul{list-style:none;margin:14px 0;padding:0;display:grid;gap:7px}.card li{font-size:12px;color:var(--sf-text)}.card li:before{content:"+";color:var(--sf-accent);font-weight:900;margin-right:6px}.buy-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;margin-top:auto;gap:12px}.buy-row span{display:block;color:var(--sf-muted);font-size:10px;font-weight:900;text-transform:uppercase}.buy-row strong{display:block;font-size:22px;line-height:1;color:var(--sf-text)}.faq{display:grid;gap:10px;margin:18px 0 0}.faq details{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:18px;padding:14px}.faq summary{cursor:pointer;font-weight:800}.faq p{color:var(--sf-muted);margin:10px 0 0;line-height:1.55}.contact{padding:38px 0 52px;border-top:1px solid var(--sf-border);background:linear-gradient(180deg,transparent,rgba(255,255,255,.035))}.contact-box{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:28px;padding:26px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.contact-box h2{margin:0 0 8px}.contact-box p{margin:0;color:var(--sf-muted)}.sticky-buy{position:fixed;right:18px;bottom:18px;z-index:5}@media(max-width:900px){.hero-grid,.mini-banner-inner{grid-template-columns:1fr}.value-grid{grid-template-columns:repeat(2,1fr)}.hero-panel{display:none}.spotlight{grid-template-columns:1fr}}@media(max-width:620px){.top{align-items:flex-start}.brand strong{max-width:170px}.hero{padding-bottom:34px}.hero h1{font-size:42px}.hero p{font-size:15px}.mini-banner{margin-top:0}.value-grid{grid-template-columns:1fr}.section-title{display:block}.media{height:172px}.contact-box{display:block}.cta{display:inline-flex;margin-top:14px}.sticky-buy{left:16px;right:16px}.sticky-buy .cta{width:100%;margin-top:0}.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -279,23 +327,43 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
       </div>
       <div class="hero-grid">
         <div>
-          <span class="eyebrow">Vitrine selecionada</span>
+          <span class="eyebrow">${escapeHtml(heroCategoryLabel)}</span>
           <h1>${escapeHtml(heroTitle)}</h1>
           <p>${escapeHtml(heroSubtitle)}</p>
           <div class="cats">${categoryLinks}</div>
         </div>
         <aside class="hero-panel">
           <strong>${activeProducts.length}</strong>
-          <span>produtos ativos nesta vitrine, separados por nicho e com atendimento direto.</span>
+          <span>${escapeHtml(productCountLabel)} nesta vitrine, com selecao objetiva e atendimento direto.</span>
           <div class="trust">
-            <div><b>Entrega combinada</b>Receba orientacao pelo atendimento.</div>
-            <div><b>Compra direta</b>Pedido rapido pelo WhatsApp.</div>
-            <div><b>Ofertas curadas</b>Catalogo enxuto e objetivo.</div>
+            <div><b>Pedido guiado</b>Fale com a loja para confirmar disponibilidade.</div>
+            <div><b>Catalogo curado</b>Produtos separados por nicho e oferta.</div>
+            <div><b>A partir de</b>R$ ${priceFrom}</div>
           </div>
         </aside>
       </div>
     </div>
   </header>
+
+  <section class="mini-banner">
+    <div class="wrap mini-banner-inner">
+      <div>
+        <span class="eyebrow">Oferta ativa</span>
+        <h2>Vitrine pronta para pedido rapido.</h2>
+        <p>Escolha o produto, confirme disponibilidade e finalize direto com a loja. A selecao foi montada para facilitar compra, comparacao e decisao.</p>
+        <div class="banner-badges">${offerBadges}</div>
+      </div>
+      <div class="spotlight">${highlightItems || '<div class="spotlight-item"><span>Catalogo</span><strong>Nenhum produto selecionado ainda.</strong><small>Publique uma oferta</small></div>'}</div>
+    </div>
+  </section>
+
+  <section class="wrap value-grid">
+    <div class="value-card"><span>1</span><b>Escolha a oferta</b><p>Compare os produtos da vitrine e veja o valor final antes de chamar.</p></div>
+    <div class="value-card"><span>2</span><b>Confirme detalhes</b><p>A loja orienta disponibilidade, prazo e dados necessarios para o pedido.</p></div>
+    <div class="value-card"><span>3</span><b>Finalize com seguranca</b><p>Atendimento direto para evitar duvidas e combinar a entrega correta.</p></div>
+    <div class="value-card"><span>4</span><b>Receba orientacao</b><p>Depois do pedido, acompanhe a entrega ou ativacao pelo atendimento.</p></div>
+  </section>
+
   <main id="produtos" class="wrap">
     <div class="section-title">
       <h2>Produtos em destaque</h2>
@@ -304,22 +372,22 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
     <section class="grid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}</section>
     ${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}
   </main>
+
   <footer id="contato" class="contact">
     <div class="wrap">
       <div class="contact-box">
         <div>
-          <h2>Gostou de algum produto?</h2>
-          <p>Entre em contato com a loja para finalizar o pedido.</p>
+          <h2>Pronto para pedir?</h2>
+          <p>Chame a loja para confirmar a melhor oferta disponivel agora.</p>
         </div>
-        <a class="cta" href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">Chamar loja</a>
+        <a class="cta" href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">Chamar atendimento</a>
       </div>
     </div>
   </footer>
-  <div class="sticky-buy"><a class="cta" href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">Comprar pelo atendimento</a></div>
+  <div class="sticky-buy"><a class="cta" href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">Chamar atendimento</a></div>
 </body>
 </html>`;
 }
-
 function downloadHtml(filename: string, html: string) {
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
