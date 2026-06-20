@@ -18,10 +18,9 @@ interface SidebarProps {
   onPageChange: (page: string) => void;
   storeName: string;
   storePrimaryColor: string;
-  storeLogoUrl?: string;
 }
 
-export default function Sidebar({ activePage, onPageChange, storeName, storePrimaryColor, storeLogoUrl }: SidebarProps) {
+export default function Sidebar({ activePage, onPageChange, storeName, storePrimaryColor }: SidebarProps) {
   const categories = [
     {
       title: 'Operação',
@@ -52,19 +51,11 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
       {/* Brand Header */}
       <div className="p-6 border-b border-white/10 flex items-center justify-between">
         <div className="min-w-0">
-          {storeLogoUrl ? (
-            <img
-              src={storeLogoUrl}
-              alt="Storefy"
-              className="h-10 w-auto max-w-[150px] object-contain"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div>
-              <span className="font-display font-bold text-lg text-white">Storefy</span>
-              <span className="text-[10px] text-brand-500 block tracking-wider font-mono uppercase">Premium SaaS</span>
-            </div>
-          )}
+          <img
+            src="/storefy-logo.png"
+            alt=""
+            className="h-12 w-auto max-w-[172px] object-contain"
+          />
         </div>
         <div className="flex h-2 w-2 relative">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

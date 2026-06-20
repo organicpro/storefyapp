@@ -58,12 +58,8 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_8%,rgba(212,175,55,0.16),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.12),transparent_30%),linear-gradient(135deg,#030305,#0a0a0d_55%,#050505)]" />
       <main className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
         <section className="flex flex-col justify-between px-6 py-7 sm:px-10 lg:px-14">
-          <div className="flex items-center gap-3">
-            <img src="https://i.imgur.com/nUsczZV.png" alt="Storefy" className="h-12 w-12 object-contain" />
-            <div>
-              <p className="font-display text-xl font-black">Storefy</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.32em] text-brand-500">Premium SaaS</p>
-            </div>
+          <div className="flex items-center">
+            <img src="/storefy-logo.png" alt="" className="h-14 w-auto max-w-[190px] object-contain" />
           </div>
 
           <div className="max-w-2xl py-16">

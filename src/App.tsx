@@ -30,7 +30,7 @@ import { productFallbackImage } from './productImages';
 import { Product, StoreConfig, Supplier } from './types';
 
 const DATA_VERSION = '2026-06-18-ai-subscriptions-v1';
-const STOREFY_LOGO_URL = 'https://i.imgur.com/nUsczZV.png';
+const STOREFY_LOGO_URL = '/storefy-logo.png';
 
 const STORAGE_KEYS = {
   products: 'storefy.front.products',
@@ -844,7 +844,7 @@ function App() {
               onPageChange={handleNavigate}
               storeName={storeConfig.name}
               storePrimaryColor={storeConfig.primaryColor}
-              storeLogoUrl={storeConfig.logoUrl}
+
             />
           </div>
         </div>
@@ -857,7 +857,6 @@ function App() {
             onPageChange={handleNavigate}
             storeName={storeConfig.name}
             storePrimaryColor={storeConfig.primaryColor}
-            storeLogoUrl={storeConfig.logoUrl}
           />
         </div>
 

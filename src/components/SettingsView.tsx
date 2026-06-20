@@ -22,7 +22,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
   const [welcomeMessage, setWelcomeMessage] = useState(storeConfig.welcomeMessage);
   const [primaryColor, setPrimaryColor] = useState(storeConfig.primaryColor);
   const [instagram, setInstagram] = useState(storeConfig.instagram || '');
-  const [logoUrl, setLogoUrl] = useState(storeConfig.logoUrl || 'https://i.imgur.com/nUsczZV.png');
+  const [logoUrl, setLogoUrl] = useState(storeConfig.logoUrl || '/storefy-logo.png');
   const [downloadHtmlFallback, setDownloadHtmlFallback] = useState(storeConfig.downloadHtmlFallback ?? false);
   const [netlifyToken, setNetlifyToken] = useState('');
   const [netlifyStatus, setNetlifyStatus] = useState<NetlifyStatus>({ connected: false, accountName: '', email: '', tokenLast4: '' });
