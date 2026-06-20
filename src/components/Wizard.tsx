@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Gamepad2, 
   Tv, 
@@ -64,7 +64,9 @@ export default function Wizard({
   const [storeSubdomain, setStoreSubdomain] = useState(storeConfig.subdomain);
   const [storeWelcomeMessage, setStoreWelcomeMessage] = useState(storeConfig.welcomeMessage);
   const [storeColor, setStoreColor] = useState(storeConfig.primaryColor);
-  const [heroTitle, setHeroTitle] = useState('Suas Chaves Digitais e Gift Cards favoritos em um só lugar.');
+  const [storeThemePreset, setStoreThemePreset] = useState<NonNullable<StoreConfig['themePreset']>>(storeConfig.themePreset || 'obsidian');
+  const [heroTitle, setHeroTitle] = useState(storeConfig.heroTitle || `${storeConfig.name} pronta para vender.`);
+  const [heroSubtitle, setHeroSubtitle] = useState(storeConfig.heroSubtitle || 'Produtos organizados, atendimento direto e compra rapida para sua audiencia.');
 
   const stepsList = [
     { num: 1, label: 'Nicho' },
@@ -79,13 +81,24 @@ export default function Wizard({
 
   // Colors list for visual editor
   const colorsList = [
+    { name: 'Ouro SaaS', hex: '#d4af37' },
     { name: 'Roxo Violeta', hex: '#7c3aed' },
-    { name: 'Azul Elétrico', hex: '#2563eb' },
-    { name: 'Verde Gamer', hex: '#10b981' },
-    { name: 'Vermelho Vibrante', hex: '#ef4444' },
-    { name: 'Rosa Shock', hex: '#db2777' },
-    { name: 'Ciano Cyber', hex: '#06b6d4' }
+    { name: 'Azul Eletrico', hex: '#2563eb' },
+    { name: 'Verde Oferta', hex: '#10b981' },
+    { name: 'Vermelho Venda', hex: '#ef4444' },
+    { name: 'Rosa Pop', hex: '#db2777' },
+    { name: 'Ciano Cyber', hex: '#06b6d4' },
+    { name: 'Laranja Achado', hex: '#f97316' },
+    { name: 'Lima Neon', hex: '#84cc16' },
+    { name: 'Preto Luxo', hex: '#f8fafc' }
   ];
+
+  const themePresets = [
+    { id: 'obsidian', name: 'Dark premium', bg: '#050507', hero: '#111827', surface: '#18181b', text: '#ffffff', muted: '#94a3b8' },
+    { id: 'aurora', name: 'Neon glass', bg: '#050312', hero: '#312e81', surface: '#111827', text: '#ffffff', muted: '#a5b4fc' },
+    { id: 'clean', name: 'Clean claro', bg: '#f8fafc', hero: '#ffffff', surface: '#e2e8f0', text: '#0f172a', muted: '#64748b' },
+    { id: 'market', name: 'Oferta pop', bg: '#09090b', hero: '#7c2d12', surface: '#1f2937', text: '#fff7ed', muted: '#fed7aa' }
+  ] as const;
 
   // Filter products matching recommendation for selected niche
   const recommendedProducts = products.filter(p => 
@@ -98,14 +111,26 @@ export default function Wizard({
   const displayStoreLink = publishedUrl || 'Publique para gerar o link da loja';
 
   const handleNext = () => {
+    const normalizedSubdomain = storeSubdomain.toLowerCase().replace(/\s+/g, '-');
+
     if (currentStep === 3) {
+      const defaultHeroTitle = `${storeConfig.name} pronta para vender.`;
+      const nextHeroTitle = heroTitle.trim() && heroTitle !== defaultHeroTitle
+        ? heroTitle
+        : `${storeName || storeConfig.name} pronta para vender.`;
+
+      if (nextHeroTitle !== heroTitle) {
+        setHeroTitle(nextHeroTitle);
+      }
+
       // Save identity config intermediate
       onUpdateStoreConfig({
         ...storeConfig,
         name: storeName,
         whatsapp: storeWhatsapp,
-        subdomain: storeSubdomain.toLowerCase().replace(/\s+/g, '-'),
-        welcomeMessage: storeWelcomeMessage
+        subdomain: normalizedSubdomain,
+        welcomeMessage: storeWelcomeMessage,
+        heroTitle: nextHeroTitle
       });
     }
 
@@ -113,7 +138,14 @@ export default function Wizard({
       // Save customized color & details
       onUpdateStoreConfig({
         ...storeConfig,
-        primaryColor: storeColor
+        name: storeName,
+        whatsapp: storeWhatsapp,
+        subdomain: normalizedSubdomain,
+        welcomeMessage: storeWelcomeMessage,
+        primaryColor: storeColor,
+        themePreset: storeThemePreset,
+        heroTitle: heroTitle.trim() || `${storeName || storeConfig.name} pronta para vender.`,
+        heroSubtitle
       });
     }
 
@@ -123,7 +155,6 @@ export default function Wizard({
       setCurrentStep(prev => prev + 1);
     }
   };
-
   const handleBack = () => {
     setCurrentStep(prev => prev - 1);
   };
@@ -492,73 +523,109 @@ export default function Wizard({
       {/* STEP 4: EDIT PAGE DESIGN */}
       {currentStep === 4 && (
         <div className="space-y-6">
-          <div className="text-center max-w-lg mx-auto space-y-2">
-            <h3 className="text-lg font-display font-medium text-white">4. Edite a identidade visual</h3>
+          <div className="text-center max-w-xl mx-auto space-y-2">
+            <h3 className="text-lg font-display font-medium text-white">4. Escolha o visual da vitrine</h3>
             <p className="text-xs text-slate-400">
-              Customize a decoração da vitrine que seu cliente final verá.
+              Selecione pela miniatura, ajuste a cor e escreva a primeira chamada que o cliente vai ver.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
-            {/* Color choices */}
-            <div className="space-y-3 p-4 rounded-2xl bg-white/[0.03] border border-white/10 md:col-span-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
+            {themePresets.map((theme) => {
+              const isSelected = storeThemePreset === theme.id;
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => setStoreThemePreset(theme.id)}
+                  className={`group overflow-hidden rounded-3xl border p-3 text-left transition-all duration-300 ${
+                    isSelected
+                      ? 'border-brand-500 bg-brand-500/10 shadow-2xl shadow-brand-500/10 ring-1 ring-brand-500/30'
+                      : 'border-white/10 bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <div className="relative overflow-hidden rounded-2xl border border-white/10" style={{ backgroundColor: theme.bg }}>
+                    <div className="p-4" style={{ background: `linear-gradient(135deg, ${theme.hero}, ${theme.bg})` }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="h-6 w-6 rounded-lg border border-white/15" style={{ backgroundColor: storeColor }} />
+                          <span className="h-2 w-20 rounded-full" style={{ backgroundColor: theme.text, opacity: 0.85 }} />
+                        </div>
+                        <span className="h-6 w-16 rounded-full" style={{ backgroundColor: storeColor }} />
+                      </div>
+                      <div className="mt-8 max-w-[72%] space-y-2">
+                        <span className="block h-2 w-20 rounded-full" style={{ backgroundColor: theme.muted }} />
+                        <span className="block h-5 w-full rounded-lg" style={{ backgroundColor: theme.text }} />
+                        <span className="block h-5 w-3/4 rounded-lg" style={{ backgroundColor: theme.text }} />
+                        <span className="block h-2 w-2/3 rounded-full" style={{ backgroundColor: theme.muted }} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 p-3">
+                      {[0, 1, 2].map((item) => (
+                        <div key={item} className="rounded-xl border border-white/10 p-2" style={{ backgroundColor: theme.surface }}>
+                          <div className="h-10 rounded-lg" style={{ backgroundColor: item === 1 ? storeColor : theme.hero }} />
+                          <div className="mt-2 h-2 w-4/5 rounded-full" style={{ backgroundColor: theme.text, opacity: 0.85 }} />
+                          <div className="mt-1 h-2 w-1/2 rounded-full" style={{ backgroundColor: theme.muted }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3 px-1">
+                    <div>
+                      <p className="text-sm font-black text-white">{theme.name}</p>
+                      <p className="text-[11px] text-slate-400">Preview visual da loja final</p>
+                    </div>
+                    {isSelected && <Check className="h-5 w-5 text-brand-500" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 max-w-5xl mx-auto text-left">
+            <div className="space-y-3 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                <Paintbrush className="w-3.5 h-3.5 animate-pulse" /> Cor de Destaque
+                <Paintbrush className="w-3.5 h-3.5 text-brand-500" /> Cor de destaque
               </h4>
-              <p className="text-[10px] text-slate-400">Define a tonalidade de botões, tags e fundos no e-commerce.</p>
-              
-              <div className="space-y-2 pt-2">
-                {colorsList.map((c) => {
-                  const isSel = storeColor === c.hex;
+              <div className="grid grid-cols-5 gap-2">
+                {colorsList.map((color) => {
+                  const isSel = storeColor === color.hex;
                   return (
                     <button
-                      key={c.hex}
-                      onClick={() => setStoreColor(c.hex)}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-slate-300 bg-white/[0.02] border border-white/10 hover:bg-white/[0.05] text-xs font-medium transition-all cursor-pointer"
+                      key={color.hex}
+                      type="button"
+                      onClick={() => setStoreColor(color.hex)}
+                      title={color.name}
+                      className={`relative h-12 rounded-2xl border transition-all ${isSel ? 'border-white ring-2 ring-white/20' : 'border-white/10 hover:border-white/30'}`}
+                      style={{ backgroundColor: color.hex }}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: c.hex }} />
-                        <span>{c.name}</span>
-                      </div>
-                      {isSel && <Check className="w-3.5 h-3.5 text-indigo-400 stroke-[3px]" />}
+                      {isSel && <Check className="absolute inset-0 m-auto h-4 w-4 text-black drop-shadow" />}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Custom layout options / Hero preview text */}
-            <div className="space-y-4 md:col-span-2 text-left">
+            <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Chamada Principal (Hero)</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Titulo principal</label>
                 <input
                   type="text"
                   value={heroTitle}
                   onChange={(e) => setHeroTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-sans"
-                  placeholder="Venda suas chaves digitais..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 font-sans"
+                  placeholder="Ex. Achados inteligentes para comprar hoje"
                 />
               </div>
-
-              {/* Sample e-commerce simulator block */}
-              <div className="p-4 rounded-2xl border border-white/10 bg-[#06060c] space-y-3.5 relative overflow-hidden select-none">
-                <span className="text-[9px] text-slate-500 font-mono font-bold uppercase tracking-wider">Simulador da Vitrine Final</span>
-                
-                {/* Header mock */}
-                <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                  <span className="text-xs font-bold text-white">{storeName || 'Sua Loja'}</span>
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: storeColor }} />
-                </div>
-
-                {/* Hero mockup */}
-                <div className="p-3 rounded-xl text-center relative overflow-hidden bg-white/[0.01] border border-white/5">
-                  <p className="text-[11px] font-bold text-white" style={{ color: storeColor }}>{heroTitle}</p>
-                </div>
-
-                <div className="flex items-center justify-between px-1">
-                  <div className="w-20 h-2.5 bg-white/10 rounded animate-pulse" />
-                  <div className="w-8 h-4 rounded" style={{ backgroundColor: storeColor }} />
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Subtitulo da vitrine</label>
+                <textarea
+                  rows={2}
+                  value={heroSubtitle}
+                  onChange={(e) => setHeroSubtitle(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 font-sans"
+                  placeholder="Explique a promessa da loja em uma frase curta."
+                />
               </div>
             </div>
           </div>

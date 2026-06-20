@@ -46,6 +46,10 @@ export interface StoreConfig {
   netlifySiteName?: string;
   downloadHtmlFallback?: boolean;
   productIds?: string[];
+  themePreset?: 'obsidian' | 'aurora' | 'clean' | 'market';
+  heroTitle?: string;
+  heroSubtitle?: string;
+  ctaLabel?: string;
 }
 
 export interface Niche {
