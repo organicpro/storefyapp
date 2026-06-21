@@ -231,9 +231,6 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
   const priceFrom = activeProducts.length ? Math.min(...activeProducts.map(product => product.salePrice)).toFixed(2).replace('.', ',') : '0,00';
   const heroCategoryLabel = categories.slice(0, 2).join(' + ') || 'Ofertas selecionadas';
-  const highlightedProducts = activeProducts.slice(0, 3);
-  const hasPhysicalProducts = activeProducts.some(product => product.category === 'Achados Fisicos');
-  const hasDigitalProducts = activeProducts.some(product => product.category !== 'Achados Fisicos');
   const productCountLabel = activeProducts.length === 1 ? 'produto selecionado' : 'produtos selecionados';
   const whatsappFor = (product?: Product) => {
     const text = product ? `Ola! Quero comprar: ${product.name} - ${formatPrice(product.salePrice)}` : config.welcomeMessage;
@@ -267,14 +264,6 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
     const onError = image.fallback ? `this.onerror=null;this.src='${escapeHtml(image.fallback)}'` : 'this.remove()';
     return `<img class="${image.className}" src="${escapeHtml(image.source)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="${onError}" />`;
   };
-  const bannerByCategory: Record<string, { label: string; title: string; copy: string }> = {
-    'Achados Fisicos': { label: 'Achados curados', title: 'Produtos fisicos com apelo de oferta e pedido rapido.', copy: 'Uma selecao enxuta para gerar interesse, tirar duvidas pelo atendimento e confirmar disponibilidade antes do pedido.' },
-    'Assinaturas Digitais': { label: 'Acesso digital', title: 'Assinaturas e ferramentas com ativacao orientada.', copy: 'Ofertas digitais organizadas para o cliente entender o que recebe e falar com a loja para finalizar com seguranca.' },
-    'Games': { label: 'Universo gamer', title: 'Produtos gamer com compra simples e direta.', copy: 'Creditos, contas, itens e servicos apresentados com clareza para acelerar a decisao sem poluir a vitrine.' },
-    'Infoprodutos': { label: 'Conteudo digital', title: 'Ebooks e materiais digitais prontos para vender.', copy: 'Promessas claras, acesso orientado e detalhes suficientes para o cliente entender o valor antes de chamar.' },
-    'Redes Sociais': { label: 'Servicos digitais', title: 'Servicos online com pedido guiado e objetivo.', copy: 'Uma experiencia direta para explicar o servico, alinhar detalhes e enviar o pedido certo pelo atendimento.' }
-  };
-  const primaryBanner = bannerByCategory[categories[0] || ''] || { label: 'Oferta ativa', title: 'Vitrine pronta para pedido rapido.', copy: 'Escolha o produto, confirme disponibilidade e finalize direto com a loja. A selecao foi montada para facilitar compra, comparacao e decisao.' };
   const storefrontProducts = activeProducts.map(product => {
     const image = getProductImageView(product);
     return {
@@ -328,9 +317,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   `).join('');
   const categoryLinks = categories.map(category => `<a href="#produtos">${escapeHtml(category)}</a>`).join('');
   const filterButtons = ['Todos', ...categories].map((category, index) => `<button type="button" class="filter-btn${index === 0 ? ' active' : ''}" data-filter="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join('');
-  const highlightItems = highlightedProducts.map(product => `<button type="button" class="spotlight-item" data-detail="${escapeHtml(product.id)}"><span>${escapeHtml(product.subcategory || product.category)}</span><strong>${escapeHtml(product.name)}</strong><small>${formatPrice(product.salePrice)}</small></button>`).join('');
   const faqItems = (config.faq || []).slice(0, 3).map(item => `<details><summary>${escapeHtml(item.question)}</summary><p>${escapeHtml(item.answer)}</p></details>`).join('');
-  const offerBadges = [hasDigitalProducts ? 'Entrega digital orientada' : '', hasPhysicalProducts ? 'Achados sob demanda' : '', 'Atendimento direto', 'Resumo do pedido', 'Ofertas curadas'].filter(Boolean).map(item => `<span>${escapeHtml(item)}</span>`).join('');
   const storefrontData = { storeName: config.name, phone, welcomeMessage: config.welcomeMessage || `Ola! Vim pela vitrine ${config.name} e gostaria de fazer um pedido.`, products: storefrontProducts };
   return `<!doctype html>
 <html lang="pt-BR">
@@ -351,9 +338,6 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
 </head>
 <body>
   <header class="hero"><div class="wrap"><div class="top"><div class="brand"><img src="${escapeHtml(normalizedLogoUrl)}" alt="${escapeHtml(config.name)}" /><strong>${escapeHtml(config.name)}</strong></div><a class="cta" href="#produtos">${escapeHtml(ctaLabel)}</a></div><div class="hero-grid"><div><span class="eyebrow">${escapeHtml(heroCategoryLabel)}</span><h1>${escapeHtml(heroTitle)}</h1><p>${escapeHtml(heroSubtitle)}</p><div class="cats">${categoryLinks}</div></div><aside class="hero-panel"><strong>${activeProducts.length}</strong><span>${escapeHtml(productCountLabel)} nesta vitrine, com selecao objetiva e atendimento direto.</span><div class="trust"><div><b>Pedido guiado</b>Resumo montado antes de chamar a loja.</div><div><b>Catalogo curado</b>Produtos separados por nicho e oferta.</div><div><b>A partir de</b>R$ ${priceFrom}</div></div></aside></div></div></header>
-  <section class="mini-banner"><div class="wrap mini-banner-inner"><div><span class="eyebrow">${escapeHtml(primaryBanner.label)}</span><h2>${escapeHtml(primaryBanner.title)}</h2><p>${escapeHtml(primaryBanner.copy)}</p><div class="banner-badges">${offerBadges}</div></div><div class="spotlight">${highlightItems || '<div class="spotlight-item"><span>Catalogo</span><strong>Nenhum produto selecionado ainda.</strong><small>Publique uma oferta</small></div>'}</div></div></section>
-  <section class="wrap value-grid"><div class="value-card"><span>1</span><b>Escolha a oferta</b><p>Compare os produtos da vitrine e veja o valor final antes de chamar.</p></div><div class="value-card"><span>2</span><b>Veja os detalhes</b><p>Abra a ficha do produto para entender beneficios, entrega e proximo passo.</p></div><div class="value-card"><span>3</span><b>Monte o pedido</b><p>Adicione varios itens ao resumo e envie tudo de uma vez para a loja.</p></div><div class="value-card"><span>4</span><b>Receba orientacao</b><p>Depois do pedido, acompanhe a entrega ou ativacao pelo atendimento.</p></div></section>
-  <section class="wrap proof-grid" aria-label="Sinais de confianca"><div class="proof-card"><small>Clareza</small><b>Pedido sem confusao</b><p>O cliente ve os itens escolhidos e o total antes de iniciar o atendimento.</p></div><div class="proof-card"><small>Curadoria</small><b>Vitrine objetiva</b><p>Produtos selecionados por nicho, sem excesso de escolhas jogadas na tela.</p></div><div class="proof-card"><small>Conversao</small><b>CTA sempre perto</b><p>Botao de resumo acompanha a navegacao para reduzir abandono.</p></div><div class="proof-card"><small>Confianca</small><b>Duvidas respondidas</b><p>FAQ, detalhes e beneficios ajudam a pessoa decidir antes de chamar.</p></div></section>
   <main id="produtos" class="wrap"><div class="section-title"><h2>Produtos em destaque</h2><p>Filtre por categoria, veja detalhes ou monte um pedido com varios itens.</p></div>${filterButtons ? `<nav class="filters" aria-label="Filtros de produtos">${filterButtons}</nav>` : ''}<section class="grid" id="productGrid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}</section>${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}</main>
   <footer id="contato" class="contact"><div class="wrap"><div class="contact-box"><div><h2>Pronto para pedir?</h2><p>Monte seu resumo ou chame a loja para confirmar a melhor oferta disponivel agora.</p></div><button type="button" class="cta" data-open-cart>Ver resumo do pedido</button></div></div></footer>
   <button type="button" class="floating-cart" data-open-cart><span>Resumo do pedido</span><span class="cart-badge" id="cartCount">0</span></button>
