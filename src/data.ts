@@ -4506,7 +4506,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   "whatsapp": "5511999998888",
   "niche": "Gamer & Esports",
   "primaryColor": "#d4af37",
-  "logoUrl": "https://i.imgur.com/nUsczZV.png",
+  "logoUrl": "/storefy-logo.png",
   "subdomain": "storefy",
   "welcomeMessage": "Olá! Vim através da vitrine Storefy e gostaria de comprar estes produtos:",
   "instagram": "storefy.digital",

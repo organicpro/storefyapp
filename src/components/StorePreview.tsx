@@ -20,6 +20,15 @@ import {
 import { Product, StoreConfig, MainCategory } from '../types';
 import { productFallbackImage } from '../productImages';
 
+const STOREFY_LOGO_URL = '/storefy-logo.png';
+const LEGACY_STOREFY_LOGO_URL = 'https://i.imgur.com/nUsczZV.png';
+
+function normalizeStoreLogoUrl(logoUrl?: string) {
+  const value = (logoUrl || '').trim();
+  if (!value || value === LEGACY_STOREFY_LOGO_URL) return STOREFY_LOGO_URL;
+  return value;
+}
+
 function isColorDark(hex: string): boolean {
   if (!hex || hex.startsWith('var')) return true;
   const rgb = hex.replace('#', '');
@@ -209,11 +218,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold font-display text-base shadow-sm shrink-0 select-none overflow-hidden"
                 style={{ backgroundColor: primaryColorHex }}
               >
-                {storeConfig.logoUrl ? (
-                  <img src={storeConfig.logoUrl} alt={storeConfig.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  storeConfig.name.charAt(0).toUpperCase()
-                )}
+                <img src={normalizeStoreLogoUrl(storeConfig.logoUrl)} alt={storeConfig.name} className="h-5 w-auto max-w-[92px] object-contain drop-shadow" referrerPolicy="no-referrer" />
               </div>
               <span className="font-display font-bold text-base text-white tracking-tight truncate max-w-40">{storeConfig.name}</span>
             </div>
