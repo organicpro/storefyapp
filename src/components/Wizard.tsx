@@ -65,8 +65,8 @@ export default function Wizard({
   const [storeWelcomeMessage, setStoreWelcomeMessage] = useState(storeConfig.welcomeMessage);
   const [storeColor, setStoreColor] = useState(storeConfig.primaryColor);
   const [storeThemePreset, setStoreThemePreset] = useState<NonNullable<StoreConfig['themePreset']>>(storeConfig.themePreset || 'obsidian');
-  const [heroTitle, setHeroTitle] = useState(storeConfig.heroTitle || `${storeConfig.name} pronta para vender.`);
-  const [heroSubtitle, setHeroSubtitle] = useState(storeConfig.heroSubtitle || 'Produtos organizados, atendimento direto e compra rapida para sua audiencia.');
+  const [heroTitle, setHeroTitle] = useState(storeConfig.heroTitle || storeConfig.name);
+  const [heroSubtitle, setHeroSubtitle] = useState(storeConfig.heroSubtitle || 'Escolha o produto, veja detalhes e envie o pedido para a loja.');
 
   const stepsList = [
     { num: 1, label: 'Nicho' },
@@ -114,10 +114,10 @@ export default function Wizard({
     const normalizedSubdomain = storeSubdomain.toLowerCase().replace(/\s+/g, '-');
 
     if (currentStep === 3) {
-      const defaultHeroTitle = `${storeConfig.name} pronta para vender.`;
+      const defaultHeroTitle = storeConfig.name;
       const nextHeroTitle = heroTitle.trim() && heroTitle !== defaultHeroTitle
         ? heroTitle
-        : `${storeName || storeConfig.name} pronta para vender.`;
+        : (storeName || storeConfig.name);
 
       if (nextHeroTitle !== heroTitle) {
         setHeroTitle(nextHeroTitle);
@@ -144,7 +144,7 @@ export default function Wizard({
         welcomeMessage: storeWelcomeMessage,
         primaryColor: storeColor,
         themePreset: storeThemePreset,
-        heroTitle: heroTitle.trim() || `${storeName || storeConfig.name} pronta para vender.`,
+        heroTitle: heroTitle.trim() || (storeName || storeConfig.name),
         heroSubtitle
       });
     }

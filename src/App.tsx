@@ -240,12 +240,94 @@ function buildProductImageMarkup(product: Product) {
   return `<img class="${className}" src="${escapeHtml(source)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="${onError}" />`;
 }
 
+function looksLikeGeneratedStoreCopy(value?: string) {
+  return !value?.trim() || /pronta para vender|produtos selecionados|produtos organizados|compra rapida|sua audiencia|vitrine pronta|em minutos|loja live/i.test(value);
+}
+
+function getAntiAiStorefrontVoice(category?: string) {
+  switch (category) {
+    case 'Achados Fisicos':
+      return {
+        label: 'Achados da loja',
+        subtitle: (collection: string, count: number, lead: string) => `${count} itens de ${collection.toLowerCase()} com foto, preco e pedido pelo atendimento. Comece por ${lead}.`,
+        services: ['Fotos e preco antes do contato', 'Pedido conferido pela loja'],
+        collectionTitle: 'Comprar por tipo',
+        collectionText: 'Atalhos para comparar os itens sem percorrer o catalogo inteiro.',
+        productTitle: 'Catalogo',
+        productText: 'Veja o item, confira o valor e envie o pedido para a loja.',
+        footerTitle: 'Quer fechar algum item?',
+        footerText: 'Envie o resumo para confirmar disponibilidade, variacao e proximo passo.'
+      };
+    case 'Assinaturas Digitais':
+      return {
+        label: 'Assinaturas e acessos',
+        subtitle: (collection: string, count: number, lead: string) => `${count} opcoes de ${collection.toLowerCase()} para comparar valor e chamar a loja. Destaque de hoje: ${lead}.`,
+        services: ['Valor claro antes do contato', 'Ativacao combinada com a loja'],
+        collectionTitle: 'Escolha por servico',
+        collectionText: 'Separe por plataforma antes de chamar o atendimento.',
+        productTitle: 'Planos disponiveis',
+        productText: 'Abra o item para ver detalhes e enviar o pedido certo.',
+        footerTitle: 'Precisa confirmar um acesso?',
+        footerText: 'Mande o resumo para a loja validar disponibilidade e forma de ativacao.'
+      };
+    case 'Games':
+      return {
+        label: 'Games e contas',
+        subtitle: (collection: string, count: number, lead: string) => `${count} produtos gamer separados por plataforma e preco. Um dos destaques: ${lead}.`,
+        services: ['Plataforma e preco visiveis', 'Entrega combinada no atendimento'],
+        collectionTitle: 'Filtre por plataforma',
+        collectionText: 'Encontre o tipo de produto antes de montar o pedido.',
+        productTitle: 'Ofertas gamer',
+        productText: 'Compare valores, abra detalhes e chame a loja com o pedido pronto.',
+        footerTitle: 'Vai levar qual item?',
+        footerText: 'Envie o resumo para a loja confirmar entrega, conta ou ativacao.'
+      };
+    case 'Redes Sociais':
+      return {
+        label: 'Servicos digitais',
+        subtitle: (collection: string, count: number, lead: string) => `${count} servicos de ${collection.toLowerCase()} com escopo simples antes do atendimento. Destaque: ${lead}.`,
+        services: ['Escopo antes do pedido', 'Atendimento para confirmar prazo'],
+        collectionTitle: 'Escolha o servico',
+        collectionText: 'Veja o tipo de entrega antes de chamar a loja.',
+        productTitle: 'Servicos disponiveis',
+        productText: 'Confira detalhes e envie o pedido com o item certo.',
+        footerTitle: 'Quer validar um servico?',
+        footerText: 'Envie o resumo para confirmar prazo, perfil e proximo passo.'
+      };
+    case 'Infoprodutos':
+      return {
+        label: 'Guias e materiais',
+        subtitle: (collection: string, count: number, lead: string) => `${count} materiais de ${collection.toLowerCase()} em uma vitrine direta. Comece por ${lead}.`,
+        services: ['Tema e valor visiveis', 'Entrega digital combinada'],
+        collectionTitle: 'Navegue por tema',
+        collectionText: 'Escolha o assunto antes de abrir os detalhes.',
+        productTitle: 'Materiais digitais',
+        productText: 'Veja o conteudo, confira o valor e envie o pedido para a loja.',
+        footerTitle: 'Quer receber um material?',
+        footerText: 'Envie o resumo para confirmar entrega e forma de acesso.'
+      };
+    default:
+      return {
+        label: 'Catalogo da loja',
+        subtitle: (collection: string, count: number, lead: string) => `${count} ofertas de ${collection.toLowerCase()} com preco visivel. Destaque: ${lead}.`,
+        services: ['Preco antes do contato', 'Pedido enviado para a loja'],
+        collectionTitle: 'Comprar por categoria',
+        collectionText: 'Use os atalhos para comparar sem perder tempo.',
+        productTitle: 'Catalogo',
+        productText: 'Abra detalhes ou envie um pedido com os itens escolhidos.',
+        footerTitle: 'Quer confirmar algum produto?',
+        footerText: 'Envie o resumo para a loja validar disponibilidade e proximo passo.'
+      };
+  }
+}
 function buildStoreHtml(config: StoreConfig, products: Product[]) {
   const activeProducts = getSelectedProductsForStore(config, products);
   const categories = Array.from(new Set(activeProducts.map(product => product.category)));
+  const collectionLabels = Array.from(new Set(activeProducts.map(product => product.subcategory || product.category).filter(Boolean))).slice(0, 8);
+  const leadProduct = activeProducts[0];
   const theme = getStoreTheme(config);
-  const heroTitle = config.heroTitle || `${config.name} pronta para vender.`;
-  const heroSubtitle = config.heroSubtitle || 'Produtos selecionados, atendimento direto e compra rapida. Escolha sua oferta e fale com a loja para finalizar.';
+  const rawHeroTitle = (config.heroTitle || '').trim();
+  const rawHeroSubtitle = (config.heroSubtitle || '').trim();
   const ctaLabel = config.ctaLabel || 'Ver produtos';
   const accentTextColor = getReadableTextColor(config.primaryColor);
   const phone = config.whatsapp.replace(/\D/g, '');
@@ -253,28 +335,37 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   const formatPrice = (value: number) => `R$ ${value.toFixed(2).replace('.', ',')}`;
   const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
   const priceFrom = activeProducts.length ? Math.min(...activeProducts.map(product => product.salePrice)).toFixed(2).replace('.', ',') : '0,00';
-  const heroCategoryLabel = categories.slice(0, 2).join(' + ') || 'Ofertas selecionadas';
-  const productCountLabel = activeProducts.length === 1 ? 'produto selecionado' : 'produtos selecionados';
+  const storefrontVoice = getAntiAiStorefrontVoice(categories[0]);
+  const primaryCollection = collectionLabels[0] || categories[0] || config.niche || 'Catalogo';
+  const leadProductName = leadProduct?.name || primaryCollection;
+  const heroCategoryLabel = storefrontVoice.label;
+  const heroTitle = looksLikeGeneratedStoreCopy(rawHeroTitle) ? config.name : rawHeroTitle;
+  const heroSubtitle = looksLikeGeneratedStoreCopy(rawHeroSubtitle)
+    ? storefrontVoice.subtitle(primaryCollection, activeProducts.length, leadProductName)
+    : rawHeroSubtitle;
+  const productCountLabel = activeProducts.length === 1 ? 'produto' : 'produtos';
   const whatsappFor = (product?: Product) => {
     const text = product ? `Ola! Quero comprar: ${product.name} - ${formatPrice(product.salePrice)}` : config.welcomeMessage;
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   };
   const getPublicDescription = (product: Product) => {
-    if (product.category === 'Achados Fisicos') return 'Produto escolhido para pedido sob demanda, com confirmacao de disponibilidade pelo atendimento.';
-    if (product.category === 'Infoprodutos') return 'Material digital organizado para acesso rapido, com orientacao de uso apos o pedido.';
-    if (product.category === 'Assinaturas Digitais') return 'Acesso digital com orientacao de ativacao e suporte direto pelo atendimento da loja.';
-    return 'Oferta digital selecionada para compra rapida, com atendimento direto para finalizar o pedido.';
+    if (product.category === 'Achados Fisicos') return 'Veja foto, preco e detalhes antes de chamar a loja para confirmar disponibilidade.';
+    if (product.category === 'Infoprodutos') return 'Material digital com tema claro, valor visivel e entrega combinada pela loja.';
+    if (product.category === 'Assinaturas Digitais') return 'Assinatura ou acesso digital com valor visivel e ativacao confirmada no atendimento.';
+    if (product.category === 'Games') return 'Produto gamer com plataforma, valor e entrega confirmados antes do pedido.';
+    if (product.category === 'Redes Sociais') return 'Servico digital com escopo e prazo confirmados antes de fechar.';
+    return 'Produto com valor visivel e detalhes conferidos antes do pedido.';
   };
   const getPublicBenefits = (product: Product) => {
-    const safeBenefits = product.benefits.filter(benefit => !/base:|valor de venda|subcategoria/i.test(benefit));
+    const safeBenefits = product.benefits.filter(benefit => !/base:|valor de venda|subcategoria|alta procura|boa opcao/i.test(benefit));
     const fallbackByCategory: Record<string, string[]> = {
-      'Achados Fisicos': ['Oferta selecionada', 'Pedido sob demanda', 'Atendimento direto'],
-      'Assinaturas Digitais': ['Ativacao orientada', 'Acesso digital', 'Suporte no atendimento'],
-      'Games': ['Entrega combinada', 'Produto gamer', 'Suporte de compra'],
-      'Redes Sociais': ['Servico orientado', 'Pedido conferido', 'Acompanhamento direto'],
-      'Infoprodutos': ['Material digital', 'Acesso rapido', 'Conteudo organizado']
+      'Achados Fisicos': ['Foto do produto', 'Preco antes do contato', 'Confirmacao pela loja'],
+      'Assinaturas Digitais': ['Valor do acesso', 'Ativacao combinada', 'Suporte da loja'],
+      'Games': ['Plataforma indicada', 'Entrega combinada', 'Detalhes antes do pedido'],
+      'Redes Sociais': ['Escopo do servico', 'Prazo confirmado', 'Pedido conferido'],
+      'Infoprodutos': ['Tema definido', 'Entrega digital', 'Acesso combinado']
     };
-    return (safeBenefits.length ? safeBenefits : fallbackByCategory[product.category] || ['Oferta selecionada', 'Atendimento direto', 'Compra rapida']).slice(0, 3);
+    return (safeBenefits.length ? safeBenefits : fallbackByCategory[product.category] || ['Preco visivel', 'Detalhes do item', 'Pedido conferido']).slice(0, 3);
   };
   const getProductImageView = (product: Product) => {
     const isPhysical = product.category === 'Achados Fisicos';
@@ -338,9 +429,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
       </div>
     </article>
   `).join('');
-  const collectionLabels = Array.from(new Set(activeProducts.map(product => product.subcategory || product.category).filter(Boolean))).slice(0, 8);
   const heroProducts = activeProducts.filter(product => getProductImageView(product).source).slice(0, 5);
-  const leadProduct = activeProducts[0];
   const categoryLinks = (collectionLabels.length ? collectionLabels : categories).slice(0, 5).map(category => `<a href="#produtos">${escapeHtml(category)}</a>`).join('');
   const heroMosaic = heroProducts.length
     ? heroProducts.map((product, index) => `
@@ -389,18 +478,18 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   </style></head>
 <body>
   <header class="hero commerce-hero">
-    <div class="promo-bar"><div class="wrap promo-bar-inner"><span>${escapeHtml(heroCategoryLabel)}</span><strong>Vitrine pronta para vender</strong><a href="#contato">Atendimento direto</a></div></div>
+    <div class="promo-bar"><div class="wrap promo-bar-inner"><span>${escapeHtml(heroCategoryLabel)}</span><strong>${activeProducts.length} ${escapeHtml(productCountLabel)} no catalogo</strong><a href="#contato">Chamar a loja</a></div></div>
     <div class="wrap">
       <div class="top"><div class="brand"><img src="${escapeHtml(normalizedLogoUrl)}" alt="${escapeHtml(config.name)}" /><strong>${escapeHtml(config.name)}</strong></div><a class="cta" href="#produtos">${escapeHtml(ctaLabel)}</a></div>
       <div class="hero-grid commerce-grid">
-        <div class="hero-copy"><span class="eyebrow">${escapeHtml(heroCategoryLabel)}</span><h1>${escapeHtml(heroTitle)}</h1><p>${escapeHtml(heroSubtitle)}</p><div class="cats">${categoryLinks}</div><div class="hero-actions"><a class="cta" href="#produtos">Ver ofertas</a><button type="button" class="secondary-btn" data-open-cart>Resumo do pedido</button></div><div class="service-row"><span>Produtos selecionados por nicho</span><span>Compra guiada pelo atendimento</span><span>A partir de R$ ${priceFrom}</span></div></div>
+        <div class="hero-copy"><span class="eyebrow">${escapeHtml(heroCategoryLabel)}</span><h1>${escapeHtml(heroTitle)}</h1><p>${escapeHtml(heroSubtitle)}</p><div class="cats">${categoryLinks}</div><div class="hero-actions"><a class="cta" href="#produtos">Ver ofertas</a><button type="button" class="secondary-btn" data-open-cart>Resumo do pedido</button></div><div class="service-row"><span>${escapeHtml(storefrontVoice.services[0])}</span><span>${escapeHtml(storefrontVoice.services[1])}</span><span>A partir de R$ ${priceFrom}</span></div></div>
         <aside class="hero-showcase" aria-label="Destaques da vitrine"><div class="showcase-top"><span>${activeProducts.length} ${escapeHtml(productCountLabel)}</span><strong>${leadProduct ? formatPrice(leadProduct.salePrice) : `R$ ${priceFrom}`}</strong></div><div class="mosaic">${heroMosaic}</div><div class="showcase-feature"><div><span>Oferta em destaque</span><b>${leadProduct ? escapeHtml(leadProduct.name) : 'Selecione produtos para publicar'}</b></div><strong>${leadProduct ? formatPrice(leadProduct.salePrice) : `R$ ${priceFrom}`}</strong></div></aside>
       </div>
     </div>
   </header>
-  ${collectionTiles ? `<section class="collection-strip"><div class="wrap"><div class="strip-head"><div><h2>Colecoes selecionadas</h2><p>Organizadas pelo tipo de produto para facilitar a escolha.</p></div><a class="secondary-btn" href="#produtos">Ver catalogo</a></div><div class="collection-grid">${collectionTiles}</div></div></section>` : ''}
-  <main id="produtos" class="wrap"><div class="section-title"><h2>Produtos em destaque</h2><p>Filtre por categoria, veja detalhes ou monte um pedido com varios itens.</p></div>${filterButtons ? `<nav class="filters" aria-label="Filtros de produtos">${filterButtons}</nav>` : ''}<section class="grid" id="productGrid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}</section>${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}</main>
-  <footer id="contato" class="contact"><div class="wrap"><div class="contact-box"><div><h2>Pronto para pedir?</h2><p>Monte seu resumo ou chame a loja para confirmar a melhor oferta disponivel agora.</p></div><button type="button" class="cta" data-open-cart>Ver resumo do pedido</button></div></div></footer>
+  ${collectionTiles ? `<section class="collection-strip"><div class="wrap"><div class="strip-head"><div><h2>${escapeHtml(storefrontVoice.collectionTitle)}</h2><p>${escapeHtml(storefrontVoice.collectionText)}</p></div><a class="secondary-btn" href="#produtos">Ver catalogo</a></div><div class="collection-grid">${collectionTiles}</div></div></section>` : ''}
+  <main id="produtos" class="wrap"><div class="section-title"><h2>${escapeHtml(storefrontVoice.productTitle)}</h2><p>${escapeHtml(storefrontVoice.productText)}</p></div>${filterButtons ? `<nav class="filters" aria-label="Filtros de produtos">${filterButtons}</nav>` : ''}<section class="grid" id="productGrid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}</section>${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}</main>
+  <footer id="contato" class="contact"><div class="wrap"><div class="contact-box"><div><h2>${escapeHtml(storefrontVoice.footerTitle)}</h2><p>${escapeHtml(storefrontVoice.footerText)}</p></div><button type="button" class="cta" data-open-cart>Ver resumo do pedido</button></div></div></footer>
   <button type="button" class="floating-cart" data-open-cart><span>Resumo do pedido</span><span class="cart-badge" id="cartCount">0</span></button>
   <div class="overlay" id="pageOverlay" data-close-panels></div>
   <aside class="drawer" id="cartDrawer" aria-hidden="true" aria-label="Resumo do pedido"><div class="drawer-head"><div><span class="eyebrow">Pedido</span><h2 style="margin:10px 0 0">Resumo da compra</h2></div><button type="button" class="icon-btn" data-close-panels aria-label="Fechar">x</button></div><div class="cart-list" id="cartList"><div class="empty-cart">Adicione produtos para montar seu pedido.</div></div><div class="drawer-foot"><div class="subtotal"><span>Total estimado</span><strong id="cartTotal">R$ 0,00</strong></div><button type="button" class="cart-checkout" id="sendOrder" style="width:100%">Enviar pedido para atendimento</button></div></aside>
