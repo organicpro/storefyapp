@@ -1191,7 +1191,7 @@ function App() {
         <main className="min-w-0 flex-1">
           <header className="sticky top-0 z-30 px-4 py-3 backdrop-blur-2xl sm:px-6">
             <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#08080b]/82 px-3 py-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.03]">
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <button
                   type="button"
                   className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-200 transition hover:bg-white/[0.08] lg:hidden"
@@ -1201,94 +1201,97 @@ function App() {
                   <Menu size={19} />
                 </button>
 
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-brand-500/20 bg-brand-500/10">
-                    <img
-                      src={normalizeStoreLogoUrl(storeConfig.logoUrl)}
-                      alt={storeConfig.name}
-                      className="h-7 w-7 object-contain"
-                    />
+                <div className="flex min-w-0 flex-1 flex-col gap-3 xl:flex-row xl:items-center">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-brand-500/20 bg-brand-500/10">
+                      <img
+                        src={normalizeStoreLogoUrl(storeConfig.logoUrl)}
+                        alt={storeConfig.name}
+                        className="h-7 w-7 object-contain"
+                      />
+                    </div>
+                    <div className="min-w-0 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Loja ativa</p>
+                        <span className={`hidden rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] sm:inline-flex ${
+                          storeConfig.status === 'published'
+                            ? 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/20'
+                            : 'bg-white/[0.05] text-slate-400 ring-1 ring-white/10'
+                        }`}>
+                          {storeConfig.status === 'published' ? 'Publicado' : 'Rascunho'}
+                        </span>
+                      </div>
+                      <h1 className="truncate font-display text-base font-bold leading-tight text-white sm:text-lg">
+                        {storeConfig.name}
+                      </h1>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Loja ativa</p>
-                      <span className={`hidden rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] sm:inline-flex ${
-                        storeConfig.status === 'published'
-                          ? 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/20'
-                          : 'bg-white/[0.05] text-slate-400 ring-1 ring-white/10'
-                      }`}>
-                        {storeConfig.status === 'published' ? 'Publicado' : 'Rascunho'}
+
+                  <div className="relative w-full max-w-[310px] xl:ml-8 xl:w-[300px] xl:max-w-none">
+                    <button
+                      type="button"
+                      onClick={() => setStoreSwitcherOpen(open => !open)}
+                      className="group flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.045] px-2.5 py-2 text-left shadow-lg shadow-black/10 ring-1 ring-white/[0.03] transition hover:border-brand-500/35 hover:bg-white/[0.07]"
+                      aria-label="Trocar loja ativa"
+                      aria-expanded={storeSwitcherOpen}
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-xl border border-brand-500/20 bg-black/30">
+                        <img src={normalizeStoreLogoUrl(storeConfig.logoUrl)} alt="" className="h-6 w-6 object-contain" />
                       </span>
-                    </div>
-                    <h1 className="truncate font-display text-base font-bold leading-tight text-white sm:text-lg">
-                      {storeConfig.name}
-                    </h1>
-                    <div className="relative mt-2 w-full max-w-[310px]">
-                      <button
-                        type="button"
-                        onClick={() => setStoreSwitcherOpen(open => !open)}
-                        className="group flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.045] px-2.5 py-2 text-left shadow-lg shadow-black/10 ring-1 ring-white/[0.03] transition hover:border-brand-500/35 hover:bg-white/[0.07]"
-                        aria-label="Trocar loja ativa"
-                        aria-expanded={storeSwitcherOpen}
-                      >
-                        <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-xl border border-brand-500/20 bg-black/30">
-                          <img src={normalizeStoreLogoUrl(storeConfig.logoUrl)} alt="" className="h-6 w-6 object-contain" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-[9px] font-black uppercase tracking-[0.22em] text-brand-500/90">Loja selecionada</span>
-                          <span className="block truncate text-sm font-black leading-tight text-white">{storeConfig.name}</span>
-                        </span>
-                        <span className="hidden rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[10px] font-black text-slate-300 sm:inline-flex">
-                          {sites.length}
-                        </span>
-                        <ChevronDown size={15} className={`shrink-0 text-slate-400 transition group-hover:text-white ${storeSwitcherOpen ? 'rotate-180' : ''}`} />
-                      </button>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[9px] font-black uppercase tracking-[0.22em] text-brand-500/90">Loja selecionada</span>
+                        <span className="block truncate text-sm font-black leading-tight text-white">{storeConfig.name}</span>
+                      </span>
+                      <span className="hidden rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[10px] font-black text-slate-300 sm:inline-flex">
+                        {sites.length}
+                      </span>
+                      <ChevronDown size={15} className={`shrink-0 text-slate-400 transition group-hover:text-white ${storeSwitcherOpen ? 'rotate-180' : ''}`} />
+                    </button>
 
-                      {storeSwitcherOpen && (
-                        <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#07070a]/98 shadow-2xl shadow-black/50 ring-1 ring-brand-500/10 backdrop-blur-2xl">
-                          <div className="border-b border-white/10 px-3 py-2.5">
-                            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Escolher vitrine</p>
-                          </div>
-                          <div className="max-h-72 overflow-y-auto p-1.5">
-                            {sites.map(site => {
-                              const isCurrent = site.id === (storeConfig.id || activeSiteId);
-
-                              return (
-                                <button
-                                  key={site.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setActiveSiteId(site.id);
-                                    setStoreSwitcherOpen(false);
-                                  }}
-                                  className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition ${
-                                    isCurrent
-                                      ? 'bg-brand-500/14 ring-1 ring-brand-500/30'
-                                      : 'hover:bg-white/[0.055]'
-                                  }`}
-                                >
-                                  <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/35">
-                                    <img src={normalizeStoreLogoUrl(site.logoUrl)} alt="" className="h-7 w-7 object-contain" />
-                                  </span>
-                                  <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-black text-white">{site.name}</span>
-                                    <span className="mt-0.5 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                                      <span className={`h-1.5 w-1.5 rounded-full ${site.status === 'published' ? 'bg-emerald-400' : 'bg-slate-600'}`} />
-                                      {site.status === 'published' ? 'Publicado' : 'Rascunho'}
-                                    </span>
-                                  </span>
-                                  {isCurrent && (
-                                    <span className="rounded-full bg-brand-500 px-2 py-1 text-[10px] font-black text-black">
-                                      Ativa
-                                    </span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
+                    {storeSwitcherOpen && (
+                      <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#07070a]/98 shadow-2xl shadow-black/50 ring-1 ring-brand-500/10 backdrop-blur-2xl">
+                        <div className="border-b border-white/10 px-3 py-2.5">
+                          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Escolher vitrine</p>
                         </div>
-                      )}
-                    </div>
+                        <div className="max-h-72 overflow-y-auto p-1.5">
+                          {sites.map(site => {
+                            const isCurrent = site.id === (storeConfig.id || activeSiteId);
+
+                            return (
+                              <button
+                                key={site.id}
+                                type="button"
+                                onClick={() => {
+                                  setActiveSiteId(site.id);
+                                  setStoreSwitcherOpen(false);
+                                }}
+                                className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition ${
+                                  isCurrent
+                                    ? 'bg-brand-500/14 ring-1 ring-brand-500/30'
+                                    : 'hover:bg-white/[0.055]'
+                                }`}
+                              >
+                                <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/35">
+                                  <img src={normalizeStoreLogoUrl(site.logoUrl)} alt="" className="h-7 w-7 object-contain" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-sm font-black text-white">{site.name}</span>
+                                  <span className="mt-0.5 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                                    <span className={`h-1.5 w-1.5 rounded-full ${site.status === 'published' ? 'bg-emerald-400' : 'bg-slate-600'}`} />
+                                    {site.status === 'published' ? 'Publicado' : 'Rascunho'}
+                                  </span>
+                                </span>
+                                {isCurrent && (
+                                  <span className="rounded-full bg-brand-500 px-2 py-1 text-[10px] font-black text-black">
+                                    Ativa
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
