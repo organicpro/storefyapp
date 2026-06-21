@@ -374,6 +374,41 @@ async function updateNetlifySiteName(token, siteId, preferredName) {
   }
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function getNetlifySite(token, siteId) {
+  return netlifyJson(`/sites/${encodeURIComponent(siteId)}`, token);
+}
+
+async function getNetlifyDeploy(token, deployId) {
+  return netlifyJson(`/deploys/${encodeURIComponent(deployId)}`, token);
+}
+
+async function waitForNetlifyDeploy(token, deployId) {
+  if (!deployId) return null;
+
+  let lastDeploy = null;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const deploy = await getNetlifyDeploy(token, deployId);
+    lastDeploy = deploy;
+    const state = String(deploy?.state || "").toLowerCase();
+
+    if (["ready", "uploaded", "current"].includes(state) || deploy?.published_at) {
+      return deploy;
+    }
+
+    if (["error", "failed", "rejected"].includes(state)) {
+      throw new Error(deploy?.error_message || deploy?.deploy_error || "Deploy Netlify falhou.");
+    }
+
+    await sleep(900);
+  }
+
+  return lastDeploy;
+}
+
 async function deployHtmlToNetlify({ token, siteId, html, title }) {
   const cleanToken = normalizeNetlifyToken(token);
   const url = new URL(`${NETLIFY_API}/sites/${siteId}/deploys`);
@@ -399,10 +434,24 @@ async function deployHtmlToNetlify({ token, siteId, html, title }) {
     throw new Error(data?.message || data?.error || JSON.stringify(data) || "Erro ao publicar na Netlify.");
   }
 
+  const readyDeploy = await waitForNetlifyDeploy(cleanToken, data?.id);
+  const site = await getNetlifySite(cleanToken, siteId).catch(() => null);
+  const finalUrl =
+    site?.ssl_url ||
+    site?.url ||
+    readyDeploy?.ssl_url ||
+    readyDeploy?.url ||
+    readyDeploy?.deploy_ssl_url ||
+    readyDeploy?.deploy_url ||
+    data.ssl_url ||
+    data.url ||
+    data.deploy_ssl_url ||
+    data.deploy_url;
+
   return {
     deployId: data.id,
-    url: data.ssl_url || data.url || data.deploy_ssl_url || data.deploy_url,
-    raw: data
+    url: finalUrl,
+    raw: readyDeploy || data
   };
 }
 

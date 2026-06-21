@@ -3,10 +3,14 @@ import { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
   Copy,
+  Edit3,
   ExternalLink,
+  Eye,
   HelpCircle,
   Menu,
+  PackageOpen,
   Plus,
+  Rocket,
   Sparkles,
   Store,
   LogOut,
@@ -310,7 +314,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
         <ul>${getPublicBenefits(product).map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}</ul>
         <div class="buy-row">
           <div><span>Preco</span><strong>${formatPrice(product.salePrice)}</strong></div>
-          <div class="card-actions"><button type="button" class="secondary-btn" data-detail="${escapeHtml(product.id)}">Detalhes</button><button type="button" class="buy-btn" data-add="${escapeHtml(product.id)}">Adicionar</button></div>
+          <div class="card-actions"><button type="button" class="secondary-btn" data-detail="${escapeHtml(product.id)}">Detalhes</button><button type="button" class="buy-btn" data-add="${escapeHtml(product.id)}">Comprar</button></div>
         </div>
       </div>
     </article>
@@ -343,7 +347,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
   <button type="button" class="floating-cart" data-open-cart><span>Resumo do pedido</span><span class="cart-badge" id="cartCount">0</span></button>
   <div class="overlay" id="pageOverlay" data-close-panels></div>
   <aside class="drawer" id="cartDrawer" aria-hidden="true" aria-label="Resumo do pedido"><div class="drawer-head"><div><span class="eyebrow">Pedido</span><h2 style="margin:10px 0 0">Resumo da compra</h2></div><button type="button" class="icon-btn" data-close-panels aria-label="Fechar">x</button></div><div class="cart-list" id="cartList"><div class="empty-cart">Adicione produtos para montar seu pedido.</div></div><div class="drawer-foot"><div class="subtotal"><span>Total estimado</span><strong id="cartTotal">R$ 0,00</strong></div><button type="button" class="cart-checkout" id="sendOrder" style="width:100%">Enviar pedido para atendimento</button></div></aside>
-  <section class="modal" id="productModal" aria-hidden="true" aria-label="Detalhes do produto"><article class="modal-card"><div class="modal-media" id="modalMedia"></div><div class="modal-body"><button type="button" class="icon-btn" data-close-panels aria-label="Fechar" style="float:right">x</button><span class="eyebrow" id="modalCategory"></span><h2 id="modalTitle"></h2><p id="modalDescription"></p><ul class="modal-benefits" id="modalBenefits"></ul><div class="modal-price"><div><span>Preco</span><strong id="modalPrice"></strong></div><div class="modal-actions"><button type="button" class="secondary-btn" id="modalAdd">Adicionar ao pedido</button><button type="button" class="buy-btn" id="modalContact">Chamar atendimento</button></div></div></div></article></section>
+  <section class="modal" id="productModal" aria-hidden="true" aria-label="Detalhes do produto"><article class="modal-card"><div class="modal-media" id="modalMedia"></div><div class="modal-body"><button type="button" class="icon-btn" data-close-panels aria-label="Fechar" style="float:right">x</button><span class="eyebrow" id="modalCategory"></span><h2 id="modalTitle"></h2><p id="modalDescription"></p><ul class="modal-benefits" id="modalBenefits"></ul><div class="modal-price"><div><span>Preco</span><strong id="modalPrice"></strong></div><div class="modal-actions"><button type="button" class="secondary-btn" id="modalAdd">Comprar</button><button type="button" class="buy-btn" id="modalContact">Chamar atendimento</button></div></div></div></article></section>
   <div class="toast" id="toast">Produto adicionado ao pedido.</div>
   <script>
     (function(){
@@ -671,6 +675,17 @@ function App() {
     handleNavigate('shop-preview');
   };
 
+  const handleEditSite = (siteId: string, wizardStep: number) => {
+    setActiveSiteId(siteId);
+    setPreviewWizardStep(wizardStep);
+    handleNavigate('wizard');
+  };
+
+  const handlePreviewSite = (siteId: string) => {
+    setActiveSiteId(siteId);
+    handleOpenGeneratedSite('stores');
+  };
+
   const handleLocalAccess = () => {
     window.localStorage.setItem(STORAGE_KEYS.localAuth, JSON.stringify(true));
     setLocalAccess(true);
@@ -796,8 +811,10 @@ function App() {
 
     return { Authorization: `Bearer ${accessToken}` };
   };
-  const handlePublishStore = async (): Promise<{ mode: string; url: string; error?: string }> => {
-    const publishConfig: StoreConfig = { ...storeConfig, productIds: activeStoreProductIds };
+  const handlePublishStore = async (siteId = storeConfig.id): Promise<{ mode: string; url: string; error?: string }> => {
+    const targetSite = sites.find(site => site.id === siteId) || storeConfig;
+    const targetProductIds = getStoreProductIds(targetSite, products);
+    const publishConfig: StoreConfig = { ...targetSite, productIds: targetProductIds };
     const selectedProducts = getSelectedProductsForStore(publishConfig, products);
 
     if (!selectedProducts.length) {
@@ -807,8 +824,8 @@ function App() {
     }
 
     const html = buildStoreHtml(publishConfig, products);
-    const filename = `${slugifyStore(storeConfig.name || storeConfig.subdomain || 'storefy')}-loja.html`;
-    const slug = slugifyStore(`${storeConfig.subdomain || storeConfig.name}-${storeConfig.id || activeSiteId || createId('store')}`);
+    const filename = `${slugifyStore(targetSite.name || targetSite.subdomain || 'storefy')}-loja.html`;
+    const slug = slugifyStore(`${targetSite.subdomain || targetSite.name}-${targetSite.id || activeSiteId || createId('store')}`);
     const publicUrl = getPublicStoreUrl(slug);
     const publishedAt = new Date().toISOString();
     const publicConfig: StoreConfig = {
@@ -835,26 +852,26 @@ function App() {
     }
 
     try {
-      const sitesForSave = sites.map((site, index) => site.id === storeConfig.id
-        ? makeSite({ ...site, productIds: activeStoreProductIds }, index + 1)
+      const sitesForSave = sites.map((site, index) => site.id === targetSite.id
+        ? makeSite({ ...site, productIds: targetProductIds }, index + 1)
         : site
       );
 
       await saveWorkspace(session.user.id, {
         products,
         sites: sitesForSave,
-        activeSiteId: storeConfig.id || activeSiteId
+        activeSiteId: targetSite.id || activeSiteId
       });
 
       const authHeaders = await getAuthHeaders();
-      const response = await fetch(`/api/projects/${encodeURIComponent(storeConfig.id || slug)}/publish/netlify`, {
+      const response = await fetch(`/api/projects/${encodeURIComponent(targetSite.id || slug)}/publish/netlify`, {
         method: 'POST',
         headers: {
           ...authHeaders,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          siteName: storeConfig.name || storeConfig.subdomain,
+          siteName: targetSite.name || targetSite.subdomain,
           html
         })
       });
@@ -865,14 +882,14 @@ function App() {
       }
 
       const netlifyUrl = data.url || publicUrl;
-      setSites(prev => prev.map(site => site.id === storeConfig.id
+      setSites(prev => prev.map(site => site.id === targetSite.id
         ? {
             ...site,
             status: 'published',
             publishedUrl: netlifyUrl,
             publishedAt,
             publicSlug: slug,
-            productIds: activeStoreProductIds,
+            productIds: targetProductIds,
             netlifySiteId: data.siteId || site.netlifySiteId,
             netlifySiteName: data.siteName || site.netlifySiteName,
             lastNetlifyDeployId: data.deployId || site.lastNetlifyDeployId
@@ -880,7 +897,7 @@ function App() {
         : site
       ));
 
-      if (storeConfig.downloadHtmlFallback) {
+      if (targetSite.downloadHtmlFallback) {
         downloadHtml(filename, html);
       }
 
@@ -1074,13 +1091,13 @@ function App() {
             )}
 
             {activePage === 'stores' && (
-              <section className="space-y-5">
+              <section className="space-y-6">
                 <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[0.035] p-5 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-500">Multi sites</p>
-                    <h2 className="mt-2 font-display text-2xl font-bold text-white">Gerencie suas lojas</h2>
+                    <h2 className="mt-2 font-display text-2xl font-bold text-white">Gerencie e edite suas lojas</h2>
                     <p className="mt-1 max-w-2xl text-sm text-slate-400">
-                      Crie vitrines separadas por nicho, configure o link publico e publique cada loja dentro da Storefy.
+                      Cada loja tem produtos, identidade, pagina e publicacao separados. Abra uma loja para editar sem misturar catalogos.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1098,84 +1115,135 @@ function App() {
                       className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-bold text-white"
                     >
                       <Copy size={16} />
-                      Duplicar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handlePublishStore()}
-                      className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-2 text-sm font-black text-black"
-                    >
-                      Publicar
+                      Duplicar atual
                     </button>
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {sites.map(site => {
-                    const isActive = site.id === storeConfig.id;
-                    const siteProductCount = getStoreProductIds(site, products).length;
-                    return (
-                      <article
-                        key={site.id}
-                        className={`rounded-2xl border p-4 text-left transition ${
-                          isActive
-                            ? 'border-brand-500/60 bg-brand-500/10'
-                            : 'border-white/10 bg-white/[0.035] hover:bg-white/[0.06]'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <img
-                              src={normalizeStoreLogoUrl(site.logoUrl)}
-                              alt={site.name}
-                              className="h-11 w-11 shrink-0 object-contain"
-                            />
-                            <div className="min-w-0">
-                              <h3 className="truncate font-display text-lg font-bold text-white">{site.name}</h3>
-                              <p className="truncate text-xs text-slate-400">/{site.subdomain}</p>
-                            </div>
-                          </div>
-                          {isActive && <CheckCircle2 className="text-brand-500" size={19} />}
+                <div className="grid gap-4 xl:grid-cols-[0.92fr_1.35fr]">
+                  <aside className="rounded-3xl border border-brand-500/30 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.14),transparent_32%),rgba(255,255,255,0.035)] p-5 text-left shadow-2xl shadow-black/25">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <img
+                          src={normalizeStoreLogoUrl(storeConfig.logoUrl)}
+                          alt={storeConfig.name}
+                          className="h-14 w-14 shrink-0 object-contain"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-brand-500">Loja ativa</p>
+                          <h3 className="mt-1 truncate font-display text-2xl font-bold text-white">{storeConfig.name}</h3>
+                          <p className="truncate text-xs text-slate-400">/{storeConfig.subdomain}</p>
                         </div>
-                        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                          <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
-                            {siteProductCount} produtos
-                          </span>
-                          <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
-                            {site.status === 'published' ? 'Publicado' : 'Rascunho'}
-                          </span>
-                        </div>
-                        {site.publishedUrl && (
-                          <p className="mt-3 truncate text-xs text-emerald-300">{site.publishedUrl}</p>
-                        )}
-                        <div className="mt-4 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setActiveSiteId(site.id)}
-                              className={`rounded-xl px-3 py-2 text-xs font-black transition ${
-                                isActive
-                                  ? 'bg-brand-500 text-black'
-                                  : 'border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]'
-                              }`}
-                            >
-                              {isActive ? 'Atual' : 'Abrir loja'}
+                      </div>
+                      <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-black uppercase text-slate-300">
+                        {storeConfig.status === 'published' ? 'Publicado' : 'Rascunho'}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-3 gap-2 text-xs">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Produtos</p>
+                        <strong className="mt-1 block text-lg text-white">{getStoreProductIds(storeConfig, products).length}</strong>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Tema</p>
+                        <strong className="mt-1 block truncate text-sm text-white">{storeConfig.themePreset || 'obsidian'}</strong>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Netlify</p>
+                        <strong className="mt-1 block text-sm text-white">{storeConfig.netlifySiteName ? 'Ativo' : 'Novo'}</strong>
+                      </div>
+                    </div>
+
+                    {storeConfig.publishedUrl && (
+                      <a href={storeConfig.publishedUrl} target="_blank" rel="noreferrer" className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-3 text-xs font-bold text-emerald-200 transition hover:bg-emerald-500/15">
+                        <ExternalLink size={14} />
+                        <span className="truncate">{storeConfig.publishedUrl}</span>
+                      </a>
+                    )}
+
+                    <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <button type="button" onClick={() => handleEditSite(storeConfig.id || activeSiteId, 3)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white transition hover:bg-white/[0.08]">
+                        <Edit3 size={14} /> Identidade
+                      </button>
+                      <button type="button" onClick={() => handleEditSite(storeConfig.id || activeSiteId, 2)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white transition hover:bg-white/[0.08]">
+                        <PackageOpen size={14} /> Produtos
+                      </button>
+                      <button type="button" onClick={() => handleEditSite(storeConfig.id || activeSiteId, 4)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white transition hover:bg-white/[0.08]">
+                        <Store size={14} /> Pagina
+                      </button>
+                      <button type="button" onClick={() => handlePreviewSite(storeConfig.id || activeSiteId)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white transition hover:bg-white/[0.08]">
+                        <Eye size={14} /> Visualizar
+                      </button>
+                    </div>
+
+                    <button type="button" onClick={() => void handlePublishStore(storeConfig.id)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-black shadow-[0_18px_42px_rgba(212,175,55,0.22)] transition hover:bg-brand-200">
+                      <Rocket size={16} /> Publicar loja ativa
+                    </button>
+                  </aside>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {sites.map(site => {
+                      const isActive = site.id === storeConfig.id;
+                      const siteProductCount = getStoreProductIds(site, products).length;
+                      return (
+                        <article
+                          key={site.id}
+                          className={isActive
+                            ? 'rounded-2xl border border-brand-500/60 bg-brand-500/10 p-4 text-left transition'
+                            : 'rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left transition hover:bg-white/[0.06]'}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <button type="button" onClick={() => setActiveSiteId(site.id)} className="flex min-w-0 items-center gap-3 text-left">
+                              <img
+                                src={normalizeStoreLogoUrl(site.logoUrl)}
+                                alt={site.name}
+                                className="h-11 w-11 shrink-0 object-contain"
+                              />
+                              <span className="min-w-0">
+                                <span className="block truncate font-display text-lg font-bold text-white">{site.name}</span>
+                                <span className="block truncate text-xs text-slate-400">/{site.subdomain}</span>
+                              </span>
                             </button>
+                            {isActive && <CheckCircle2 className="shrink-0 text-brand-500" size={19} />}
                           </div>
+
+                          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                            <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">{siteProductCount} produtos</span>
+                            <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-slate-300">{site.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+                          </div>
+
+                          {site.publishedUrl && (
+                            <a href={site.publishedUrl} target="_blank" rel="noreferrer" className="mt-3 block truncate rounded-xl border border-emerald-400/15 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300">
+                              {site.publishedUrl}
+                            </a>
+                          )}
+
+                          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
+                            <button type="button" onClick={() => setActiveSiteId(site.id)} className={isActive ? 'rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black' : 'rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-slate-200 hover:bg-white/[0.08]'}>
+                              {isActive ? 'Atual' : 'Abrir'}
+                            </button>
+                            <button type="button" onClick={() => handleEditSite(site.id, 3)} className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-slate-200 hover:bg-white/[0.08]">Editar</button>
+                            <button type="button" onClick={() => handleEditSite(site.id, 2)} className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-slate-200 hover:bg-white/[0.08]">Produtos</button>
+                            <button type="button" onClick={() => handleEditSite(site.id, 4)} className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-slate-200 hover:bg-white/[0.08]">Pagina</button>
+                            <button type="button" onClick={() => handlePreviewSite(site.id)} className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-slate-200 hover:bg-white/[0.08]">Visualizar</button>
+                            <button type="button" onClick={() => void handlePublishStore(site.id)} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Publicar</button>
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => handleDeleteSite(site.id)}
                             disabled={sites.length <= 1}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-40"
                             title={sites.length <= 1 ? 'Crie outra loja antes de apagar esta.' : 'Apagar loja'}
                           >
                             <Trash2 size={14} />
-                            Apagar
+                            Apagar loja
                           </button>
-                        </div>
-                      </article>
-                    );
-                  })}
+                        </article>
+                      );
+                    })}
+                  </div>
                 </div>
               </section>
             )}

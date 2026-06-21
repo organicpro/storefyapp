@@ -399,7 +399,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                           style={{ backgroundColor: primaryColorHex }}
                         >
                           <Plus className="w-3.5 h-3.5 shrink-0" />
-                          <span>Adicionar</span>
+                          <span>Comprar</span>
                         </button>
                       </div>
                     </div>
