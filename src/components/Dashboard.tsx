@@ -13,99 +13,142 @@ import {
 } from 'lucide-react';
 import { Product, StoreConfig } from '../types';
 
+type ManualSale = { id: string; amount: number; note: string; createdAt: string };
+
+interface DashboardStoreContext {
+  storeConfig: StoreConfig;
+  products: Product[];
+}
+
 interface DashboardProps {
   storeConfig: StoreConfig;
   products: Product[];
   onNavigate: (page: string) => void;
   metricsScope?: string;
   accountName?: string;
+  stores?: DashboardStoreContext[];
 }
 
-export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local', accountName = '' }: DashboardProps) {
-  // Simple state for filtering feed
+export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local', accountName = '', stores = [] }: DashboardProps) {
   const [metricTimeframe, setMetricTimeframe] = useState<'7d' | '30d' | 'today'>('7d');
-  const salesStorageKey = `storefy.sales.${metricsScope}.${storeConfig.id || storeConfig.subdomain}`;
-  const [manualSales, setManualSales] = useState<Array<{ id: string; amount: number; note: string; createdAt: string }>>(() => {
-    try {
-      const raw = window.localStorage.getItem(salesStorageKey);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [metricView, setMetricView] = useState<'current' | 'all'>('current');
+  const [manualSalesByKey, setManualSalesByKey] = useState<Record<string, ManualSale[]>>({});
   const [saleAmount, setSaleAmount] = useState('');
   const [saleNote, setSaleNote] = useState('');
 
-  const productsInStore = products.filter(p => p.addedToStore);
-  const hasOperationalData = productsInStore.length > 0;
+  const dashboardStores = stores.length ? stores : [{ storeConfig, products }];
+  const storeSalesKey = (config: StoreConfig) => `storefy.sales.${metricsScope}.${config.id || config.subdomain}`;
+  const currentSalesKey = storeSalesKey(storeConfig);
+  const storeKeysSignature = dashboardStores.map(store => storeSalesKey(store.storeConfig)).join('|');
   const timeframeDays = metricTimeframe === 'today' ? 1 : metricTimeframe === '7d' ? 7 : 30;
-  const publishedBoost = storeConfig.status === 'published' ? 1.35 : 1;
-  const operationalBase = hasOperationalData
-    ? Math.max(8, productsInStore.length * 9 + manualSales.length * 5)
-    : 0;
 
-  // Operational counters grow with the selected timeframe and store activity. Revenue stays manual/real.
-  const viewsCount = Math.round(operationalBase * timeframeDays * publishedBoost);
-  const clicksCount = hasOperationalData ? Math.max(1, Math.round(viewsCount * 0.31)) : 0;
-  const conversionsCount = hasOperationalData ? Math.round(clicksCount * 0.22) : 0;
-  const viewsGrowth = hasOperationalData ? Math.min(38.6, 8.4 + productsInStore.length * 0.9 + timeframeDays * 0.22) : 0;
-  const clicksGrowth = hasOperationalData ? Math.min(34.2, 6.8 + productsInStore.length * 0.7 + timeframeDays * 0.18) : 0;
-  const contactsGrowth = hasOperationalData ? Math.min(31.5, 5.6 + productsInStore.length * 0.55 + timeframeDays * 0.15) : 0;
-  const contactsCount = hasOperationalData ? Math.max(conversionsCount, manualSales.length) : manualSales.length;
+  const readStoreSales = (key: string): ManualSale[] => {
+    try {
+      const raw = window.localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const nextSales: Record<string, ManualSale[]> = {};
+    dashboardStores.forEach(store => {
+      const key = storeSalesKey(store.storeConfig);
+      nextSales[key] = readStoreSales(key);
+    });
+    setManualSalesByKey(nextSales);
+  }, [metricsScope, storeKeysSignature]);
+
+  const currentManualSales = manualSalesByKey[currentSalesKey] || [];
+  const currentManualSalesTotal = currentManualSales.reduce((sum, sale) => sum + sale.amount, 0);
+  const currentManualSalesCount = currentManualSales.length;
+  const currentProductsInStore = products.filter(product => product.addedToStore);
+
+  const getStoreMetrics = (store: DashboardStoreContext) => {
+    const selectedProducts = store.products.filter(product => product.addedToStore);
+    const storeSales = manualSalesByKey[storeSalesKey(store.storeConfig)] || [];
+    const hasOperationalData = selectedProducts.length > 0;
+    const publishedBoost = store.storeConfig.status === 'published' ? 1.35 : 1;
+    const operationalBase = hasOperationalData
+      ? Math.max(8, selectedProducts.length * 9 + storeSales.length * 5)
+      : 0;
+    const views = Math.round(operationalBase * timeframeDays * publishedBoost);
+    const clicks = hasOperationalData ? Math.max(1, Math.round(views * 0.31)) : 0;
+    const projectedContacts = hasOperationalData ? Math.round(clicks * 0.22) : 0;
+    const contacts = hasOperationalData ? Math.max(projectedContacts, storeSales.length) : storeSales.length;
+    const revenue = storeSales.reduce((sum, sale) => sum + sale.amount, 0);
+    const salesCount = storeSales.length;
+    const viewsGrowthValue = hasOperationalData ? Math.min(38.6, 8.4 + selectedProducts.length * 0.9 + timeframeDays * 0.22) : 0;
+    const clicksGrowthValue = hasOperationalData ? Math.min(34.2, 6.8 + selectedProducts.length * 0.7 + timeframeDays * 0.18) : 0;
+    const contactsGrowthValue = hasOperationalData ? Math.min(31.5, 5.6 + selectedProducts.length * 0.55 + timeframeDays * 0.15) : 0;
+
+    return {
+      store,
+      storeSales,
+      hasOperationalData,
+      views,
+      clicks,
+      contacts,
+      revenue,
+      salesCount,
+      viewsGrowthValue,
+      clicksGrowthValue,
+      contactsGrowthValue
+    };
+  };
+
+  const visibleStores = metricView === 'all' ? dashboardStores : [{ storeConfig, products }];
+  const visibleMetrics = visibleStores.map(getStoreMetrics);
+  const activeMetricsCount = visibleMetrics.filter(metric => metric.hasOperationalData).length || 1;
+  const viewsCount = visibleMetrics.reduce((sum, metric) => sum + metric.views, 0);
+  const clicksCount = visibleMetrics.reduce((sum, metric) => sum + metric.clicks, 0);
+  const contactsCount = visibleMetrics.reduce((sum, metric) => sum + metric.contacts, 0);
+  const manualSalesCount = visibleMetrics.reduce((sum, metric) => sum + metric.salesCount, 0);
+  const estimatedRevenue = visibleMetrics.reduce((sum, metric) => sum + metric.revenue, 0);
+  const viewsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.viewsGrowthValue, 0) / activeMetricsCount;
+  const clicksGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.clicksGrowthValue, 0) / activeMetricsCount;
+  const contactsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.contactsGrowthValue, 0) / activeMetricsCount;
   const clickRate = viewsCount > 0 ? (clicksCount / viewsCount) * 100 : 0;
   const conversionRate = clicksCount > 0 ? (contactsCount / clicksCount) * 100 : 0;
-  const manualSalesTotal = manualSales.reduce((sum, sale) => sum + sale.amount, 0);
-  const manualSalesCount = manualSales.length;
-  
-  const estimatedRevenue = manualSalesTotal;
+  const viewLabel = metricView === 'all' ? 'Todas as lojas' : storeConfig.name;
+  const viewDescription = metricView === 'all'
+    ? `Visão consolidada de ${dashboardStores.length} lojas. Faturamento soma apenas vendas lançadas manualmente.`
+    : `Sua loja ${storeConfig.name} esta no ar e pronta para vender.`;
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(salesStorageKey);
-      setManualSales(raw ? JSON.parse(raw) : []);
-    } catch {
-      setManualSales([]);
-    }
-  }, [salesStorageKey]);
-
-  useEffect(() => {
-    window.localStorage.setItem(salesStorageKey, JSON.stringify(manualSales));
-  }, [manualSales, salesStorageKey]);
+  const recentActivities = visibleMetrics
+    .flatMap(metric => metric.storeSales.map(sale => ({
+      id: `${metric.store.storeConfig.id || metric.store.storeConfig.subdomain}-${sale.id}`,
+      createdAt: sale.createdAt,
+      time: new Date(sale.createdAt).toLocaleDateString('pt-BR'),
+      event: metricView === 'all' ? `Venda em ${metric.store.storeConfig.name}` : 'Venda registrada',
+      detail: `${sale.note} - R$ ${sale.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      icon: DollarSign,
+      color: 'text-emerald-400 bg-emerald-500/10'
+    })))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
   const handleAddManualSale = () => {
     const amount = Number(saleAmount.replace(',', '.'));
     if (!Number.isFinite(amount) || amount <= 0) return;
 
-    setManualSales(prev => [
-      {
-        id: `${Date.now()}`,
-        amount,
-        note: saleNote.trim() || 'Venda manual',
-        createdAt: new Date().toISOString()
-      },
-      ...prev
-    ]);
+    const nextSale: ManualSale = {
+      id: `${Date.now()}`,
+      amount,
+      note: saleNote.trim() || 'Venda manual',
+      createdAt: new Date().toISOString()
+    };
+    const nextSales = [nextSale, ...currentManualSales];
+    setManualSalesByKey(prev => ({ ...prev, [currentSalesKey]: nextSales }));
+    window.localStorage.setItem(currentSalesKey, JSON.stringify(nextSales));
     setSaleAmount('');
     setSaleNote('');
   };
-  
-  // Calculate potential margin (since we have the costPrice vs salePrice)
-  let totalPotentialMargin = 0;
-  productsInStore.forEach(p => {
-    totalPotentialMargin += (p.salePrice - p.costPrice);
-  });
-
-  const recentActivities = manualSales.slice(0, 5).map(sale => ({
-    id: sale.id,
-    time: new Date(sale.createdAt).toLocaleDateString('pt-BR'),
-    event: 'Venda registrada',
-    detail: `${sale.note} - R$ ${sale.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-    icon: DollarSign,
-    color: 'text-emerald-400 bg-emerald-500/10'
-  }));
 
   // Dynamic values for progress indicator
-  const hasProducts = productsInStore.length > 0;
+  const hasProducts = currentProductsInStore.length > 0;
   const hasWhatsapp = storeConfig.whatsapp.length > 5;
   const hasCustomName = storeConfig.name !== 'Digital Express Store';
   
@@ -122,31 +165,48 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Upper header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+      <div className="flex flex-col gap-4 text-left xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1 className="text-3xl font-display font-medium text-white tracking-tight flex items-center gap-2">
             {accountName ? `Ol\u00e1, ${accountName}` : 'Ol\u00e1'} <span className="text-wave" aria-hidden="true">&#128075;</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Sua loja <span className="font-semibold text-indigo-400">{storeConfig.name}</span> está no ar e pronta para vender.
+            <span className="font-semibold text-indigo-400">{viewLabel}</span> - {viewDescription}
           </p>
         </div>
 
-        {/* Timeframe picker */}
-        <div className="p-1 rounded-xl bg-white/[0.03] border border-white/10 inline-flex self-start md:self-center backdrop-blur-xl">
-          {(['today', '7d', '30d'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setMetricTimeframe(t)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                metricTimeframe === t
-                  ? 'bg-white text-black font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {t === 'today' ? 'Hoje' : t === '7d' ? '7 Dias' : '30 Dias'}
-            </button>
-          ))}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center xl:self-center">
+          <div className="p-1 rounded-xl bg-white/[0.03] border border-white/10 inline-flex self-start backdrop-blur-xl">
+            {(['current', 'all'] as const).map((view) => (
+              <button
+                key={view}
+                onClick={() => setMetricView(view)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  metricView === view
+                    ? 'bg-brand-500 text-black font-black shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {view === 'current' ? 'Loja atual' : 'Todas as lojas'}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-1 rounded-xl bg-white/[0.03] border border-white/10 inline-flex self-start backdrop-blur-xl">
+            {(['today', '7d', '30d'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setMetricTimeframe(t)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  metricTimeframe === t
+                    ? 'bg-white text-black font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {t === 'today' ? 'Hoje' : t === '7d' ? '7 Dias' : '30 Dias'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -165,7 +225,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
             </div>
           </div>
           <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            <span className="text-emerald-400 font-bold font-mono">+{viewsGrowth.toFixed(1)}%</span> em relacao ao periodo anterior
+            <span className="text-emerald-400 font-bold font-mono">+{viewsGrowth.toFixed(1)}%</span> em relação ao período anterior
           </p>
         </div>
 
@@ -199,7 +259,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
             </div>
           </div>
           <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            <span className="text-emerald-400 font-bold font-mono">+{contactsGrowth.toFixed(1)}%</span> Conversao total: <span className="font-semibold text-white">{conversionRate.toFixed(1)}%</span>
+            <span className="text-emerald-400 font-bold font-mono">+{contactsGrowth.toFixed(1)}%</span> Conversão total: <span className="font-semibold text-white">{conversionRate.toFixed(1)}%</span>
           </p>
         </div>
 
@@ -208,7 +268,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-brand-500/10 to-transparent rounded-bl-full opacity-60 group-hover:scale-110 transition-transform duration-500" />
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-mono">Vendas Estimadas</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-mono">Faturamento</p>
               <h3 className="text-2xl font-display font-bold text-white mt-2">
                 R$ {estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
@@ -218,7 +278,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
             </div>
           </div>
           <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            Margem acumulada: <span className="font-semibold text-brand-500 font-mono">R$ {(estimatedRevenue * 0.35).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} (35%)</span>
+            <span className="font-semibold text-brand-500 font-mono">{manualSalesCount}</span> {manualSalesCount === 1 ? 'venda lançada' : 'vendas lançadas'} manualmente
           </p>
         </div>
       </div>
@@ -359,7 +419,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
 
           <div className="mt-6 border-t border-white/[0.08] pt-4 flex items-center justify-between">
             <div className="text-xs text-slate-400">
-              Produtos na vitrine: <span className="text-white font-bold">{productsInStore.length} itens</span>
+              Produtos na vitrine: <span className="text-white font-bold">{currentProductsInStore.length} itens</span>
             </div>
             <button 
               onClick={() => onNavigate('shop-preview')}
@@ -386,7 +446,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
           <div className="space-y-4">
             {recentActivities.length === 0 && (
               <div className="rounded-xl border border-white/10 bg-black/20 p-5 text-sm text-slate-400">
-                Nenhuma atividade ainda. As metricas comecam zeradas e passam a atualizar quando voce registrar vendas ou conectar eventos reais.
+                Nenhuma atividade ainda. As métricas começam zeradas e passam a atualizar quando você registrar vendas ou conectar eventos reais.
               </div>
             )}
 
@@ -487,7 +547,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
               <p className="text-[11px] text-slate-500">Use só quando quiser refletir vendas fechadas manualmente no dashboard.</p>
             </div>
             <span className="text-[10px] text-slate-400 font-mono">
-              {manualSalesCount} vendas • R$ {manualSalesTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {currentManualSalesCount} vendas • R$ {currentManualSalesTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </div>
 

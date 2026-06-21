@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
+  ChevronDown,
   Copy,
   Edit3,
   ExternalLink,
@@ -701,6 +702,13 @@ function App() {
     return applyStoreSelection(products, activeStoreProductIds);
   }, [activeStoreProductIds, products]);
 
+  const dashboardStores = useMemo(() => {
+    return sites.map(site => ({
+      storeConfig: site,
+      products: applyStoreSelection(products, getStoreProductIds(site, products))
+    }));
+  }, [products, sites]);
+
   const accountDisplayName = getAccountDisplayName(session, !session ? localAccountName : '');
 
   useEffect(() => {
@@ -1214,6 +1222,22 @@ function App() {
                     <h1 className="truncate font-display text-base font-bold leading-tight text-white sm:text-lg">
                       {storeConfig.name}
                     </h1>
+                    <label className="mt-1 flex max-w-[260px] items-center gap-2 rounded-lg border border-white/10 bg-white/[0.035] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                      <span className="hidden sm:inline">Trocar</span>
+                      <select
+                        value={storeConfig.id || activeSiteId}
+                        onChange={(event) => setActiveSiteId(event.target.value)}
+                        className="min-w-0 flex-1 appearance-none bg-transparent pr-5 text-[11px] font-black normal-case tracking-normal text-white outline-none"
+                        aria-label="Trocar loja ativa"
+                      >
+                        {sites.map(site => (
+                          <option key={site.id} value={site.id} className="bg-[#08080b] text-white">
+                            {site.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={13} className="pointer-events-none -ml-5 shrink-0 text-slate-500" />
+                    </label>
                   </div>
                 </div>
               </div>
@@ -1256,6 +1280,7 @@ function App() {
                 onNavigate={handleNavigate}
                 metricsScope={session?.user?.id || 'local'}
                 accountName={accountDisplayName}
+                stores={dashboardStores}
               />
             )}
 
