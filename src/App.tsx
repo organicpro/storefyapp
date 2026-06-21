@@ -43,23 +43,27 @@ function normalizeStoreLogoUrl(logoUrl?: string) {
   return value;
 }
 
-function getAccountFirstName(session: Session | null) {
+function getAccountDisplayName(session: Session | null, localAccountName = '') {
+  const localName = localAccountName.trim().replace(/[._-]+/g, ' ');
+  if (localName) return localName;
+
   const metadata = session?.user?.user_metadata || {};
   const candidate =
-    metadata.first_name ||
+    metadata.display_name ||
     metadata.full_name ||
     metadata.name ||
-    metadata.display_name ||
+    metadata.first_name ||
     session?.user?.email?.split('@')[0] ||
     '';
 
-  const firstName = String(candidate)
+  const displayName = String(candidate)
     .trim()
     .replace(/[._-]+/g, ' ')
     .split(/\s+/)
-    .filter(Boolean)[0] || '';
+    .filter(Boolean)
+    .join(' ');
 
-  return firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : '';
+  return displayName ? displayName.charAt(0).toUpperCase() + displayName.slice(1) : '';
 }
 
 const STORAGE_KEYS = {
@@ -68,6 +72,7 @@ const STORAGE_KEYS = {
   sites: 'storefy.front.sites',
   activeSiteId: 'storefy.front.activeSiteId',
   storeConfig: 'storefy.front.config',
+  accountName: 'storefy.front.accountName',
   localAuth: 'storefy.auth.local',
   publicStores: 'storefy.publicStores'
 };
@@ -658,6 +663,7 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [localAccess, setLocalAccess] = useState(() => readStorage<boolean>(STORAGE_KEYS.localAuth, false));
+  const [localAccountName, setLocalAccountName] = useState(() => readStorage<string>(STORAGE_KEYS.accountName, ''));
   const [workspaceReady, setWorkspaceReady] = useState(false);
   const publicStoreSlug = useMemo(() => {
     const match = window.location.pathname.match(/^\/store\/([^/?#]+)/);
@@ -694,6 +700,8 @@ function App() {
   const storeProducts = useMemo(() => {
     return applyStoreSelection(products, activeStoreProductIds);
   }, [activeStoreProductIds, products]);
+
+  const accountDisplayName = getAccountDisplayName(session, !session ? localAccountName : '');
 
   useEffect(() => {
     document.title = 'Storefy | Premium SaaS';
@@ -893,6 +901,30 @@ function App() {
       : site
     ));
     showAppToast('Loja atualizada.');
+  };
+
+  const handleUpdateAccountName = async (nextName: string) => {
+    const cleanName = nextName.trim().replace(/\s+/g, ' ');
+
+    if (supabase && session) {
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          display_name: cleanName,
+          full_name: cleanName,
+          name: cleanName
+        }
+      });
+      if (error) {
+        showAppToast('Nao foi possivel atualizar o nome da conta.');
+        return;
+      }
+      setSession(prev => prev && data.user ? { ...prev, user: data.user } : prev);
+    } else {
+      setLocalAccountName(cleanName);
+      window.localStorage.setItem(STORAGE_KEYS.accountName, JSON.stringify(cleanName));
+    }
+
+    showAppToast('Nome de usuario atualizado.');
   };
 
   const handleCreateSite = () => {
@@ -1223,7 +1255,7 @@ function App() {
                 products={storeProducts}
                 onNavigate={handleNavigate}
                 metricsScope={session?.user?.id || 'local'}
-                accountName={getAccountFirstName(session)}
+                accountName={accountDisplayName}
               />
             )}
 
@@ -1413,7 +1445,9 @@ function App() {
             {activePage === 'settings' && (
               <SettingsView
                 storeConfig={storeConfig}
+                accountName={accountDisplayName}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
+                onUpdateAccountName={handleUpdateAccountName}
               />
             )}
           </div>

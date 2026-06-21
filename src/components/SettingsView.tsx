@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Check, ExternalLink, Globe, HelpCircle, Instagram, Save, Store, Trash2 } from 'lucide-react';
+import { Check, ExternalLink, Globe, HelpCircle, Instagram, Save, Store, Trash2, UserRound } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StoreConfig } from '../types';
 
 interface SettingsViewProps {
   storeConfig: StoreConfig;
+  accountName: string;
   onUpdateStoreConfig: (newConfig: StoreConfig) => void;
+  onUpdateAccountName: (name: string) => void | Promise<void>;
 }
 
 interface NetlifyStatus {
@@ -15,7 +17,8 @@ interface NetlifyStatus {
   tokenLast4: string;
 }
 
-export default function SettingsView({ storeConfig, onUpdateStoreConfig }: SettingsViewProps) {
+export default function SettingsView({ storeConfig, accountName, onUpdateStoreConfig, onUpdateAccountName }: SettingsViewProps) {
+  const [accountDisplayName, setAccountDisplayName] = useState(accountName);
   const [name, setName] = useState(storeConfig.name);
   const [whatsapp, setWhatsapp] = useState(storeConfig.whatsapp);
   const [subdomain, setSubdomain] = useState(storeConfig.subdomain);
@@ -84,6 +87,10 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
     void loadNetlifyStatus();
   }, []);
 
+  useEffect(() => {
+    setAccountDisplayName(accountName);
+  }, [accountName]);
+
   const handleTestNetlifyConnection = async () => {
     setNetlifyTesting(true);
     setNetlifyFeedback('');
@@ -143,7 +150,7 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
     }
   };
 
-  const handleUpdateConfig = (event: React.FormEvent) => {
+  const handleUpdateConfig = async (event: React.FormEvent) => {
     event.preventDefault();
     onUpdateStoreConfig({
       ...storeConfig,
@@ -157,6 +164,12 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
       downloadHtmlFallback,
       faq: faqs
     });
+
+    const normalizedAccountName = accountDisplayName.trim().replace(/\s+/g, ' ');
+    if (normalizedAccountName !== accountName.trim()) {
+      await onUpdateAccountName(normalizedAccountName);
+    }
+
     setShowSavedFeedback(true);
     setTimeout(() => setShowSavedFeedback(false), 3000);
   };
@@ -177,6 +190,17 @@ export default function SettingsView({ storeConfig, onUpdateStoreConfig }: Setti
 
       <form onSubmit={handleUpdateConfig} className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          <section className="glass-premium space-y-5 rounded-2xl p-6">
+            <h3 className="flex items-center gap-2 border-b border-white/5 pb-3 font-mono text-sm font-bold uppercase tracking-wider text-white">
+              <UserRound className="h-4 w-4 text-slate-400" /> Perfil do Usuario
+            </h3>
+            <label className="space-y-1.5">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-slate-400">Nome de usuario</span>
+              <input value={accountDisplayName} onChange={(event) => setAccountDisplayName(event.target.value)} placeholder="Ex. Gabriel Almeida" className="glass-premium-input w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:border-brand-500 focus:outline-none" />
+              <span className="block text-[11px] leading-relaxed text-slate-500">Esse nome aparece na saudacao da dashboard. O nome da loja continua separado.</span>
+            </label>
+          </section>
+
           <section className="glass-premium space-y-5 rounded-2xl p-6">
             <h3 className="flex items-center gap-2 border-b border-white/5 pb-3 font-mono text-sm font-bold uppercase tracking-wider text-white">
               <Store className="h-4 w-4 text-slate-400" /> Perfil da Vitrine
