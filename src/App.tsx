@@ -988,8 +988,8 @@ function App() {
         </div>
       )}
 
-      <div className="relative z-10 flex min-h-screen">
-        <div className="hidden lg:block">
+      <div className="relative z-10 flex min-h-screen overflow-x-hidden">
+        <div className="hidden shrink-0 lg:sticky lg:top-0 lg:block lg:h-screen">
           <Sidebar
             activePage={activePage}
             onPageChange={handleNavigate}
@@ -998,7 +998,7 @@ function App() {
           />
         </div>
 
-        <main className="flex-1 lg:ml-72">
+        <main className="min-w-0 flex-1">
           <header className="sticky top-0 z-30 px-4 py-3 backdrop-blur-2xl sm:px-6">
             <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#08080b]/82 px-3 py-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.03]">
               <div className="flex items-center gap-3 min-w-0">
@@ -1049,10 +1049,10 @@ function App() {
                 <button
                   type="button"
                   onClick={() => void handlePublishStore()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-sm font-black text-black shadow-lg shadow-brand-500/25 transition hover:bg-brand-200"
+                  className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-brand-500 px-3 text-sm font-black text-black shadow-lg shadow-brand-500/25 transition hover:bg-brand-200 sm:px-4"
                 >
                   <Sparkles size={16} />
-                  Publicar
+                  <span className="hidden sm:inline">Publicar</span>
                 </button>
                 <button
                   type="button"

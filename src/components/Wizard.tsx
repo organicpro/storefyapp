@@ -260,15 +260,15 @@ export default function Wizard({
   };
 
   return (
-    <div className="storefy-panel rounded-3xl p-6 md:p-8 space-y-8 animate-fade-in">
+    <div className="storefy-panel w-full min-w-0 space-y-6 rounded-2xl p-4 animate-fade-in sm:space-y-8 sm:rounded-3xl sm:p-6 xl:p-8">
       {/* Progress wizard header */}
       <div className="space-y-4 border-b border-white/5 pb-6 text-left">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
             <span className="storefy-badge storefy-badge-brand">
               ASSISTENTE DE CONFIGURACAO
             </span>
-            <h2 className="text-xl font-display font-semibold text-white mt-2">Crie sua Vitrine em Minutos</h2>
+            <h2 className="mt-2 font-display text-lg font-semibold text-white sm:text-xl">Crie sua Vitrine em Minutos</h2>
           </div>
           <span className="text-xs font-mono font-bold text-slate-300 bg-white/[0.05] border border-white/10 px-3 py-1 rounded-xl">
             Passo {currentStep} de 6
@@ -331,7 +331,7 @@ export default function Wizard({
                 <div
                   key={niche.id}
                   onClick={() => setSelectedNicheId(niche.id)}
-                  className={`storefy-card p-5 rounded-2xl cursor-pointer flex gap-4 text-left group ${
+                  className={`storefy-card flex cursor-pointer gap-3 rounded-2xl p-4 text-left group sm:gap-4 sm:p-5 ${
                     isSelected ? 'storefy-card-selected' : ''
                   }`}
                 >
