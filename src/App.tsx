@@ -43,6 +43,25 @@ function normalizeStoreLogoUrl(logoUrl?: string) {
   return value;
 }
 
+function getAccountFirstName(session: Session | null) {
+  const metadata = session?.user?.user_metadata || {};
+  const candidate =
+    metadata.first_name ||
+    metadata.full_name ||
+    metadata.name ||
+    metadata.display_name ||
+    session?.user?.email?.split('@')[0] ||
+    '';
+
+  const firstName = String(candidate)
+    .trim()
+    .replace(/[._-]+/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)[0] || '';
+
+  return firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : '';
+}
+
 const STORAGE_KEYS = {
   products: 'storefy.front.products',
   productsVersion: 'storefy.front.productsVersion',
@@ -1074,6 +1093,7 @@ function App() {
                 products={storeProducts}
                 onNavigate={handleNavigate}
                 metricsScope={session?.user?.id || 'local'}
+                accountName={getAccountFirstName(session)}
               />
             )}
 

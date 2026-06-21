@@ -18,9 +18,10 @@ interface DashboardProps {
   products: Product[];
   onNavigate: (page: string) => void;
   metricsScope?: string;
+  accountName?: string;
 }
 
-export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local' }: DashboardProps) {
+export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local', accountName = '' }: DashboardProps) {
   // Simple state for filtering feed
   const [metricTimeframe, setMetricTimeframe] = useState<'7d' | '30d' | 'today'>('7d');
   const salesStorageKey = `storefy.sales.${metricsScope}.${storeConfig.id || storeConfig.subdomain}`;
@@ -124,7 +125,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
         <div>
           <h1 className="text-3xl font-display font-medium text-white tracking-tight flex items-center gap-2">
-            Olá, Gabriel <span className="text-wave">👋</span>
+            {accountName ? `Ol\u00e1, ${accountName}` : 'Ol\u00e1'} <span className="text-wave" aria-hidden="true">&#128075;</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">
             Sua loja <span className="font-semibold text-indigo-400">{storeConfig.name}</span> está no ar e pronta para vender.
