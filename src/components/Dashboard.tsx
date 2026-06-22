@@ -105,7 +105,6 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   const viewsCount = visibleMetrics.reduce((sum, metric) => sum + metric.views, 0);
   const clicksCount = visibleMetrics.reduce((sum, metric) => sum + metric.clicks, 0);
   const contactsCount = visibleMetrics.reduce((sum, metric) => sum + metric.contacts, 0);
-  const manualSalesCount = visibleMetrics.reduce((sum, metric) => sum + metric.salesCount, 0);
   const estimatedRevenue = visibleMetrics.reduce((sum, metric) => sum + metric.revenue, 0);
   const viewsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.viewsGrowthValue, 0) / activeMetricsCount;
   const clicksGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.clicksGrowthValue, 0) / activeMetricsCount;
@@ -277,9 +276,6 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-400 mt-4 flex items-center gap-1.5 font-sans">
-            <span className="font-semibold text-brand-500 font-mono">{manualSalesCount}</span> {manualSalesCount === 1 ? 'venda lançada' : 'vendas lançadas'} manualmente
-          </p>
         </div>
       </div>
 
