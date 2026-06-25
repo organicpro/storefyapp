@@ -136,10 +136,18 @@ async function netlifyJson(pathname, token, options = {}) {
 
   if (!response.ok) {
     const message = data?.message || data?.error || JSON.stringify(data) || "Erro na API Netlify.";
-    throw new Error(message);
+    const error = new Error(message);
+    error.statusCode = response.status;
+    error.responseBody = data;
+    throw error;
   }
 
   return data;
+}
+
+function isNetlifyNotFoundError(error) {
+  const message = String(error?.message || "").toLowerCase();
+  return error?.statusCode === 404 || message.includes("not found");
 }
 
 async function validateNetlifyToken(token) {
@@ -191,19 +199,8 @@ function escapeHtml(value) {
 }
 
 function getStoreProductIds(config, products) {
-  const ids = Array.isArray(config?.productIds)
-    ? [...new Set(config.productIds.filter(Boolean))]
-    : [];
-
-  if (!ids.length) return [];
-
-  const productById = new Map((products || []).map(product => [product.id, product]));
-  const lastSelectedCategory = [...ids].reverse()
-    .map(id => productById.get(id)?.category)
-    .find(Boolean);
-
-  if (!lastSelectedCategory) return ids;
-  return ids.filter(id => productById.get(id)?.category === lastSelectedCategory);
+  const availableIds = new Set((products || []).map(product => product.id));
+  return [...new Set(Array.isArray(config?.productIds) ? config.productIds.filter((id) => availableIds.has(id)) : [])];
 }
 
 function getSelectedProductsForStore(config, products) {
@@ -431,7 +428,10 @@ async function deployHtmlToNetlify({ token, siteId, html, title }) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.error || JSON.stringify(data) || "Erro ao publicar na Netlify.");
+    const error = new Error(data?.message || data?.error || JSON.stringify(data) || "Erro ao publicar na Netlify.");
+    error.statusCode = response.status;
+    error.responseBody = data;
+    throw error;
   }
 
   const readyDeploy = await waitForNetlifyDeploy(cleanToken, data?.id);
@@ -602,12 +602,27 @@ async function handlePublish(req, res) {
       if (renamed?.storefySiteName) netlifySiteName = renamed.storefySiteName;
     }
 
-    const deploy = await deployHtmlToNetlify({
-      token,
-      siteId,
-      html,
-      title: siteConfig.name || desiredSiteName
-    });
+    let deploy;
+    try {
+      deploy = await deployHtmlToNetlify({
+        token,
+        siteId,
+        html,
+        title: siteConfig.name || desiredSiteName
+      });
+    } catch (error) {
+      if (!siteId || !isNetlifyNotFoundError(error)) throw error;
+
+      const recreated = await createNetlifySiteWithPreferredName(token, desiredSiteName);
+      siteId = recreated.id;
+      netlifySiteName = recreated.storefySiteName || desiredSiteName;
+      deploy = await deployHtmlToNetlify({
+        token,
+        siteId,
+        html,
+        title: siteConfig.name || desiredSiteName
+      });
+    }
 
     const publishedAt = new Date().toISOString();
     const nextSiteConfig = {
