@@ -29,12 +29,12 @@ interface OperationStudioProps {
 const typeFor = (product: Product) => product.category === 'Achados Fisicos'
   ? 'Fisico' : product.category === 'Assinaturas Digitais' ? 'Assinatura' : 'Digital';
 
-const FEATURED_NICHE_IDS = ['games', 'social-media', 'subscriptions', 'apps-tools', 'physical-finds', 'digital-products'];
+const FEATURED_NICHE_IDS = ['games', 'social-media', 'subscriptions', 'physical-finds', 'digital-products'];
 
 const NICHE_CARD_META: Record<string, { icon: React.ReactNode; tags: string[] }> = {
   games: { icon: <Gamepad2 size={23} />, tags: ['eFootball', 'Steam', 'Call of Duty', '+5 mais'] },
   'social-media': { icon: <Compass size={23} />, tags: ['Instagram', 'TikTok', 'Redes Sociais', '+2 mais'] },
-  subscriptions: { icon: <MonitorPlay size={23} />, tags: ['Disney+', 'Spotify', 'Crunchyroll', '+11 mais'] },
+  subscriptions: { icon: <MonitorPlay size={23} />, tags: ['Disney+', 'Spotify', 'ChatGPT', 'Gemini', 'Canva Pro', '+11 mais'] },
   'apps-tools': { icon: <Bot size={23} />, tags: ['ChatGPT', 'Gemini', 'Canva Pro', '+4 mais'] },
   'physical-finds': { icon: <PackageSearch size={23} />, tags: ['Eletrônicos', 'Áudio e Gadgets', 'Moda e Fitness', '+5 mais'] },
   'digital-products': { icon: <BookOpen size={23} />, tags: ['Emagrecimento', 'Evolução Pessoal', 'Finanças Pessoais', '+3 mais'] }
