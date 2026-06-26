@@ -78,8 +78,13 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
     const clicks = hasOperationalData ? Math.max(1, Math.round(views * 0.31)) : 0;
     const projectedContacts = hasOperationalData ? Math.round(clicks * 0.22) : 0;
     const contacts = hasOperationalData ? Math.max(projectedContacts, storeSales.length) : storeSales.length;
-    const revenue = storeSales.reduce((sum, sale) => sum + sale.amount, 0);
-    const salesCount = storeSales.length;
+    const manualRevenue = storeSales.reduce((sum, sale) => sum + sale.amount, 0);
+    const averageTicket = selectedProducts.length ? selectedProducts.reduce((sum, product) => sum + product.salePrice, 0) / selectedProducts.length : 0;
+    const projectedSales = hasOperationalData ? Math.max(storeSales.length, Math.round(contacts * 0.32)) : storeSales.length;
+    const projectedRevenue = hasOperationalData ? projectedSales * averageTicket : 0;
+    const revenue = manualRevenue > 0 ? manualRevenue : projectedRevenue;
+    const salesCount = manualRevenue > 0 ? storeSales.length : projectedSales;
+    const revenueMode = manualRevenue > 0 ? 'manual' : 'projected';
     const viewsGrowthValue = hasOperationalData ? Math.min(38.6, 8.4 + selectedProducts.length * 0.9 + timeframeDays * 0.22) : 0;
     const clicksGrowthValue = hasOperationalData ? Math.min(34.2, 6.8 + selectedProducts.length * 0.7 + timeframeDays * 0.18) : 0;
     const contactsGrowthValue = hasOperationalData ? Math.min(31.5, 5.6 + selectedProducts.length * 0.55 + timeframeDays * 0.15) : 0;
@@ -93,6 +98,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
       contacts,
       revenue,
       salesCount,
+      revenueMode,
       viewsGrowthValue,
       clicksGrowthValue,
       contactsGrowthValue
@@ -106,11 +112,34 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   const clicksCount = visibleMetrics.reduce((sum, metric) => sum + metric.clicks, 0);
   const contactsCount = visibleMetrics.reduce((sum, metric) => sum + metric.contacts, 0);
   const estimatedRevenue = visibleMetrics.reduce((sum, metric) => sum + metric.revenue, 0);
+  const manualRevenueVisible = visibleMetrics.reduce((sum, metric) => sum + metric.storeSales.reduce((saleSum, sale) => saleSum + sale.amount, 0), 0);
+  const revenueIsProjected = manualRevenueVisible <= 0 && estimatedRevenue > 0;
   const viewsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.viewsGrowthValue, 0) / activeMetricsCount;
   const clicksGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.clicksGrowthValue, 0) / activeMetricsCount;
   const contactsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.contactsGrowthValue, 0) / activeMetricsCount;
   const clickRate = viewsCount > 0 ? (clicksCount / viewsCount) * 100 : 0;
   const conversionRate = clicksCount > 0 ? (contactsCount / clicksCount) * 100 : 0;
+  const chartDays = metricTimeframe === 'today'
+    ? ['8h', '10h', '12h', '14h', '16h', '18h', 'Agora']
+    : metricTimeframe === '7d'
+      ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom']
+      : ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'Hoje'];
+  const chartValues = chartDays.map((_, index) => {
+    const progress = chartDays.length === 1 ? 1 : index / (chartDays.length - 1);
+    const wave = Math.sin((index + 1) * 1.35) * 0.12;
+    return Math.max(0, Math.round((clicksCount * (0.45 + progress * 0.72 + wave)) / chartDays.length));
+  });
+  const maxChartValue = Math.max(1, ...chartValues);
+  const chartPoints = chartValues.map((value, index) => {
+    const x = 20 + index * (460 / Math.max(1, chartValues.length - 1));
+    const y = 178 - (value / maxChartValue) * 138;
+    return { x, y, value, label: chartDays[index] };
+  });
+  const chartLine = chartPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ');
+  const chartArea = `${chartLine} L ${chartPoints[chartPoints.length - 1]?.x.toFixed(1) || 480} 180 L ${chartPoints[0]?.x.toFixed(1) || 20} 180 Z`;
+  const chartGrowth = chartValues.length > 1 && chartValues[0] > 0
+    ? ((chartValues[chartValues.length - 1] - chartValues[0]) / chartValues[0]) * 100
+    : viewsGrowth;
   const viewLabel = metricView === 'all' ? 'Todas as lojas' : storeConfig.name;
   const viewDescription = metricView === 'all'
     ? `Visão consolidada de ${dashboardStores.length} lojas. Faturamento soma apenas vendas lançadas manualmente.`
@@ -205,6 +234,9 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
                 {t === 'today' ? 'Hoje' : t === '7d' ? '7 Dias' : '30 Dias'}
               </button>
             ))}
+          <p className="mt-4 text-xs text-slate-400">
+            {revenueIsProjected ? 'Estimativa calculada pelos produtos selecionados e contatos previstos. Lance vendas reais abaixo para trocar para faturamento confirmado.' : 'Total confirmado pelas vendas lançadas manualmente.'}
+          </p>
           </div>
         </div>
       </div>
@@ -316,13 +348,13 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
 
               {/* Chart Line Gradient Area */}
               <path
-                d="M 10 180 Q 80 150 120 120 T 220 80 T 320 110 T 420 50 T 490 35 L 490 180 Z"
+                d={chartArea}
                 fill="url(#chartGrad)"
               />
 
               {/* Dynamic Line Accent */}
               <path
-                d="M 10 180 Q 80 150 120 120 T 220 80 T 320 110 T 420 50 T 490 35"
+                d={chartLine}
                 fill="none"
                 stroke={storeConfig.primaryColor}
                 strokeWidth="4"
@@ -330,16 +362,12 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
               />
 
               {/* Interactive Dots */}
-              <circle cx="120" cy="120" r="5" fill="#030305" stroke={storeConfig.primaryColor} strokeWidth="3" />
-              <circle cx="220" cy="80" r="5" fill="#030305" stroke={storeConfig.primaryColor} strokeWidth="3" />
-              <circle cx="420" cy="50" r="5" fill="#030305" stroke={storeConfig.primaryColor} strokeWidth="3" />
-              <circle cx="490" cy="35" r="5" fill="#030305" stroke={storeConfig.primaryColor} strokeWidth="3" />
-
-              {/* Guidelines or Tooltips labels */}
-              <text x="120" y="102" fontSize="9" fontWeight="600" fill="#64748b" textAnchor="middle" fontFamily="monospace">Dom</text>
-              <text x="220" y="62" fontSize="9" fontWeight="600" fill="#64748b" textAnchor="middle" fontFamily="monospace">Ter</text>
-              <text x="420" y="32" fontSize="9" fontWeight="600" fill="#64748b" textAnchor="middle" fontFamily="monospace">Sex</text>
-              <text x="490" y="18" fontSize="9" fontWeight="600" fill="#d4af37" textAnchor="end" fontFamily="monospace">Hoje</text>
+              {chartPoints.map((point, index) => (
+                <g key={point.label}>
+                  <circle cx={point.x} cy={point.y} r={index === chartPoints.length - 1 ? 6 : 4.5} fill="#030305" stroke={storeConfig.primaryColor} strokeWidth="3" />
+                  <text x={point.x} y={point.y - 14} fontSize="9" fontWeight="700" fill={index === chartPoints.length - 1 ? '#d4af37' : '#64748b'} textAnchor="middle" fontFamily="monospace">{point.value}</text>
+                </g>
+              ))}
             </svg>
             
             {/* Chart Legends */}
@@ -368,9 +396,9 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
               <span className="text-xl font-bold font-mono text-amber-500">{progressPercent}%</span>
             </div>
             
-            <h3 className="text-lg font-display font-medium text-white">Sua vitrine pronta para faturar</h3>
+            <h3 className="text-lg font-display font-medium text-white">Sua operação pronta para divulgar</h3>
             <p className="text-slate-400 text-xs mt-2 leading-relaxed">
-              Complete os passos abaixo de forma rápida para faturar ainda hoje enviando produtos digitais pelo WhatsApp.
+              Escolha o nicho, monte a vitrine e gere os materiais para começar a receber interessados no WhatsApp.
             </p>
 
             {/* Progress bar visual */}
@@ -535,8 +563,8 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
         </div>
       </div>
 
-      <div className="pt-4 opacity-20 hover:opacity-100 transition-opacity duration-300">
-        <div className="max-w-xl ml-auto p-4 rounded-2xl border border-white/5 bg-white/[0.015] text-left">
+      <div className="pt-4">
+        <div className="max-w-xl ml-auto p-4 rounded-2xl border border-brand-500/20 bg-brand-500/[0.045] text-left">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div>
               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-mono font-bold">Atualizar vendas da loja</p>

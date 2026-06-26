@@ -50,6 +50,13 @@ export interface StoreConfig {
   heroTitle?: string;
   heroSubtitle?: string;
   ctaLabel?: string;
+  operationNiche?: string;
+  socialChannels?: Array<'instagram' | 'tiktok'>;
+  profileHandle?: string;
+  profileBio?: string;
+  videoFormat?: 'frame' | 'caption';
+  videoCta?: string;
+  videoWatermarkEnabled?: boolean;
 }
 
 export interface Niche {

@@ -1,187 +1,162 @@
 import React, { useState } from 'react';
-import { 
-  Instagram, 
-  MessageSquare, 
-  Copy, 
-  Share2, 
-  TrendingUp, 
-  Cpu, 
-  CheckCircle2, 
-  Megaphone,
-  Smartphone,
-  Facebook,
-  QrCode,
-  Sparkles,
-  Link as LinkIcon
-} from 'lucide-react';
-import { StoreConfig } from '../types';
+import { CheckCircle2, Copy, Facebook, Sparkles } from 'lucide-react';
+import { Product, StoreConfig } from '../types';
 
 interface MarketingKitProps {
   storeConfig: StoreConfig;
+  products: Product[];
 }
 
-export default function MarketingKit({ storeConfig }: MarketingKitProps) {
+export default function MarketingKit({ storeConfig, products }: MarketingKitProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (message: string) => {
     setToastMessage(message);
-    setTimeout(() => {
+    window.setTimeout(() => {
       setToastMessage((prev) => prev === message ? null : prev);
-    }, 3500);
+    }, 3000);
   };
 
   const fullDomain = storeConfig.publishedUrl?.startsWith('http')
     ? storeConfig.publishedUrl
     : 'Publique a loja para gerar o link ao vivo';
 
-  const kits = [
+  const selectedProducts = products.filter(product => product.addedToStore);
+  const selectedProductsText = selectedProducts
+    .map(product => `${product.name} ${product.subcategory}`.toLowerCase())
+    .join(' ');
+  const productNames = selectedProducts.slice(0, 4).map(product => product.name).join(', ');
+  const productLine = productNames
+    ? `\nTem: ${productNames}${selectedProducts.length > 4 ? ' e mais ofertas' : ''}.`
+    : '';
+
+  const getFacebookSearchTerm = () => {
+    const nicheName = (storeConfig.niche || '').toLowerCase();
+
+    if (nicheName.includes('gamer') || selectedProductsText.includes('free fire') || selectedProductsText.includes('roblox')) {
+      if (selectedProductsText.includes('roblox')) return 'pais roblox contas robux ofertas jogos infantis';
+      if (selectedProductsText.includes('free fire')) return 'free fire diamantes guildas jogadores ofertas';
+      if (selectedProductsText.includes('steam')) return 'pc gamer steam promocoes jogos baratos';
+      return 'pc gamer jogos baratos ofertas';
+    }
+
+    if (nicheName.includes('assinaturas') || selectedProductsText.includes('netflix') || selectedProductsText.includes('spotify')) {
+      if (selectedProductsText.includes('netflix') || selectedProductsText.includes('disney') || selectedProductsText.includes('prime')) return 'filmes series streaming ofertas assinatura';
+      if (selectedProductsText.includes('spotify') || selectedProductsText.includes('youtube')) return 'musica premium estudantes assinatura barata';
+      return 'assinaturas digitais apps premium ofertas';
+    }
+
+    if (nicheName.includes('infoprodutos') || selectedProductsText.includes('renda') || selectedProductsText.includes('emagrec')) {
+      if (selectedProductsText.includes('emagrec') || selectedProductsText.includes('fitness')) return 'receitas saudaveis treino em casa emagrecimento';
+      if (selectedProductsText.includes('renda') || selectedProductsText.includes('finan')) return 'renda extra trabalho em casa empreendedores iniciantes';
+      return 'melhorar rotina ganhar dinheiro aprender online';
+    }
+
+    if (nicheName.includes('achados') || selectedProductsText.includes('casa') || selectedProductsText.includes('cozinha')) {
+      if (selectedProductsText.includes('cozinha') || selectedProductsText.includes('casa')) return 'donas de casa decoracao cozinha achadinhos uteis';
+      if (selectedProductsText.includes('beleza') || selectedProductsText.includes('make')) return 'beleza feminina skincare maquiagem achadinhos';
+      return 'achadinhos uteis casa ofertas';
+    }
+
+    return `${storeConfig.niche || storeConfig.name} ofertas produtos baratos interessados`;
+  };
+
+  const facebookCopies = [
     {
-      title: 'Biografia do Instagram e TikTok',
-      icon: Instagram,
-      description: 'Ideal para colocar na secao "Link na Bio" das suas redes sociais de vendas.',
-      text: `Chaves digitais, gift cards, assinaturas e achados com ofertas selecionadas. Confira a vitrine oficial:\n${fullDomain}`,
-      copiedId: 1
+      title: 'Copy direta para grupos',
+      description: 'Texto simples para postar em grupos de oferta e comunidade do nicho.',
+      text: `Pessoal, montei uma vitrine com ofertas de ${storeConfig.niche || storeConfig.name}.${productLine}\n\nDa para ver os produtos, valores e chamar direto no WhatsApp pelo link:\n${fullDomain}`
     },
     {
-      title: 'Mensagem de Grupo WhatsApp (Oferta do Dia)',
-      icon: MessageSquare,
-      description: 'Perfeito para compartilhar em grupos locais de ofertas, games e servicos.',
-      text: `Atencao, pessoal! Montei um catalogo com produtos selecionados, recargas, assinaturas e ofertas especiais.\n\nConfira a vitrine e escolha seu produto:\n${fullDomain}`,
-      copiedId: 2
+      title: 'Copy de curiosidade',
+      description: 'Boa para grupos onde posts muito vendedores performam pior.',
+      text: `Achei algumas ofertas que podem ajudar quem curte ${storeConfig.niche || 'esse tipo de produto'}.${productLine}\n\nDeixei tudo organizado numa vitrine com valores e atendimento pelo WhatsApp:\n${fullDomain}`
     },
     {
-      title: 'Script de Vendas Direct',
-      icon: Share2,
-      description: 'Responda clientes no Instagram ou WhatsApp que perguntaram sobre precos ou disponibilidade.',
-      text: `Ola! Fico feliz pelo contato. Aqui esta a vitrine com os produtos atualizados, valores e ofertas disponiveis: ${fullDomain}`,
-      copiedId: 3
+      title: 'Copy com urgencia leve',
+      description: 'Use quando quiser dar sensação de oportunidade sem parecer spam.',
+      text: `Passando para avisar: separei algumas ofertas que estao valendo a pena hoje.${productLine}\n\nQuem quiser ver os produtos e chamar no WhatsApp, deixei a vitrine aqui:\n${fullDomain}`
+    },
+    {
+      title: 'Copy curta',
+      description: 'Para grupos mais movimentados ou publicações rápidas.',
+      text: `Ofertas selecionadas de ${storeConfig.niche || storeConfig.name} em uma vitrine simples, com valores e WhatsApp:\n${fullDomain}`
     }
   ];
 
-  const handleCopyText = (text: string, id: number) => {
-    navigator.clipboard.writeText(text);
+  const handleCopyText = async (text: string, id: number) => {
+    await navigator.clipboard.writeText(text);
     setCopiedIndex(id);
-    setTimeout(() => setCopiedIndex(null), 2000);
+    showToast('Copy do Facebook copiada.');
+    window.setTimeout(() => setCopiedIndex(null), 2200);
+  };
+
+  const handleOpenFacebookGroups = async () => {
+    await handleCopyText(facebookCopies[0].text, 100);
+    window.open(`https://www.facebook.com/search/groups/?q=${encodeURIComponent(getFacebookSearchTerm())}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <div className="space-y-8 animate-fade-in text-left">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-medium text-white tracking-tight">Kit de Divulgação</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Acelere seu faturamento copiando nossos modelos premium de copy, bio social e templates estruturados para conversão.
+    <div className="space-y-7 animate-fade-in text-left">
+      <header className="rounded-3xl border border-brand-500/25 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,.16),transparent_34%),rgba(255,255,255,.035)] p-6 sm:p-8">
+        <p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Anuncio gratis</p>
+        <h1 className="mt-3 max-w-3xl font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">Copys para divulgar no Facebook.</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+          Escolha um texto, copie e publique em grupos. Se quiser, use o botão abaixo para copiar a primeira copy e abrir a busca de grupos.
         </p>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleOpenFacebookGroups}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-3 text-sm font-black text-white transition hover:bg-blue-400"
+          >
+            <Facebook className="h-4 w-4" />
+            Buscar grupos e copiar texto
+          </button>
+          <span className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs font-bold text-slate-300">
+            Busca sugerida: {getFacebookSearchTerm()}
+          </span>
+        </div>
+      </header>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        {facebookCopies.map((copyItem, index) => {
+          const copied = copiedIndex === index || copiedIndex === 100 && index === 0;
+
+          return (
+            <article key={copyItem.title} className="rounded-3xl border border-white/10 bg-white/[.035] p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[.22em] text-blue-300">Facebook</p>
+                  <h2 className="mt-2 font-display text-xl font-bold text-white">{copyItem.title}</h2>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">{copyItem.description}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText(copyItem.text, index)}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-black transition ${
+                    copied ? 'bg-emerald-500 text-white' : 'bg-white text-black hover:bg-slate-200'
+                  }`}
+                >
+                  {copied ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? 'Copiado' : 'Copiar'}
+                </button>
+              </div>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4 text-sm leading-6 text-slate-200 whitespace-pre-wrap">
+                {copyItem.text}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left main copies listings */}
-        <div className="lg:col-span-2 space-y-6">
-          {kits.map((kit) => {
-            const IconComp = kit.icon;
-            const isCopied = copiedIndex === kit.copiedId;
-            return (
-              <div key={kit.copiedId} className="p-6 rounded-2xl glass-premium space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-white/[0.05] border border-white/5 text-slate-300 shrink-0">
-                      <IconComp className="w-5 h-5 animate-pulse" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-white">{kit.title}</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{kit.description}</p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleCopyText(kit.text, kit.copiedId)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer ${
-                      isCopied 
-                        ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' 
-                        : 'bg-white text-black hover:bg-slate-200'
-                    }`}
-                  >
-                    {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{isCopied ? 'Copiado!' : 'Copiar Copy'}</span>
-                  </button>
-                </div>
-
-                <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl text-xs text-slate-300 font-mono whitespace-pre-wrap select-all leading-relaxed">
-                  {kit.text}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Right guide cards - Traffic and QR Code generator */}
-        <div className="space-y-6">
-          {/* QR Code generator mock */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-[#0b0b0f] via-[#121217] to-[#181824] border border-white/15 text-white text-center space-y-5 relative overflow-hidden shadow-lg select-none">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-bl-full" />
-            <span className="text-[9px] font-bold tracking-widest font-mono text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20 uppercase inline-block">
-              QR Code do E-commerce
-            </span>
-
-            <div className="p-4 bg-white rounded-3xl w-40 h-40 mx-auto flex items-center justify-center shadow-lg relative group">
-              <QrCode className="w-32 h-32 text-slate-800 transition-transform duration-300 group-hover:scale-105" />
-              {/* Abs hover click to action */}
-              <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm rounded-3xl opacity-0 hover:opacity-100 transition-all flex items-center justify-center p-3 text-[10px] font-bold text-white leading-tight cursor-pointer">
-                Baixar QR Code de Impressão (Adesivo/Cartão)
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <h4 className="text-xs font-bold text-white">Imprima e espalhe fisicamente</h4>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Ótima tática para colar em faculdades, padarias e pontos de encontros gamers de amigos. O código leva direto ao link publicado da sua loja.
-              </p>
-            </div>
-            
-            <button
-              onClick={() => showToast('Download do QR Code de alta resolução iniciado! Verifique sua pasta de downloads em instantes.')}
-              className="mt-2 w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/10 transition-all cursor-pointer"
-            >
-              Baixar PNG High-Res
-            </button>
-          </div>
-
-          {/* Social Bio Strategies */}
-          <div className="p-6 rounded-2xl glass-premium space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-1.5 uppercase font-mono tracking-wider">
-              <Megaphone className="w-4 h-4 text-brand-500" /> Estratégias de Conversão
-            </h3>
-            
-            <div className="space-y-3 font-sans text-xs text-slate-300">
-              <div className="flex gap-2">
-                <div className="h-5 w-5 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center font-mono font-bold text-[10px] text-slate-300 shrink-0">1</div>
-                <p><strong>Grupos de Jogos:</strong> Participe de grupos de Free Fire, Valorant e Discord locais e use a copy sugerida no lado esquerdo.</p>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="h-5 w-5 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center font-mono font-bold text-[10px] text-slate-300 shrink-0">2</div>
-                <p><strong>Trafego Organico:</strong> Crie pequenos videos (Reels, TikTok, Shorts) mostrando as recargas sendo feitas e coloque o link na bio.</p>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="h-5 w-5 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center font-mono font-bold text-[10px] text-slate-300 shrink-0">3</div>
-                <p><strong>Meta Ads / Pixel:</strong> Se for investir em anúncios pagos, configure o pixel do Facebook na guia Configurações para rastrear os cliques de compras no WhatsApp!</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Elegant Toast Feedback */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-xl bg-[#0a0a0f]/95 backdrop-blur-md border border-white/10 shadow-2xl flex items-center gap-3 animate-fade-in max-w-xs md:max-w-sm">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 animate-pulse text-emerald-400" />
+        <div className="fixed bottom-6 right-6 z-50 flex max-w-sm items-center gap-3 rounded-xl border border-white/10 bg-[#0a0a0f]/95 p-4 shadow-2xl backdrop-blur-md">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <div>
-            <p className="text-xs font-bold text-white leading-normal font-sans">{toastMessage}</p>
-          </div>
+          <p className="text-xs font-bold leading-normal text-white">{toastMessage}</p>
         </div>
       )}
     </div>

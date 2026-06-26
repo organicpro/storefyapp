@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
@@ -21,6 +21,7 @@ import {
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Wizard from './components/Wizard';
+import OperationStudio from './components/OperationStudio';
 import ProductCatalog from './components/ProductCatalog';
 import SuppliersList from './components/SuppliersList';
 import MarketingKit from './components/MarketingKit';
@@ -135,19 +136,8 @@ function makeSite(config: StoreConfig, index = 1): StoreSite {
 }
 
 function getStoreProductIds(config: StoreConfig, products: Product[]) {
-  const ids = Array.isArray(config.productIds)
-    ? Array.from(new Set(config.productIds.filter(Boolean)))
-    : [];
-
-  if (!ids.length) return [];
-
-  const productById = new Map(products.map(product => [product.id, product]));
-  const lastSelectedCategory = [...ids].reverse()
-    .map(id => productById.get(id)?.category)
-    .find(Boolean);
-
-  if (!lastSelectedCategory) return ids;
-  return ids.filter(id => productById.get(id)?.category === lastSelectedCategory);
+  const availableIds = new Set(products.map(product => product.id));
+  return Array.from(new Set((config.productIds || []).filter((id) => availableIds.has(id))));
 }
 
 function applyStoreSelection(products: Product[], productIds: string[]) {
@@ -615,11 +605,13 @@ function downloadHtml(filename: string, html: string) {
 function HtmlStorePreview({
   html,
   storeName,
-  onBackToSaaS
+  onBackToSaaS,
+  onPromotion
 }: {
   html: string;
   storeName: string;
   onBackToSaaS: () => void;
+  onPromotion: () => void;
 }) {
   return (
     <div className="min-h-screen bg-[#030305] text-white">
@@ -630,6 +622,13 @@ function HtmlStorePreview({
             <h1 className="truncate font-display text-lg font-bold text-white">{storeName}</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onPromotion}
+              className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black transition hover:bg-brand-200"
+            >
+              Divulgacao
+            </button>
             <button
               type="button"
               onClick={onBackToSaaS}
@@ -659,6 +658,7 @@ function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [previewReturnPage, setPreviewReturnPage] = useState('dashboard');
   const [previewWizardStep, setPreviewWizardStep] = useState(1);
+  const [previewSnapshot, setPreviewSnapshot] = useState<{ html: string; storeName: string } | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [storeSwitcherOpen, setStoreSwitcherOpen] = useState(false);
   const [appToast, setAppToast] = useState<string | null>(null);
@@ -713,7 +713,7 @@ function App() {
   const accountDisplayName = getAccountDisplayName(session, !session ? localAccountName : '');
 
   useEffect(() => {
-    document.title = 'Storefy | Premium SaaS';
+    document.title = 'Storefy | Operacao de nicho';
   }, []);
 
   useEffect(() => {
@@ -833,7 +833,20 @@ function App() {
     setMobileSidebarOpen(false);
   };
 
-  const handleOpenGeneratedSite = (returnPage = activePage, wizardStep?: number) => {
+  const createPreviewSnapshot = (targetSite = storeConfig, forcedProductIds?: string[]) => {
+    const explicitIds = forcedProductIds?.length ? forcedProductIds : getStoreProductIds(targetSite, products);
+    const visualIds = storeProducts.filter(product => product.addedToStore).map(product => product.id);
+    const resolvedProductIds = explicitIds.length ? explicitIds : visualIds;
+    const previewConfig = { ...targetSite, productIds: resolvedProductIds };
+    const previewProducts = applyStoreSelection(products, resolvedProductIds);
+    return {
+      html: buildStoreHtml(previewConfig, previewProducts),
+      storeName: previewConfig.name || 'Storefy'
+    };
+  };
+
+  const handleOpenGeneratedSite = (returnPage = activePage, wizardStep?: number, targetSite = storeConfig, forcedProductIds?: string[]) => {
+    setPreviewSnapshot(createPreviewSnapshot(targetSite, forcedProductIds));
     setPreviewReturnPage(returnPage);
     if (wizardStep) {
       setPreviewWizardStep(wizardStep);
@@ -844,12 +857,13 @@ function App() {
   const handleEditSite = (siteId: string, wizardStep: number) => {
     setActiveSiteId(siteId);
     setPreviewWizardStep(wizardStep);
-    handleNavigate('wizard');
+    handleNavigate('operation');
   };
 
   const handlePreviewSite = (siteId: string) => {
+    const targetSite = sites.find(site => site.id === siteId) || storeConfig;
     setActiveSiteId(siteId);
-    handleOpenGeneratedSite('stores');
+    handleOpenGeneratedSite('stores', undefined, targetSite);
   };
 
   const handleLocalAccess = () => {
@@ -868,26 +882,24 @@ function App() {
   };
 
   const handleToggleAddProduct = (productId: string) => {
-    const targetProduct = products.find(product => product.id === productId);
-    if (!targetProduct) return;
+    if (!products.some(product => product.id === productId)) return;
+
+    const targetSiteId = storeConfig.id || activeSiteId || sites[0]?.id;
+    let shouldSelectProduct = true;
 
     setSites(prev => prev.map((site, index) => {
-      if (site.id !== storeConfig.id) return site;
-
-      const currentIds = getStoreProductIds(site, products);
-      const isSelected = currentIds.includes(productId);
-      const sameCategoryIds = currentIds.filter(id => {
-        const product = products.find(item => item.id === id);
-        return product?.category === targetProduct.category;
-      });
-      const nextIds = isSelected
-        ? sameCategoryIds.filter(id => id !== productId)
-        : [...sameCategoryIds, productId];
-
-      return makeSite({ ...site, productIds: nextIds, niche: targetProduct.category, status: 'draft' }, index + 1);
+      if (site.id !== targetSiteId) return site;
+      const currentIds = new Set(site.productIds || []);
+      shouldSelectProduct = !currentIds.has(productId);
+      if (shouldSelectProduct) currentIds.add(productId); else currentIds.delete(productId);
+      return makeSite({ ...site, productIds: Array.from(currentIds), status: 'draft' }, index + 1);
     }));
-  };
 
+    setProducts(prev => prev.map(product => product.id === productId
+      ? { ...product, addedToStore: shouldSelectProduct }
+      : product
+    ));
+  };
   const handleUpdateSalePrice = (productId: string, newPrice: number) => {
     setProducts(prev => prev.map(product => product.id === productId
       ? { ...product, salePrice: newPrice }
@@ -1147,9 +1159,10 @@ function App() {
   if (activePage === 'shop-preview') {
     return (
       <HtmlStorePreview
-        html={buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)}
-        storeName={storeConfig.name}
+        html={previewSnapshot?.html || createPreviewSnapshot().html}
+        storeName={previewSnapshot?.storeName || storeConfig.name}
         onBackToSaaS={() => handleNavigate(previewReturnPage)}
+        onPromotion={() => handleNavigate('promotion')}
       />
     );
   }
@@ -1338,6 +1351,42 @@ function App() {
               />
             )}
 
+            {activePage === 'operation' && (
+              <OperationStudio
+               
+                mode="create"
+                products={storeProducts}
+                storeConfig={storeConfig}
+                onUpdateStoreConfig={handleUpdateStoreConfig}
+                onToggleAddProduct={handleToggleAddProduct}
+                onUpdateSalePrice={handleUpdateSalePrice}
+                onOpenSection={handleNavigate}
+                onPreview={(step, productIds) => handleOpenGeneratedSite('operation', step, storeConfig, productIds)}
+                onPublish={handlePublishStore}
+                onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, storeProducts)}
+                initialStep={previewWizardStep}
+              />
+            )}
+
+            {activePage === 'profile' && (
+              <OperationStudio mode="profile" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onUpdateSalePrice={handleUpdateSalePrice} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('profile')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, storeProducts)} />
+            )}
+
+            {activePage === 'videos' && (
+              <OperationStudio mode="videos" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onUpdateSalePrice={handleUpdateSalePrice} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('videos')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, storeProducts)} />
+            )}
+
+            {activePage === 'promotion' && (
+              <OperationStudio mode="promotion" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onUpdateSalePrice={handleUpdateSalePrice} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('promotion')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, storeProducts)} />
+            )}
+
+            {activePage === 'calendar' && (
+              <OperationStudio mode="calendar" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onUpdateSalePrice={handleUpdateSalePrice} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('calendar')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, storeProducts)} />
+            )}
+
+            {activePage === 'export' && (
+              <OperationStudio mode="export" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onUpdateSalePrice={handleUpdateSalePrice} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('export')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, storeProducts)} />
+            )}
             {activePage === 'wizard' && (
               <Wizard
                 products={storeProducts}
@@ -1520,7 +1569,7 @@ function App() {
             )}
 
             {activePage === 'suppliers' && <SuppliersList suppliers={suppliers} products={storeProducts} />}
-            {activePage === 'marketing' && <MarketingKit storeConfig={storeConfig} />}
+            {activePage === 'marketing' && <MarketingKit storeConfig={storeConfig} products={storeProducts} />}
             {activePage === 'settings' && (
               <SettingsView
                 storeConfig={storeConfig}
@@ -1558,3 +1607,4 @@ function App() {
 }
 
 export default App;
+

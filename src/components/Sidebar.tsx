@@ -1,16 +1,15 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Sparkles, 
-  Store, 
-  ShoppingBag, 
-  Users, 
-  Share2, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Sparkles,
+  Store,
+  ShoppingBag,
+  Users,
+  Share2,
+  Settings,
   ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  CircleDot
+  CircleDot,
+  Film
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,27 +24,27 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
     {
       title: 'Operação',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'wizard', label: 'Criar Loja', icon: Sparkles, badge: 'Novo' },
-        { id: 'stores', label: 'Minhas Lojas', icon: Store }
+        { id: 'dashboard', label: 'Visão geral', icon: LayoutDashboard },
+        { id: 'operation', label: 'Criar operação', icon: Sparkles, badge: 'Novo' },
+        { id: 'promotion', label: 'Divulgação', icon: Share2 },
+        { id: 'videos', label: 'Vídeos automáticos', icon: Film },
+        { id: 'stores', label: 'Minhas operações', icon: Store }
       ]
     },
     {
-      title: 'Catálogo',
+      title: 'Produtos',
       items: [
-        { id: 'products', label: 'Produtos SaaS', icon: ShoppingBag },
-        { id: 'suppliers', label: 'Fornecedores & Links', icon: Users }
+        { id: 'products', label: 'Produtos', icon: ShoppingBag },
+        { id: 'suppliers', label: 'Fornecedores', icon: Users }
       ]
     },
     {
-      title: 'Crescimento',
+      title: 'Conta',
       items: [
-        { id: 'marketing', label: 'Divulgação', icon: Share2 },
         { id: 'settings', label: 'Configurações', icon: Settings }
       ]
     }
   ];
-
   return (
     <aside className="w-64 flex flex-col h-screen border-r border-white/10 bg-white/[0.01] backdrop-blur-2xl text-slate-300 select-none">
       {/* Brand Header */}

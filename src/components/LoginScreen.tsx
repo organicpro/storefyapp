@@ -48,9 +48,9 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
   };
 
   const highlights = [
-    'Crie vitrines por nicho em minutos',
-    'Produtos com custo, venda e margem',
-    'Multi-sites, publicacao e catalogo pronto'
+    'Escolha um nicho e receba uma operação estruturada',
+    'Produtos de fornecedores prontos para a vitrine',
+    'Perfil, vídeos, copies e calendário de postagem'
   ];
 
   return (
@@ -68,10 +68,10 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
               Acesso operacional
             </div>
             <h1 className="font-display text-5xl font-black leading-[0.92] tracking-tight sm:text-6xl xl:text-7xl">
-              Entre para montar lojas prontas para vender.
+              Entre para criar sua operação de nicho.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
-              A Storefy centraliza produtos, fornecedores, precificacao, multi-sites e publicacao para quem quer testar nichos com velocidade.
+              A Storefy conecta fornecedores, produtos, perfil social, vídeos, vitrine e WhatsApp para você começar a divulgar um nicho com velocidade.
             </p>
 
             <div className="mt-9 grid gap-3">
