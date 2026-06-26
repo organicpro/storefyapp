@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
-  CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Download, Film, Instagram,
-  LayoutTemplate, MessageCircle, PackageCheck, Play, Send, Sparkles, Store, Music2, UserRound
+  BookOpen, Bot, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Compass, Download, Film, Gamepad2, Instagram,
+  LayoutTemplate, MessageCircle, MonitorPlay, PackageCheck, PackageSearch, Play, Send, Sparkles, Store, Music2, UserRound
 } from 'lucide-react';
 import { Product, StoreConfig } from '../types';
 import {
@@ -28,6 +28,17 @@ interface OperationStudioProps {
 
 const typeFor = (product: Product) => product.category === 'Achados Fisicos'
   ? 'Fisico' : product.category === 'Assinaturas Digitais' ? 'Assinatura' : 'Digital';
+
+const FEATURED_NICHE_IDS = ['games', 'social-media', 'subscriptions', 'apps-tools', 'physical-finds', 'digital-products'];
+
+const NICHE_CARD_META: Record<string, { icon: React.ReactNode; tags: string[] }> = {
+  games: { icon: <Gamepad2 size={23} />, tags: ['eFootball', 'Steam', 'Call of Duty', '+5 mais'] },
+  'social-media': { icon: <Compass size={23} />, tags: ['Instagram', 'TikTok', 'Redes Sociais', '+2 mais'] },
+  subscriptions: { icon: <MonitorPlay size={23} />, tags: ['Disney+', 'Spotify', 'Crunchyroll', '+11 mais'] },
+  'apps-tools': { icon: <Bot size={23} />, tags: ['ChatGPT', 'Gemini', 'Canva Pro', '+4 mais'] },
+  'physical-finds': { icon: <PackageSearch size={23} />, tags: ['Eletrônicos', 'Áudio e Gadgets', 'Moda e Fitness', '+5 mais'] },
+  'digital-products': { icon: <BookOpen size={23} />, tags: ['Emagrecimento', 'Evolução Pessoal', 'Finanças Pessoais', '+3 mais'] }
+};
 
 const copy = async (value: string) => {
   try { await navigator.clipboard.writeText(value); } catch { /* Clipboard can be unavailable in previews. */ }
@@ -558,16 +569,40 @@ export default function OperationStudio({
       </header>
 
       {step === 1 && (
-        <div>
-          <h2 className="font-display text-2xl font-bold text-white">1. Escolha seu nicho</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {OPERATION_NICHES.map((item) => (
-              <button key={item.id} onClick={() => chooseNiche(item.id)} className={'rounded-2xl border p-4 text-left transition ' + (niche.id === item.id ? 'border-brand-500 bg-brand-500/10' : 'border-white/10 bg-white/[.03] hover:bg-white/[.06]')}>
-                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.accent }} />
-                <h3 className="mt-3 font-bold text-white">{item.name}</h3>
-                <p className="mt-1 text-xs leading-5 text-slate-400">{item.description}</p>
-              </button>
-            ))}
+        <div className="border-t border-white/10 pt-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="font-display text-2xl font-bold text-white">1. Escolha seu nicho de atuação</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-400">Isso nos ajuda a pré-configurar os produtos com maior potencial de venda para sua operação inicial.</p>
+          </div>
+          <div className="mt-7 grid gap-4 lg:grid-cols-2">
+            {OPERATION_NICHES.filter((item) => FEATURED_NICHE_IDS.includes(item.id)).map((item) => {
+              const cardMeta = NICHE_CARD_META[item.id] || { icon: <Sparkles size={23} />, tags: item.hashtags };
+              const active = niche.id === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => chooseNiche(item.id)}
+                  className={'group relative flex min-h-[116px] items-start gap-4 rounded-2xl border p-5 text-left transition duration-200 ' + (active ? 'border-brand-500 bg-brand-500/10 shadow-[0_0_0_1px_rgba(212,175,55,.18),0_20px_70px_rgba(212,175,55,.08)]' : 'border-white/10 bg-gradient-to-br from-white/[.045] to-white/[.018] hover:border-white/20 hover:bg-white/[.06]')}
+                >
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.06] text-slate-200 transition group-hover:scale-105" style={active ? { color: item.accent, backgroundColor: `${item.accent}18`, borderColor: `${item.accent}55` } : undefined}>
+                    {cardMeta.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-start justify-between gap-3">
+                      <b className="block text-base text-white">{item.name}</b>
+                      {active && <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500 text-black"><Check size={13} strokeWidth={4} /></span>}
+                    </span>
+                    <span className="mt-1 block text-sm leading-5 text-slate-400">{item.description}</span>
+                    <span className="mt-3 flex flex-wrap gap-1.5">
+                      {cardMeta.tags.map((tag) => (
+                        <span key={tag} className="rounded-md border border-white/10 bg-white/[.065] px-2 py-1 font-mono text-[10px] font-black text-slate-300">{tag}</span>
+                      ))}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@ export interface OperationNiche {
   name: string;
   description: string;
   categories: Product['category'][];
+  subcategories?: string[];
   accent: string;
   names: string[];
   hashtags: string[];
@@ -16,12 +17,13 @@ export interface OperationNiche {
 }
 
 export const OPERATION_NICHES: OperationNiche[] = [
-  { id: 'games', name: 'Games', description: 'Ofertas, acessórios, contas e itens para jogadores.', categories: ['Games'], accent: '#7c3aed', names: ['LootBarato', 'Pixel Ofertas', 'Player Shop'], hashtags: ['#games', '#gamer', '#ofertasgamer'], framePhrase: 'Achados para quem joga de verdade', captionPhrase: 'Seu setup merece isso.' },
-  { id: 'subscriptions', name: 'Assinaturas', description: 'Streaming, acessos e serviços recorrentes.', categories: ['Assinaturas Digitais'], accent: '#2563eb', names: ['Clube Play', 'Acesso Fácil', 'Tela Premium'], hashtags: ['#streaming', '#assinaturas', '#ofertas'], framePhrase: 'Mais entretenimento, menos custo', captionPhrase: 'Olha esse acesso.' },
-  { id: 'physical-finds', name: 'Achados físicos', description: 'Produtos úteis, baratos e prontos para divulgar.', categories: ['Achados Fisicos'], accent: '#f97316', names: ['Achado do Dia', 'Garimpo Fácil', 'Oferta em Casa'], hashtags: ['#achadinhos', '#ofertas', '#utilidades'], framePhrase: 'Achados que facilitam a rotina', captionPhrase: 'Pouca gente conhece esse achado.' },
+  { id: 'games', name: 'Gamer & Esports', description: 'Produtos digitais para jogos, contas, itens, keys, moedas, skins e serviços gamer.', categories: ['Games'], accent: '#7c3aed', names: ['LootBarato', 'Pixel Ofertas', 'Player Shop'], hashtags: ['#games', '#gamer', '#ofertasgamer'], framePhrase: 'Achados para quem joga de verdade', captionPhrase: 'Seu setup merece isso.' },
+  { id: 'social-media', name: 'Redes Sociais', description: 'Serviços de redes sociais, seguidores, inscritos e engajamento para perfis digitais.', categories: ['Redes Sociais'], accent: '#64748b', names: ['Social Boost', 'Perfil em Alta', 'Alcance Pro'], hashtags: ['#instagram', '#tiktok', '#redessociais'], framePhrase: 'Mais alcance para seu perfil crescer', captionPhrase: 'Seu perfil pode destravar com isso.' },
+  { id: 'subscriptions', name: 'Assinaturas Digitais', description: 'Produtos de streaming, assinaturas de IA, ferramentas digitais e acessos recorrentes.', categories: ['Assinaturas Digitais'], accent: '#2563eb', names: ['Clube Play', 'Acesso Fácil', 'Tela Premium'], hashtags: ['#streaming', '#assinaturas', '#ofertas'], framePhrase: 'Mais entretenimento, menos custo', captionPhrase: 'Olha esse acesso.' },
+  { id: 'physical-finds', name: 'Achados Físicos', description: 'Produtos físicos baratos e chamativos para vender por WhatsApp sem estoque próprio.', categories: ['Achados Fisicos'], accent: '#f97316', names: ['Achado do Dia', 'Garimpo Fácil', 'Oferta em Casa'], hashtags: ['#achadinhos', '#ofertas', '#utilidades'], framePhrase: 'Achados que facilitam a rotina', captionPhrase: 'Pouca gente conhece esse achado.' },
   { id: 'streaming', name: 'Streaming', description: 'Catálogo de entretenimento e acessos digitais.', categories: ['Assinaturas Digitais'], accent: '#ef4444', names: ['Play Agora', 'Tela Livre', 'Seu Streaming'], hashtags: ['#filmes', '#series', '#streaming'], framePhrase: 'Sua próxima maratona começa aqui', captionPhrase: 'Quer assistir mais pagando menos?' },
-  { id: 'digital-products', name: 'Produtos digitais', description: 'Guias, materiais e recursos para baixar.', categories: ['Infoprodutos'], accent: '#10b981', names: ['Arquivo Pronto', 'Kit Digital', 'Guia Direto'], hashtags: ['#produtosdigitais', '#ebook', '#rendaextra'], framePhrase: 'Materiais que ajudam você a avançar', captionPhrase: 'Salva isso para ver depois.' },
-  { id: 'apps-tools', name: 'Apps e ferramentas', description: 'Ferramentas, IA e assinaturas úteis.', categories: ['Assinaturas Digitais'], accent: '#06b6d4', names: ['Ferramenta Pro', 'App em Dia', 'Atalho Digital'], hashtags: ['#apps', '#ferramentas', '#ia'], framePhrase: 'Ferramentas para fazer mais em menos tempo', captionPhrase: 'Essa ferramenta pode te poupar horas.' },
+  { id: 'digital-products', name: 'Infoprodutos', description: 'Ebooks, templates, checklists, playbooks e materiais digitais prontos para vender.', categories: ['Infoprodutos'], accent: '#10b981', names: ['Arquivo Pronto', 'Kit Digital', 'Guia Direto'], hashtags: ['#produtosdigitais', '#ebook', '#rendaextra'], framePhrase: 'Materiais que ajudam você a avançar', captionPhrase: 'Salva isso para ver depois.' },
+  { id: 'apps-tools', name: 'IA, ChatGPT e ferramentas', description: 'ChatGPT, Gemini, Canva, Grok e combos de ferramentas úteis para produtividade.', categories: ['Assinaturas Digitais'], subcategories: ['ChatGPT', 'Gemini', 'Grok', 'Combo IA + Ferramentas', 'Canva'], accent: '#06b6d4', names: ['Ferramenta Pro', 'IA em Dia', 'Atalho Digital'], hashtags: ['#chatgpt', '#ia', '#ferramentas'], framePhrase: 'Ferramentas para fazer mais em menos tempo', captionPhrase: 'Essa ferramenta pode te poupar horas.' },
   { id: 'electronics', name: 'Eletrônicos', description: 'Gadgets, acessórios e tecnologia do dia a dia.', categories: ['Achados Fisicos'], accent: '#0ea5e9', names: ['Tech em Oferta', 'Gadget Agora', 'Conecta Shop'], hashtags: ['#tecnologia', '#gadgets', '#eletronicos'], framePhrase: 'Tecnologia útil com preço que cabe', captionPhrase: 'Você usaria esse gadget?' },
   { id: 'home', name: 'Casa e utilidades', description: 'Itens para deixar a rotina mais prática.', categories: ['Achados Fisicos'], accent: '#f59e0b', names: ['Casa em Dia', 'Utilidade Já', 'Lar Prático'], hashtags: ['#casa', '#utilidades', '#achadinhos'], framePhrase: 'Pequenos achados, grande diferença em casa', captionPhrase: 'Isso resolve uma dor da rotina.' },
   { id: 'beauty', name: 'Beleza', description: 'Cuidados, acessórios e itens de autocuidado.', categories: ['Achados Fisicos'], accent: '#db2777', names: ['Glow em Oferta', 'Beleza Prática', 'Seu Momento'], hashtags: ['#beleza', '#autocuidado', '#ofertas'], framePhrase: 'Beleza prática para o seu dia', captionPhrase: 'Um achado que vale testar.' },
@@ -56,7 +58,12 @@ export function getOperationProfile(config: StoreConfig) {
 
 export function getRelevantProducts(config: StoreConfig, products: Product[]) {
   const niche = getOperationNiche(config);
-  return products.filter((product) => niche.categories.includes(product.category));
+  return products.filter((product) => {
+    if (!niche.categories.includes(product.category)) return false;
+    if (!niche.subcategories?.length) return true;
+    const searchable = `${product.subcategory} ${product.name}`.toLowerCase();
+    return niche.subcategories.some((subcategory) => searchable.includes(subcategory.toLowerCase()));
+  });
 }
 
 export function getContentPack(config: StoreConfig, products: Product[]) {
