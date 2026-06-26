@@ -646,12 +646,12 @@ export default function OperationStudio({
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-display text-2xl font-bold text-white">4. Monte a vitrine com produtos dos fornecedores</h2>
-              <p className="mt-2 text-sm text-slate-400">{relevantProducts.length} produtos relacionados a {niche.name}. A vitrine vai usar somente os produtos marcados aqui.</p>
+              <p className="mt-2 text-sm text-slate-400">{relevantProducts.length} produtos relacionados a {niche.name}, organizados por prioridade do nicho. A vitrine vai usar somente os produtos marcados aqui.</p>
             </div>
             <span className="rounded-full bg-brand-500 px-3 py-2 text-xs font-black text-black">{selectedCount} selecionados</span>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {relevantProducts.slice(0, 24).map((product) => (
+            {relevantProducts.slice(0, 48).map((product) => (
               <article key={product.id} className={'rounded-2xl border p-4 ' + (product.addedToStore ? 'border-brand-500/70 bg-brand-500/10' : 'border-white/10 bg-white/[.03]')}>
                 {(() => {
                   const profit = product.salePrice - product.costPrice;
