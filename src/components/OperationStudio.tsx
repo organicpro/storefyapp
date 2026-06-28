@@ -438,7 +438,7 @@ export default function OperationStudio({
   if (mode === 'videos') return (
     <section className="space-y-7 text-left">
       {generating && <GenerationOverlay />}
-      {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} nicheName={niche.name} profileName={profile.name} profileHandle={profile.handle} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
+      {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} nicheName={niche.name} profileName={profile.name} profileHandle={profile.handle} products={selectedProducts.length ? selectedProducts : relevantProducts.slice(0, 8)} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
       {!videoLibraryPage ? <>
         <header><p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Videos automaticos</p><h1 className="mt-2 font-display text-3xl font-bold text-white">Escolha o tipo de video.</h1><p className="mt-2 max-w-3xl text-sm text-slate-400">Primeiro escolha uma entrada. A capa de Influencer IA pode usar GIF, mas dentro da biblioteca aparecem apenas os modelos/personas.</p></header>
         <div className="grid max-w-3xl gap-5 sm:grid-cols-2">
@@ -909,7 +909,7 @@ type PublishingProfile = {
   detail: string;
 };
 
-function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profileHandle, onDownload, onClose }: { generatedVideo: { url: string; fileName: string; label: string }; nicheName: string; profileName: string; profileHandle: string; onDownload: () => void; onClose: () => void }) {
+function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profileHandle, products, onDownload, onClose }: { generatedVideo: { url: string; fileName: string; label: string }; nicheName: string; profileName: string; profileHandle: string; products: Product[]; onDownload: () => void; onClose: () => void }) {
   const dateFromNow = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
@@ -922,11 +922,37 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
     { id: 'whatsapp-status', label: 'WhatsApp', channel: 'WhatsApp', handle: 'Status e lista', detail: 'Status + broadcast' }
   ];
   const facebookCopy = `🔥 Oferta nova na ${profileName} para quem procura ${nicheName}.\n\nAssista o video, veja os detalhes e me chama no WhatsApp para receber agora.\n\n✅ Atendimento rapido\n✅ Vitrine organizada\n✅ Conteudo pronto para hoje\n\n${profileHandle}`;
-  const groupSearchTerms = [nicheName, `${nicheName} Brasil`, `${nicheName} ofertas`, `${nicheName} compra e venda`];
+  const normalizeSearchTerm = (value: string) => value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9+ ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const productSignals = products
+    .slice(0, 8)
+    .flatMap((product) => [product.subcategory, product.name.split(/[-–#(]/)[0]])
+    .map(normalizeSearchTerm)
+    .filter((term) => term.length > 2);
+  const uniqueSignals = Array.from(new Set(productSignals));
+  const mainProduct = uniqueSignals[0] || normalizeSearchTerm(nicheName);
+  const secondProduct = uniqueSignals.find((term) => term !== mainProduct) || normalizeSearchTerm(nicheName);
+  const groupSearchTerms = Array.from(new Set([
+    `${mainProduct} ofertas Brasil`,
+    `${mainProduct} grupo compra e venda`,
+    `${secondProduct} promocoes`,
+    `${normalizeSearchTerm(nicheName)} ${mainProduct}`,
+    `${normalizeSearchTerm(nicheName)} achadinhos ofertas`
+  ].filter(Boolean))).slice(0, 5);
   const groupSearchResults = groupSearchTerms.map((term, index) => ({
     id: `group-${index}`,
-    title: ['Busca principal', 'Brasil', 'Ofertas', 'Compra e venda'][index] || 'Busca extra',
-    description: ['Grupos mais ligados ao nicho da loja', 'Comunidades brasileiras com publico amplo', 'Grupos focados em promoções e ofertas', 'Grupos comerciais para divulgar a vitrine'][index] || 'Comunidades relacionadas',
+    title: ['Publico mais quente', 'Compra e venda', 'Promocoes do produto', 'Nicho + produto', 'Achadinhos relacionados'][index] || 'Busca extra',
+    description: [
+      'Pessoas procurando exatamente esse tipo de produto',
+      'Grupos onde o publico ja espera ofertas e indicacoes',
+      'Comunidades com abertura para posts de oportunidade',
+      'Busca cruzando o nicho da loja com o produto divulgado',
+      'Grupos de ofertas relacionados ao interesse da vitrine'
+    ][index] || 'Comunidades relacionadas',
     query: term
   }));
   const openFacebookGroupSearch = (query: string) => {
@@ -1073,7 +1099,7 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
               <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
                 <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Resultados da busca</p>
                 <h4 className="mt-2 font-display text-xl font-bold text-white">Buscar grupos no Facebook</h4>
-                <div className="mt-4 space-y-2">{groupSearchResults.map((group) => <div key={group.id} className="rounded-2xl border border-white/10 bg-white/[.035] p-3"><div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-white">{group.title}</span><p className="mt-1 text-xs text-slate-500">{group.description}</p><p className="mt-2 font-mono text-[11px] font-black text-brand-500">{group.query}</p></div><button onClick={() => openFacebookGroupSearch(group.query)} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Divulgar</button></div></div>)}</div>
+                <div className="mt-4 space-y-2">{groupSearchResults.map((group) => <div key={group.id} className="rounded-2xl border border-white/10 bg-white/[.035] p-3"><div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-white">{group.title}</span><p className="mt-1 text-xs text-slate-500">{group.description}</p><p className="mt-2 font-mono text-[11px] font-black text-brand-500">Busca: {group.query}</p></div><button onClick={() => openFacebookGroupSearch(group.query)} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Divulgar</button></div></div>)}</div>
               </div>
             </div>
           )}
