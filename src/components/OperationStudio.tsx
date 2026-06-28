@@ -438,7 +438,7 @@ export default function OperationStudio({
   if (mode === 'videos') return (
     <section className="space-y-7 text-left">
       {generating && <GenerationOverlay />}
-      {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
+      {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} nicheName={niche.name} profileName={profile.name} profileHandle={profile.handle} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
       {!videoLibraryPage ? <>
         <header><p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Videos automaticos</p><h1 className="mt-2 font-display text-3xl font-bold text-white">Escolha o tipo de video.</h1><p className="mt-2 max-w-3xl text-sm text-slate-400">Primeiro escolha uma entrada. A capa de Influencer IA pode usar GIF, mas dentro da biblioteca aparecem apenas os modelos/personas.</p></header>
         <div className="grid max-w-3xl gap-5 sm:grid-cols-2">
@@ -909,7 +909,7 @@ type PublishingProfile = {
   detail: string;
 };
 
-function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { generatedVideo: { url: string; fileName: string; label: string }; onDownload: () => void; onClose: () => void }) {
+function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profileHandle, onDownload, onClose }: { generatedVideo: { url: string; fileName: string; label: string }; nicheName: string; profileName: string; profileHandle: string; onDownload: () => void; onClose: () => void }) {
   const dateFromNow = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
@@ -921,8 +921,15 @@ function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { genera
     { id: 'facebook-page', label: 'Facebook', channel: 'Facebook', handle: 'Pagina da loja', detail: 'Pagina + grupos' },
     { id: 'whatsapp-status', label: 'WhatsApp', channel: 'WhatsApp', handle: 'Status e lista', detail: 'Status + broadcast' }
   ];
-  const facebookCopy = `🔥 Acabei de separar uma oferta que vale conferir.\n\nAssista o video, veja os detalhes e me chama no WhatsApp para receber agora.\n\n✅ Atendimento rapido\n✅ Vitrine organizada\n✅ Oferta pronta para hoje`;
-  const facebookGroups = ['Achadinhos e Ofertas Brasil', 'Promoções e Cupons Hoje', 'Compras Online Brasil', 'Ofertas da Semana'];
+  const facebookCopy = `🔥 Oferta nova na ${profileName} para quem procura ${nicheName}.\n\nAssista o video, veja os detalhes e me chama no WhatsApp para receber agora.\n\n✅ Atendimento rapido\n✅ Vitrine organizada\n✅ Conteudo pronto para hoje\n\n${profileHandle}`;
+  const groupSearchTerms = [nicheName, `${nicheName} Brasil`, `${nicheName} ofertas`, `${nicheName} compra e venda`];
+  const groupSearchResults = groupSearchTerms.map((term, index) => ({
+    id: `group-${index}`,
+    name: `${term} - comunidade ativa`,
+    members: ['12 mil', '27 mil', '43 mil', '68 mil'][index] || '18 mil',
+    fit: ['Alta afinidade', 'Bom volume', 'Postagem rapida', 'Publico quente'][index] || 'Boa afinidade',
+    query: term
+  }));
   const allProfileIds = profiles.map((profile) => profile.id);
   const storageKey = `storefy.video.schedule.${generatedVideo.fileName}`;
   const defaultSchedule: ScheduledVideoPost[] = [
@@ -1046,16 +1053,23 @@ function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { genera
           )}
 
           {managerTab === 'facebook' && (
-            <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_.8fr]">
+            <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_.9fr]">
               <div className="rounded-3xl border border-white/10 bg-white/[.035] p-5">
                 <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Modo direto Facebook</p>
                 <h4 className="mt-2 font-display text-2xl font-bold text-white">Video + copy para grupos</h4>
+                <div className="mt-4 rounded-2xl border border-brand-500/20 bg-brand-500/[.06] p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[.2em] text-brand-500">Busca por nicho</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {groupSearchTerms.map((term) => <button key={term} onClick={() => copy(term)} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-black text-white hover:border-brand-500/50">{term}</button>)}
+                  </div>
+                </div>
                 <textarea readOnly value={facebookCopy} className="mt-4 h-44 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm leading-6 text-slate-200 outline-none" />
-                <div className="mt-3 flex flex-wrap gap-2"><button onClick={() => copy(facebookCopy)} className="rounded-xl bg-white px-4 py-3 text-xs font-black text-black">Copiar copy</button><button onClick={onDownload} className="rounded-xl border border-white/10 px-4 py-3 text-xs font-black text-white">Baixar video para anexar</button><button onClick={() => { copy(`${facebookCopy}\n\nVideo: ${generatedVideo.label}`); }} className="rounded-xl bg-brand-500 px-4 py-3 text-xs font-black text-black">Copiar pacote</button></div>
+                <div className="mt-3 flex flex-wrap gap-2"><button onClick={() => copy(facebookCopy)} className="rounded-xl bg-white px-4 py-3 text-xs font-black text-black">Copiar copy</button><button onClick={onDownload} className="rounded-xl border border-white/10 px-4 py-3 text-xs font-black text-white">Baixar video</button><button onClick={() => { copy(`${facebookCopy}\n\nVideo: ${generatedVideo.label}`); }} className="rounded-xl bg-brand-500 px-4 py-3 text-xs font-black text-black">Copiar pacote</button></div>
               </div>
               <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
-                <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Grupos sugeridos</p>
-                <div className="mt-4 space-y-2">{facebookGroups.map((group) => <div key={group} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.035] p-3"><span className="text-sm font-bold text-white">{group}</span><button onClick={() => copy(`${facebookCopy}\n\nGrupo: ${group}`)} className="text-xs font-black text-brand-500">Preparar</button></div>)}</div>
+                <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Resultados da busca</p>
+                <h4 className="mt-2 font-display text-xl font-bold text-white">Grupos alinhados com {nicheName}</h4>
+                <div className="mt-4 space-y-2">{groupSearchResults.map((group) => <div key={group.id} className="rounded-2xl border border-white/10 bg-white/[.035] p-3"><div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-white">{group.name}</span><p className="mt-1 text-xs text-slate-500">{group.members} membros • {group.fit}</p></div><button onClick={() => copy(`${facebookCopy}\n\nGrupo: ${group.name}\nBusca: ${group.query}`)} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Divulgar</button></div></div>)}</div>
               </div>
             </div>
           )}
