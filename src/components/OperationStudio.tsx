@@ -134,7 +134,8 @@ export default function OperationStudio({
   const calendar = getPostingCalendar(storeConfig);
   const relevantProducts = useMemo(() => getRelevantProducts(storeConfig, products), [storeConfig, products]);
   const selectedProducts = relevantProducts.filter((product) => product.addedToStore);
-  const [step, setStep] = useState(initialStep);
+  const normalizeCreateStep = (value: number) => value <= 1 ? 1 : value <= 4 ? 2 : value === 5 ? 3 : 4;
+  const [step, setStep] = useState(normalizeCreateStep(initialStep));
   const [name, setName] = useState(storeConfig.name || getSuggestedOperationName(niche));
   const [whatsapp, setWhatsapp] = useState(storeConfig.whatsapp || '');
   const [channels, setChannels] = useState<SocialChannel[]>(storeConfig.socialChannels?.length ? storeConfig.socialChannels : ['instagram', 'tiktok']);
@@ -151,7 +152,7 @@ export default function OperationStudio({
   const [tempPrice, setTempPrice] = useState('');
 
   useEffect(() => {
-    if (mode === 'create') setStep(initialStep);
+    if (mode === 'create') setStep(normalizeCreateStep(initialStep));
   }, [initialStep, mode]);
 
   const saveOperation = (overrides: Partial<StoreConfig> = {}) => {
@@ -558,9 +559,9 @@ export default function OperationStudio({
       <header className="rounded-3xl border border-brand-500/25 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,.18),transparent_34%),rgba(255,255,255,.035)] p-6 sm:p-8">
         <p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Nova operacao de nicho</p>
         <h1 className="mt-3 max-w-3xl font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">Responda o essencial. A Storefy organiza o resto.</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Nicho &gt; identidade &gt; canais &gt; produtos &gt; estrutura da loja &gt; divulgacao.</p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Nicho &gt; produtos &gt; estrutura da loja &gt; divulgacao.</p>
         <div className="mt-6 flex flex-wrap gap-2">
-          {['Nicho', 'Identidade', 'Canais', 'Produtos', 'Loja', 'Divulgacao'].map((item, index) => (
+          {['Nicho', 'Produtos', 'Loja', 'Divulgacao'].map((item, index) => (
             <span key={item} className={'rounded-full px-3 py-1.5 text-xs font-black ' + (step === index + 1 ? 'bg-brand-500 text-black' : step > index + 1 ? 'bg-emerald-400/15 text-emerald-300' : 'bg-white/[.06] text-slate-500')}>
               {index + 1}. {item}
             </span>
@@ -608,44 +609,10 @@ export default function OperationStudio({
       )}
 
       {step === 2 && (
-        <div className="grid gap-5 lg:grid-cols-2">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-white">2. De um nome e atendimento a operacao</h2>
-            <p className="mt-2 text-sm text-slate-400">A Storefy sugere um nome, mas voce pode personalizar.</p>
-          </div>
-          <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[.03] p-5">
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-400">Nome
-              <input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-white outline-none" />
-            </label>
-            <button onClick={() => setName(getSuggestedOperationName(niche, 1))} className="text-xs font-black text-brand-500">Sugerir outro nome</button>
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-400">WhatsApp
-              <input value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} placeholder="5511999999999" className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-white outline-none" />
-            </label>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div>
-          <h2 className="font-display text-2xl font-bold text-white">3. Onde voce vai postar?</h2>
-          <p className="mt-2 text-sm text-slate-400">Os textos, o calendario e os videos serao montados para os canais escolhidos.</p>
-          <div className="mt-5 flex flex-wrap gap-4">
-            {([{ id: 'instagram', label: 'Instagram', icon: Instagram }, { id: 'tiktok', label: 'TikTok', icon: Music2 }] as const).map(({ id, label, icon: Icon }) => (
-              <button key={id} onClick={() => toggleChannel(id)} className={'flex min-w-52 items-center gap-3 rounded-2xl border p-5 text-left ' + (channels.includes(id) ? 'border-brand-500 bg-brand-500/10' : 'border-white/10 bg-white/[.03]')}>
-                <Icon className="text-brand-500" />
-                <span><b className="block text-white">{label}</b><small className="text-slate-400">{channels.includes(id) ? 'Incluido no plano' : 'Adicionar canal'}</small></span>
-                {channels.includes(id) && <Check className="ml-auto text-emerald-400" />}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {step === 4 && (
         <div>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="font-display text-2xl font-bold text-white">4. Monte a vitrine com produtos dos fornecedores</h2>
+              <h2 className="font-display text-2xl font-bold text-white">2. Monte a vitrine com produtos dos fornecedores</h2>
               <p className="mt-2 text-sm text-slate-400">{relevantProducts.length} produtos relacionados a {niche.name}, organizados por prioridade do nicho. A vitrine vai usar somente os produtos marcados aqui.</p>
             </div>
             <span className="rounded-full bg-brand-500 px-3 py-2 text-xs font-black text-black">{selectedCount} selecionados</span>
@@ -719,7 +686,7 @@ export default function OperationStudio({
         </div>
       )}
 
-      {step === 5 && (
+      {step === 3 && (
         <div className="grid gap-5 lg:grid-cols-[1.05fr_.95fr]">
           <article className="rounded-3xl border border-white/10 bg-white/[.035] p-6">
             <p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Estrutura da loja</p>
@@ -789,21 +756,21 @@ export default function OperationStudio({
             <label className="mt-5 block text-xs font-black uppercase tracking-wider text-slate-400">Cor principal
               <input type="color" value={storeConfig.primaryColor || niche.accent} onChange={(event) => saveOperation({ primaryColor: event.target.value })} className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-black/30 p-1" />
             </label>
-            <button type="button" onClick={() => { saveOperation(); onPreview(5); }} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-black">
+            <button type="button" onClick={() => { saveOperation(); onPreview(3); }} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-black">
               <Store size={16} /> Ver loja agora
             </button>
           </aside>
         </div>
       )}
 
-      {step === 6 && (
+      {step === 4 && (
         <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
           <article className="rounded-3xl border border-white/10 bg-white/[.035] p-6">
             <p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Divulgacao</p>
             <h2 className="mt-3 font-display text-3xl font-bold text-white">Sua loja esta pronta para ganhar trafego.</h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">Antes de divulgar, confira a vitrine. Quando voltar, voce continua exatamente nesta etapa.</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <button onClick={() => { const selectedIds = selectedProducts.map((product) => product.id); saveOperation({ productIds: selectedIds }); onPreview(step, selectedIds); }} className="rounded-2xl border border-brand-500/40 bg-brand-500/10 p-5 text-left transition hover:bg-brand-500/15">
+              <button onClick={() => { const selectedIds = selectedProducts.map((product) => product.id); saveOperation({ productIds: selectedIds }); onPreview(4, selectedIds); }} className="rounded-2xl border border-brand-500/40 bg-brand-500/10 p-5 text-left transition hover:bg-brand-500/15">
                 <Store className="text-brand-500" size={22} />
                 <b className="mt-4 block text-white">Ver loja</b>
                 <span className="mt-1 block text-xs leading-5 text-slate-400">Visualizar a vitrine gerada com os produtos selecionados.</span>
@@ -820,7 +787,7 @@ export default function OperationStudio({
             <h3 className="mt-3 font-display text-2xl font-bold text-white">{name || profile.name}</h3>
             <div className="mt-5 space-y-3 text-sm text-slate-300">
               <p><b className="text-white">{selectedCount}</b> produtos na vitrine</p>
-              <p><b className="text-white">{channels.length}</b> canais preparados</p>
+              <p><b className="text-white">IA</b> prepara os canais na etapa de divulgacao</p>
               <p><b className="text-white">{profile.handle}</b> como marca d'agua opcional</p>
             </div>
             <button onClick={async () => {
@@ -839,8 +806,8 @@ export default function OperationStudio({
         <button disabled={step === 1} onClick={() => setStep((value) => Math.max(1, value - 1))} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm font-bold text-white disabled:opacity-30">
           <ChevronLeft size={16} /> Voltar
         </button>
-        <button onClick={() => { if (step === 4) saveOperation({ productIds: selectedProducts.map((product) => product.id) }); else saveOperation(); if (step < 6) setStep((value) => value + 1); else onOpenSection('promotion'); }} className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-sm font-black text-black">
-          {step === 6 ? 'Abrir divulgacao' : 'Continuar'} <ChevronRight size={16} />
+        <button onClick={() => { if (step === 2) saveOperation({ productIds: selectedProducts.map((product) => product.id) }); else saveOperation(); if (step < 4) setStep((value) => value + 1); else onOpenSection('promotion'); }} className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-sm font-black text-black">
+          {step === 4 ? 'Abrir divulgacao' : 'Continuar'} <ChevronRight size={16} />
         </button>
       </footer>
     </section>
