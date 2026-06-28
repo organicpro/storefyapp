@@ -929,29 +929,33 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
     .replace(/\s+/g, ' ')
     .trim();
   const productSignals = products
-    .slice(0, 8)
-    .flatMap((product) => [product.subcategory, product.name.split(/[-–#(]/)[0]])
+    .slice(0, 10)
+    .flatMap((product) => [product.category, product.subcategory, product.name])
     .map(normalizeSearchTerm)
     .filter((term) => term.length > 2);
-  const uniqueSignals = Array.from(new Set(productSignals));
-  const mainProduct = uniqueSignals[0] || normalizeSearchTerm(nicheName);
-  const secondProduct = uniqueSignals.find((term) => term !== mainProduct) || normalizeSearchTerm(nicheName);
-  const groupSearchTerms = Array.from(new Set([
-    `${mainProduct} ofertas Brasil`,
-    `${mainProduct} grupo compra e venda`,
-    `${secondProduct} promocoes`,
-    `${normalizeSearchTerm(nicheName)} ${mainProduct}`,
-    `${normalizeSearchTerm(nicheName)} achadinhos ofertas`
-  ].filter(Boolean))).slice(0, 5);
+  const signalText = `${normalizeSearchTerm(nicheName)} ${productSignals.join(' ')}`.toLowerCase();
+  const audienceRules = [
+    { match: ['chatgpt', 'gemini', 'grok', 'canva', 'ia ', 'inteligencia artificial'], terms: ['inteligencia artificial para negocios', 'empreendedores usando IA', 'produtividade com IA e ferramentas', 'marketing digital para pequenos negocios', 'renda extra com ferramentas digitais'] },
+    { match: ['free fire', 'roblox', 'steam', 'efootball', 'valorant', 'minecraft', 'call of duty'], terms: ['gamers brasil ofertas', 'free fire e jogos mobile brasil', 'comunidade gamer compra e venda', 'jogadores online brasil', 'promocoes para gamers'] },
+    { match: ['instagram', 'tiktok', 'youtube', 'seguidores', 'redes sociais'], terms: ['criadores de conteudo brasil', 'instagram crescimento organico', 'divulgacao de perfis e negocios', 'marketing para redes sociais', 'empreendedores no instagram'] },
+    { match: ['emagrecimento', 'fitness', 'low carb', 'treino'], terms: ['emagrecimento saudavel brasil', 'receitas fitness e low carb', 'mulheres fitness e bem estar', 'vida saudavel e treino em casa', 'dicas para perder peso'] },
+    { match: ['casa', 'utilidades', 'cozinha', 'organizacao'], terms: ['achadinhos para casa', 'casa organizada e utilidades', 'donas de casa dicas e ofertas', 'decoracao e organizacao do lar', 'promocoes para casa'] },
+    { match: ['beleza', 'autocuidado', 'moda'], terms: ['beleza e autocuidado brasil', 'achadinhos de beleza', 'moda feminina e ofertas', 'cuidados pessoais dicas', 'promocoes de beleza'] },
+    { match: ['pet', 'cachorro', 'gato'], terms: ['pets brasil dicas', 'cachorros e gatos cuidados', 'produtos para pets ofertas', 'tutores de pets brasil', 'mundo pet promoções'] },
+    { match: ['disney', 'spotify', 'crunchyroll', 'streaming', 'prime video', 'hbo'], terms: ['streaming barato brasil', 'filmes series e streaming', 'assinaturas digitais ofertas', 'entretenimento online brasil', 'promocoes de streaming'] }
+  ];
+  const matchedRule = audienceRules.find((rule) => rule.match.some((keyword) => signalText.includes(keyword)));
+  const fallbackTerms = ['achadinhos e promocoes brasil', 'ofertas online brasil', 'compras inteligentes e descontos', 'grupo de ofertas e novidades', 'empreendedores e compradores online'];
+  const groupSearchTerms = Array.from(new Set([...(matchedRule?.terms || fallbackTerms), `${normalizeSearchTerm(nicheName)} ofertas`])).slice(0, 5);
   const groupSearchResults = groupSearchTerms.map((term, index) => ({
     id: `group-${index}`,
-    title: ['Publico mais quente', 'Compra e venda', 'Promocoes do produto', 'Nicho + produto', 'Achadinhos relacionados'][index] || 'Busca extra',
+    title: ['Publico por interesse', 'Comunidade ampla', 'Intencao de compra', 'Conteudo relacionado', 'Oferta natural'][index] || 'Busca extra',
     description: [
-      'Pessoas procurando exatamente esse tipo de produto',
-      'Grupos onde o publico ja espera ofertas e indicacoes',
-      'Comunidades com abertura para posts de oportunidade',
-      'Busca cruzando o nicho da loja com o produto divulgado',
-      'Grupos de ofertas relacionados ao interesse da vitrine'
+      'Busca pessoas interessadas no beneficio do produto, nao apenas no nome exato',
+      'Termo mais amplo para evitar grupos vazios e aumentar alcance',
+      'Comunidades onde ofertas e indicacoes fazem sentido',
+      'Publico que conversa com o tema do video e da vitrine',
+      'Busca equilibrada entre nicho, produto e oportunidade'
     ][index] || 'Comunidades relacionadas',
     query: term
   }));
