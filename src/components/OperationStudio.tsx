@@ -925,11 +925,15 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
   const groupSearchTerms = [nicheName, `${nicheName} Brasil`, `${nicheName} ofertas`, `${nicheName} compra e venda`];
   const groupSearchResults = groupSearchTerms.map((term, index) => ({
     id: `group-${index}`,
-    name: `${term} - comunidade ativa`,
-    members: ['12 mil', '27 mil', '43 mil', '68 mil'][index] || '18 mil',
-    fit: ['Alta afinidade', 'Bom volume', 'Postagem rapida', 'Publico quente'][index] || 'Boa afinidade',
+    title: ['Busca principal', 'Brasil', 'Ofertas', 'Compra e venda'][index] || 'Busca extra',
+    description: ['Grupos mais ligados ao nicho da loja', 'Comunidades brasileiras com publico amplo', 'Grupos focados em promoções e ofertas', 'Grupos comerciais para divulgar a vitrine'][index] || 'Comunidades relacionadas',
     query: term
   }));
+  const openFacebookGroupSearch = (query: string) => {
+    copy(`${facebookCopy}\n\nVideo: ${generatedVideo.label}`);
+    const url = `https://www.facebook.com/search/groups/?q=${encodeURIComponent(query)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
   const allProfileIds = profiles.map((profile) => profile.id);
   const storageKey = `storefy.video.schedule.${generatedVideo.fileName}`;
   const defaultSchedule: ScheduledVideoPost[] = [
@@ -1060,7 +1064,7 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
                 <div className="mt-4 rounded-2xl border border-brand-500/20 bg-brand-500/[.06] p-4">
                   <p className="text-[10px] font-black uppercase tracking-[.2em] text-brand-500">Busca por nicho</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {groupSearchTerms.map((term) => <button key={term} onClick={() => copy(term)} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-black text-white hover:border-brand-500/50">{term}</button>)}
+                    {groupSearchTerms.map((term) => <button key={term} onClick={() => openFacebookGroupSearch(term)} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-black text-white hover:border-brand-500/50">Buscar: {term}</button>)}
                   </div>
                 </div>
                 <textarea readOnly value={facebookCopy} className="mt-4 h-44 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm leading-6 text-slate-200 outline-none" />
@@ -1068,8 +1072,8 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
               </div>
               <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
                 <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Resultados da busca</p>
-                <h4 className="mt-2 font-display text-xl font-bold text-white">Grupos alinhados com {nicheName}</h4>
-                <div className="mt-4 space-y-2">{groupSearchResults.map((group) => <div key={group.id} className="rounded-2xl border border-white/10 bg-white/[.035] p-3"><div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-white">{group.name}</span><p className="mt-1 text-xs text-slate-500">{group.members} membros • {group.fit}</p></div><button onClick={() => copy(`${facebookCopy}\n\nGrupo: ${group.name}\nBusca: ${group.query}`)} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Divulgar</button></div></div>)}</div>
+                <h4 className="mt-2 font-display text-xl font-bold text-white">Buscar grupos no Facebook</h4>
+                <div className="mt-4 space-y-2">{groupSearchResults.map((group) => <div key={group.id} className="rounded-2xl border border-white/10 bg-white/[.035] p-3"><div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-white">{group.title}</span><p className="mt-1 text-xs text-slate-500">{group.description}</p><p className="mt-2 font-mono text-[11px] font-black text-brand-500">{group.query}</p></div><button onClick={() => openFacebookGroupSearch(group.query)} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Divulgar</button></div></div>)}</div>
               </div>
             </div>
           )}
