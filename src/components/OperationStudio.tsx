@@ -897,7 +897,16 @@ type ScheduledVideoPost = {
   date: string;
   time: string;
   channel: 'Instagram' | 'TikTok' | 'Facebook' | 'WhatsApp';
-  status: 'Pronto' | 'IA ativa';
+  status: 'Pronto' | 'IA ativa' | 'Publicado';
+  targets?: string[];
+};
+
+type PublishingProfile = {
+  id: string;
+  label: string;
+  channel: ScheduledVideoPost['channel'];
+  handle: string;
+  detail: string;
 };
 
 function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { generatedVideo: { url: string; fileName: string; label: string }; onDownload: () => void; onClose: () => void }) {
@@ -906,21 +915,33 @@ function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { genera
     date.setDate(date.getDate() + days);
     return date.toISOString().slice(0, 10);
   };
+  const profiles: PublishingProfile[] = [
+    { id: 'instagram-feed', label: 'Instagram', channel: 'Instagram', handle: '@perfil.oficial', detail: 'Feed + Reels' },
+    { id: 'tiktok-main', label: 'TikTok', channel: 'TikTok', handle: '@perfilviral', detail: 'Publicacao vertical' },
+    { id: 'facebook-page', label: 'Facebook', channel: 'Facebook', handle: 'Pagina da loja', detail: 'Pagina + grupos' },
+    { id: 'whatsapp-status', label: 'WhatsApp', channel: 'WhatsApp', handle: 'Status e lista', detail: 'Status + broadcast' }
+  ];
+  const facebookCopy = `🔥 Acabei de separar uma oferta que vale conferir.\n\nAssista o video, veja os detalhes e me chama no WhatsApp para receber agora.\n\n✅ Atendimento rapido\n✅ Vitrine organizada\n✅ Oferta pronta para hoje`;
+  const facebookGroups = ['Achadinhos e Ofertas Brasil', 'Promoções e Cupons Hoje', 'Compras Online Brasil', 'Ofertas da Semana'];
+  const allProfileIds = profiles.map((profile) => profile.id);
   const storageKey = `storefy.video.schedule.${generatedVideo.fileName}`;
   const defaultSchedule: ScheduledVideoPost[] = [
-    { id: 'post-1', date: dateFromNow(1), time: '09:00', channel: 'Instagram', status: 'Pronto' },
-    { id: 'post-2', date: dateFromNow(2), time: '12:30', channel: 'TikTok', status: 'Pronto' },
-    { id: 'post-3', date: dateFromNow(3), time: '19:00', channel: 'Facebook', status: 'Pronto' }
+    { id: 'post-1', date: dateFromNow(1), time: '09:00', channel: 'Instagram', status: 'Pronto', targets: ['instagram-feed'] },
+    { id: 'post-2', date: dateFromNow(2), time: '12:30', channel: 'TikTok', status: 'Pronto', targets: ['tiktok-main'] },
+    { id: 'post-3', date: dateFromNow(3), time: '19:00', channel: 'Facebook', status: 'Pronto', targets: ['facebook-page'] }
   ];
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledVideoPost[]>(() => {
     try {
       const raw = window.localStorage.getItem(storageKey);
       const parsed = raw ? JSON.parse(raw) : null;
-      return Array.isArray(parsed) && parsed.length ? parsed : defaultSchedule;
+      if (!Array.isArray(parsed) || !parsed.length) return defaultSchedule;
+      return parsed.map((post: ScheduledVideoPost) => ({ ...post, targets: post.targets?.length ? post.targets : [profiles.find((profile) => profile.channel === post.channel)?.id || profiles[0].id] }));
     } catch {
       return defaultSchedule;
     }
   });
+  const [selectedProfiles, setSelectedProfiles] = useState<string[]>(() => Array.from(new Set(scheduledPosts.flatMap((post) => post.targets || []))).filter(Boolean));
+  const [managerTab, setManagerTab] = useState<'agenda' | 'facebook' | 'gestao'>('agenda');
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(scheduledPosts));
@@ -929,79 +950,126 @@ function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { genera
   const updatePost = (id: string, patch: Partial<ScheduledVideoPost>) => {
     setScheduledPosts((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item));
   };
+  const toggleProfile = (id: string) => {
+    setSelectedProfiles((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id]);
+  };
+  const postInAllProfiles = () => {
+    setSelectedProfiles(allProfileIds);
+    setScheduledPosts((items) => items.map((item) => ({ ...item, targets: allProfileIds })));
+  };
   const addPost = () => {
+    const targets = selectedProfiles.length ? selectedProfiles : ['instagram-feed'];
+    const firstTarget = profiles.find((profile) => profile.id === targets[0]) || profiles[0];
     setScheduledPosts((items) => [
       ...items,
-      { id: `post-${Date.now()}`, date: dateFromNow(items.length + 1), time: '18:00', channel: 'Instagram', status: 'Pronto' }
+      { id: `post-${Date.now()}`, date: dateFromNow(items.length + 1), time: '18:00', channel: firstTarget.channel, status: 'Pronto', targets }
     ]);
   };
-  const activateAll = () => setScheduledPosts((items) => items.map((item) => ({ ...item, status: 'IA ativa' })));
+  const activateAll = () => setScheduledPosts((items) => items.map((item) => ({ ...item, status: 'IA ativa', targets: selectedProfiles.length ? selectedProfiles : item.targets })));
+  const markPublished = (id: string) => updatePost(id, { status: 'Publicado' });
   const removePost = (id: string) => setScheduledPosts((items) => items.length === 1 ? items : items.filter((item) => item.id !== id));
-  const activeCount = scheduledPosts.filter((item) => item.status === 'IA ativa').length;
+  const activeCount = scheduledPosts.filter((item) => item.status === 'IA ativa' || item.status === 'Publicado').length;
+  const nextPost = scheduledPosts.slice().sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0];
 
   return (
     <div className="fixed inset-0 z-[80] grid min-h-dvh place-items-center overflow-y-auto bg-[#030305]/95 p-3 sm:p-5">
-      <div className="grid w-full max-w-6xl gap-5 rounded-3xl border border-brand-500/30 bg-[#09090d] p-4 shadow-2xl lg:grid-cols-[310px_1fr]">
+      <div className="grid w-full max-w-7xl gap-5 rounded-3xl border border-brand-500/30 bg-[#09090d] p-4 shadow-2xl xl:grid-cols-[300px_1fr]">
         <div className="space-y-4">
-          <video src={generatedVideo.url} autoPlay controls loop muted playsInline preload="auto" className="mx-auto aspect-[9/16] w-full max-w-[310px] rounded-2xl bg-black object-cover" />
-          <div className="flex flex-wrap gap-2">
-            <button onClick={onDownload} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black"><Download size={16} /> Baixar</button>
-            <button onClick={onClose} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm font-black text-white">Outro video</button>
+          <video src={generatedVideo.url} autoPlay controls loop muted playsInline preload="auto" className="mx-auto aspect-[9/16] w-full max-w-[300px] rounded-2xl bg-black object-cover" />
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={onDownload} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black"><Download size={16} /> Baixar</button>
+            <button onClick={onClose} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm font-black text-white">Outro video</button>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-white/[.035] p-4">
+            <p className="text-[10px] font-black uppercase tracking-[.22em] text-brand-500">Gerenciar video postado</p>
+            <h4 className="mt-2 font-display text-xl font-bold text-white">{generatedVideo.label}</h4>
+            <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+              <div className="rounded-2xl bg-black/25 p-3"><span className="text-[10px] text-slate-500">Agendados</span><b className="block text-lg text-white">{scheduledPosts.length}</b></div>
+              <div className="rounded-2xl bg-black/25 p-3"><span className="text-[10px] text-slate-500">Ativos</span><b className="block text-lg text-emerald-300">{activeCount}</b></div>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-400">Proximo post: <span className="font-bold text-white">{nextPost?.date} às {nextPost?.time}</span></p>
           </div>
         </div>
 
         <div className="p-2 lg:p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <span className="w-fit rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.22em] text-brand-500">Pronto para postar</span>
-              <h3 className="mt-4 font-display text-3xl font-bold text-white">{generatedVideo.label}</h3>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Agora organize os dias de postagem desse video. A IA publica nos canais marcados conforme o calendario abaixo.</p>
+              <span className="w-fit rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.22em] text-brand-500">Central de publicacao</span>
+              <h3 className="mt-4 font-display text-3xl font-bold text-white">Programar e gerenciar divulgacao</h3>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Escolha os perfis, ajuste a agenda e acompanhe o video em cada canal. A IA publica conforme a programacao ativa.</p>
             </div>
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-right">
-              <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-300">Postagem IA</p>
-              <b className="mt-1 block text-xl text-white">{activeCount}/{scheduledPosts.length}</b>
-            </div>
+            <button onClick={postInAllProfiles} className="rounded-2xl bg-brand-500 px-4 py-3 text-sm font-black text-black">Postar em todos</button>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Ultimo passo</p>
-                <h4 className="mt-1 font-display text-2xl font-bold text-white">Calendario de divulgacao</h4>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={addPost} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-black text-white hover:bg-white/[.08]">Adicionar dia</button>
-                <button onClick={activateAll} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Ativar postagem IA</button>
-              </div>
-            </div>
+          <div className="mt-6 grid gap-3 md:grid-cols-4">
+            {profiles.map((profile) => {
+              const selected = selectedProfiles.includes(profile.id);
+              return (
+                <button key={profile.id} onClick={() => toggleProfile(profile.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-brand-500 bg-brand-500/10' : 'border-white/10 bg-white/[.035] hover:bg-white/[.06]'}`}>
+                  <span className={`grid h-10 w-10 place-items-center rounded-xl ${selected ? 'bg-brand-500 text-black' : 'bg-white/10 text-white'}`}>{profile.label[0]}</span>
+                  <b className="mt-3 block text-sm text-white">{profile.label}</b>
+                  <span className="mt-1 block text-xs text-slate-400">{profile.handle}</span>
+                  <small className="mt-2 block text-[11px] font-bold text-slate-500">{profile.detail}</small>
+                </button>
+              );
+            })}
+          </div>
 
-            <div className="mt-4 space-y-3">
-              {scheduledPosts.map((post, index) => (
-                <div key={post.id} className="grid gap-2 rounded-2xl border border-white/10 bg-white/[.035] p-3 md:grid-cols-[70px_1fr_110px_130px_95px_auto]">
-                  <div className="rounded-xl bg-black/25 px-3 py-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Post</span>
-                    <b className="block text-sm text-white">#{index + 1}</b>
+          <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
+            {([{ id: 'agenda', label: 'Calendario' }, { id: 'facebook', label: 'Facebook grupos' }, { id: 'gestao', label: 'Gestao do video' }] as const).map((tab) => (
+              <button key={tab.id} onClick={() => setManagerTab(tab.id)} className={`rounded-xl px-4 py-2 text-xs font-black ${managerTab === tab.id ? 'bg-white text-black' : 'text-slate-400 hover:text-white'}`}>{tab.label}</button>
+            ))}
+          </div>
+
+          {managerTab === 'agenda' && (
+            <div className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div><p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Ultimo passo</p><h4 className="mt-1 font-display text-2xl font-bold text-white">Calendario de divulgacao</h4></div>
+                <div className="flex flex-wrap gap-2"><button onClick={addPost} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-black text-white hover:bg-white/[.08]">Adicionar dia</button><button onClick={activateAll} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Ativar postagem IA</button></div>
+              </div>
+              <div className="mt-4 space-y-3">
+                {scheduledPosts.map((post, index) => (
+                  <div key={post.id} className="grid gap-2 rounded-2xl border border-white/10 bg-white/[.035] p-3 md:grid-cols-[70px_1fr_105px_130px_1.2fr_95px_auto]">
+                    <div className="rounded-xl bg-black/25 px-3 py-2"><span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Post</span><b className="block text-sm text-white">#{index + 1}</b></div>
+                    <input type="date" value={post.date} onChange={(event) => updatePost(post.id, { date: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
+                    <input type="time" value={post.time} onChange={(event) => updatePost(post.id, { time: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
+                    <select value={post.channel} onChange={(event) => updatePost(post.id, { channel: event.target.value as ScheduledVideoPost['channel'] })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>WhatsApp</option></select>
+                    <div className="flex flex-wrap gap-1.5 rounded-xl border border-white/10 bg-black/20 p-2">
+                      {profiles.map((profile) => <button key={profile.id} onClick={() => { const targets = post.targets || []; updatePost(post.id, { targets: targets.includes(profile.id) ? targets.filter((id) => id !== profile.id) : [...targets, profile.id] }); }} className={`rounded-lg px-2 py-1 text-[10px] font-black ${post.targets?.includes(profile.id) ? 'bg-brand-500 text-black' : 'bg-white/10 text-slate-300'}`}>{profile.label}</button>)}
+                    </div>
+                    <button onClick={() => updatePost(post.id, { status: post.status === 'IA ativa' ? 'Pronto' : 'IA ativa' })} className={`rounded-xl px-3 py-2 text-xs font-black ${post.status === 'IA ativa' ? 'bg-emerald-400/15 text-emerald-300' : post.status === 'Publicado' ? 'bg-sky-400/15 text-sky-300' : 'bg-white/10 text-slate-300'}`}>{post.status}</button>
+                    <button onClick={() => removePost(post.id)} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-slate-400 hover:text-white">Remover</button>
                   </div>
-                  <input type="date" value={post.date} onChange={(event) => updatePost(post.id, { date: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
-                  <input type="time" value={post.time} onChange={(event) => updatePost(post.id, { time: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
-                  <select value={post.channel} onChange={(event) => updatePost(post.id, { channel: event.target.value as ScheduledVideoPost['channel'] })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none">
-                    <option>Instagram</option>
-                    <option>TikTok</option>
-                    <option>Facebook</option>
-                    <option>WhatsApp</option>
-                  </select>
-                  <button onClick={() => updatePost(post.id, { status: post.status === 'IA ativa' ? 'Pronto' : 'IA ativa' })} className={`rounded-xl px-3 py-2 text-xs font-black ${post.status === 'IA ativa' ? 'bg-emerald-400/15 text-emerald-300' : 'bg-white/10 text-slate-300'}`}>
-                    {post.status}
-                  </button>
-                  <button onClick={() => removePost(post.id)} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-slate-400 hover:text-white">Remover</button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {managerTab === 'facebook' && (
+            <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_.8fr]">
+              <div className="rounded-3xl border border-white/10 bg-white/[.035] p-5">
+                <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Modo direto Facebook</p>
+                <h4 className="mt-2 font-display text-2xl font-bold text-white">Video + copy para grupos</h4>
+                <textarea readOnly value={facebookCopy} className="mt-4 h-44 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm leading-6 text-slate-200 outline-none" />
+                <div className="mt-3 flex flex-wrap gap-2"><button onClick={() => copy(facebookCopy)} className="rounded-xl bg-white px-4 py-3 text-xs font-black text-black">Copiar copy</button><button onClick={onDownload} className="rounded-xl border border-white/10 px-4 py-3 text-xs font-black text-white">Baixar video para anexar</button><button onClick={() => { copy(`${facebookCopy}\n\nVideo: ${generatedVideo.label}`); }} className="rounded-xl bg-brand-500 px-4 py-3 text-xs font-black text-black">Copiar pacote</button></div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
+                <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Grupos sugeridos</p>
+                <div className="mt-4 space-y-2">{facebookGroups.map((group) => <div key={group} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.035] p-3"><span className="text-sm font-bold text-white">{group}</span><button onClick={() => copy(`${facebookCopy}\n\nGrupo: ${group}`)} className="text-xs font-black text-brand-500">Preparar</button></div>)}</div>
+              </div>
+            </div>
+          )}
+
+          {managerTab === 'gestao' && (
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              {scheduledPosts.map((post, index) => <article key={post.id} className="rounded-3xl border border-white/10 bg-white/[.035] p-5"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Publicacao #{index + 1}</p><h4 className="mt-2 font-display text-xl font-bold text-white">{post.channel}</h4><p className="mt-2 text-sm text-slate-400">{post.date} às {post.time}</p><p className="mt-3 text-xs text-slate-500">Perfis: {(post.targets || []).map((id) => profiles.find((profile) => profile.id === id)?.label).filter(Boolean).join(', ') || 'Selecionar perfis'}</p><div className="mt-4 flex gap-2"><button onClick={() => markPublished(post.id)} className="rounded-xl bg-emerald-400/15 px-3 py-2 text-xs font-black text-emerald-300">Marcar publicado</button><button onClick={() => updatePost(post.id, { status: 'Pronto' })} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-slate-300">Pausar</button></div></article>)}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 
 
