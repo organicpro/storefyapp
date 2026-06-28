@@ -892,8 +892,116 @@ function GenerationOverlay() {
   return <div className="fixed inset-0 z-[80] grid min-h-dvh place-items-center bg-[#030305]/95 p-4"><div className="w-full max-w-sm rounded-3xl border border-brand-500/30 bg-[#0b0b10] p-6 text-center shadow-2xl"><div className="mx-auto grid h-16 w-16 animate-spin place-items-center rounded-full border-4 border-white/10 border-t-brand-500" /><p className="mt-5 text-xs font-black uppercase tracking-[.24em] text-brand-500">Gerando video</p><h3 className="mt-2 font-display text-2xl font-bold text-white">{phrase}</h3><p className="mt-2 text-sm leading-6 text-slate-400">Quase pronto para postar.</p></div></div>;
 }
 
+type ScheduledVideoPost = {
+  id: string;
+  date: string;
+  time: string;
+  channel: 'Instagram' | 'TikTok' | 'Facebook' | 'WhatsApp';
+  status: 'Pronto' | 'IA ativa';
+};
+
 function GeneratedVideoPreview({ generatedVideo, onDownload, onClose }: { generatedVideo: { url: string; fileName: string; label: string }; onDownload: () => void; onClose: () => void }) {
-  return <div className="fixed inset-0 z-[80] grid min-h-dvh place-items-center overflow-y-auto bg-[#030305]/95 p-3 sm:p-5"><div className="grid w-full max-w-4xl gap-5 rounded-3xl border border-brand-500/30 bg-[#09090d] p-4 shadow-2xl lg:grid-cols-[340px_1fr]"><video src={generatedVideo.url} autoPlay controls loop muted playsInline preload="auto" className="mx-auto aspect-[9/16] w-full max-w-[340px] rounded-2xl bg-black object-cover" /><div className="flex flex-col justify-center p-2 lg:p-5"><span className="w-fit rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.22em] text-brand-500">Pronto para postar</span><h3 className="mt-4 font-display text-3xl font-bold text-white">{generatedVideo.label}</h3><p className="mt-3 max-w-md text-sm leading-6 text-slate-300">Seu video ja virou uma peca de divulgacao. Assista, aprove e baixe para usar nos seus canais.</p><div className="mt-6 flex flex-wrap gap-3"><button onClick={onDownload} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black"><Download size={16} /> Baixar video</button><button onClick={onClose} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm font-black text-white">Criar outra versao</button></div></div></div></div>;
+  const dateFromNow = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().slice(0, 10);
+  };
+  const storageKey = `storefy.video.schedule.${generatedVideo.fileName}`;
+  const defaultSchedule: ScheduledVideoPost[] = [
+    { id: 'post-1', date: dateFromNow(1), time: '09:00', channel: 'Instagram', status: 'Pronto' },
+    { id: 'post-2', date: dateFromNow(2), time: '12:30', channel: 'TikTok', status: 'Pronto' },
+    { id: 'post-3', date: dateFromNow(3), time: '19:00', channel: 'Facebook', status: 'Pronto' }
+  ];
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledVideoPost[]>(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed) && parsed.length ? parsed : defaultSchedule;
+    } catch {
+      return defaultSchedule;
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(storageKey, JSON.stringify(scheduledPosts));
+  }, [scheduledPosts, storageKey]);
+
+  const updatePost = (id: string, patch: Partial<ScheduledVideoPost>) => {
+    setScheduledPosts((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item));
+  };
+  const addPost = () => {
+    setScheduledPosts((items) => [
+      ...items,
+      { id: `post-${Date.now()}`, date: dateFromNow(items.length + 1), time: '18:00', channel: 'Instagram', status: 'Pronto' }
+    ]);
+  };
+  const activateAll = () => setScheduledPosts((items) => items.map((item) => ({ ...item, status: 'IA ativa' })));
+  const removePost = (id: string) => setScheduledPosts((items) => items.length === 1 ? items : items.filter((item) => item.id !== id));
+  const activeCount = scheduledPosts.filter((item) => item.status === 'IA ativa').length;
+
+  return (
+    <div className="fixed inset-0 z-[80] grid min-h-dvh place-items-center overflow-y-auto bg-[#030305]/95 p-3 sm:p-5">
+      <div className="grid w-full max-w-6xl gap-5 rounded-3xl border border-brand-500/30 bg-[#09090d] p-4 shadow-2xl lg:grid-cols-[310px_1fr]">
+        <div className="space-y-4">
+          <video src={generatedVideo.url} autoPlay controls loop muted playsInline preload="auto" className="mx-auto aspect-[9/16] w-full max-w-[310px] rounded-2xl bg-black object-cover" />
+          <div className="flex flex-wrap gap-2">
+            <button onClick={onDownload} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black"><Download size={16} /> Baixar</button>
+            <button onClick={onClose} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm font-black text-white">Outro video</button>
+          </div>
+        </div>
+
+        <div className="p-2 lg:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <span className="w-fit rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.22em] text-brand-500">Pronto para postar</span>
+              <h3 className="mt-4 font-display text-3xl font-bold text-white">{generatedVideo.label}</h3>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Agora organize os dias de postagem desse video. A IA publica nos canais marcados conforme o calendario abaixo.</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-right">
+              <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-300">Postagem IA</p>
+              <b className="mt-1 block text-xl text-white">{activeCount}/{scheduledPosts.length}</b>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Ultimo passo</p>
+                <h4 className="mt-1 font-display text-2xl font-bold text-white">Calendario de divulgacao</h4>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={addPost} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-black text-white hover:bg-white/[.08]">Adicionar dia</button>
+                <button onClick={activateAll} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Ativar postagem IA</button>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {scheduledPosts.map((post, index) => (
+                <div key={post.id} className="grid gap-2 rounded-2xl border border-white/10 bg-white/[.035] p-3 md:grid-cols-[70px_1fr_110px_130px_95px_auto]">
+                  <div className="rounded-xl bg-black/25 px-3 py-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Post</span>
+                    <b className="block text-sm text-white">#{index + 1}</b>
+                  </div>
+                  <input type="date" value={post.date} onChange={(event) => updatePost(post.id, { date: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
+                  <input type="time" value={post.time} onChange={(event) => updatePost(post.id, { time: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
+                  <select value={post.channel} onChange={(event) => updatePost(post.id, { channel: event.target.value as ScheduledVideoPost['channel'] })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none">
+                    <option>Instagram</option>
+                    <option>TikTok</option>
+                    <option>Facebook</option>
+                    <option>WhatsApp</option>
+                  </select>
+                  <button onClick={() => updatePost(post.id, { status: post.status === 'IA ativa' ? 'Pronto' : 'IA ativa' })} className={`rounded-xl px-3 py-2 text-xs font-black ${post.status === 'IA ativa' ? 'bg-emerald-400/15 text-emerald-300' : 'bg-white/10 text-slate-300'}`}>
+                    {post.status}
+                  </button>
+                  <button onClick={() => removePost(post.id)} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-slate-400 hover:text-white">Remover</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 
