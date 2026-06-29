@@ -160,9 +160,17 @@ function isolateStoreIdentity<T extends StoreConfig>(site: T, knownStoreNames: s
   return { ...site, welcomeMessage: makeStoreWelcomeMessage(site.name) };
 }
 
-function isolateStoreList(sites: StoreSite[]) {
-  const names = sites.map((site) => site.name).filter(Boolean);
-  return sites.map((site) => isolateStoreIdentity(site, names));
+function normalizeStoreSites(sites: StoreSite[]) {
+  const seenIds = new Set<string>();
+  const normalized = sites.map((site, index) => {
+    const safeSite = makeSite(site, index + 1);
+    const duplicateOrMissingId = !safeSite.id || seenIds.has(safeSite.id);
+    const id = duplicateOrMissingId ? createId('site') : safeSite.id;
+    seenIds.add(id);
+    return { ...safeSite, id };
+  });
+  const names = normalized.map((site) => site.name).filter(Boolean);
+  return normalized.map((site) => isolateStoreIdentity(site, names));
 }
 
 function getStoreProductIds(config: StoreConfig, products: Product[]) {
@@ -718,7 +726,7 @@ function App() {
     const legacyConfig = readStorage<StoreConfig>(STORAGE_KEYS.storeConfig, DEFAULT_STORE_CONFIG);
     const storedSites = readStorage<StoreSite[]>(STORAGE_KEYS.sites, []);
     const initialSites = storedSites.length ? storedSites.map((site, index) => makeSite(site, index + 1)) : [makeSite(legacyConfig)];
-    return isolateStoreList(initialSites);
+    return normalizeStoreSites(initialSites);
   });
   const [activeSiteId, setActiveSiteId] = useState(() => readStorage<string>(STORAGE_KEYS.activeSiteId, ''));
 
@@ -810,7 +818,7 @@ function App() {
         setProducts(INITIAL_PRODUCTS);
       }
       if (workspace?.sites?.length) {
-        setSites(isolateStoreList(workspace.sites.map((site, index) => makeSite(site, index + 1))));
+        setSites(normalizeStoreSites(workspace.sites.map((site, index) => makeSite(site, index + 1))));
       } else {
         const cleanSite = isolateStoreIdentity(makeSite(DEFAULT_STORE_CONFIG));
         setSites([cleanSite]);
@@ -832,6 +840,21 @@ function App() {
     if (!activeSiteId && sites[0]?.id) {
       setActiveSiteId(sites[0].id);
     }
+  }, [activeSiteId, sites]);
+
+  useEffect(() => {
+    const seenIds = new Set<string>();
+    const hasInvalidId = sites.some((site) => {
+      const invalid = !site.id || seenIds.has(site.id);
+      if (site.id) seenIds.add(site.id);
+      return invalid;
+    });
+    if (!hasInvalidId) return;
+
+    const fixedSites = normalizeStoreSites(sites);
+    const activeIndex = Math.max(0, sites.findIndex((site) => site.id === activeSiteId));
+    setSites(fixedSites);
+    setActiveSiteId(fixedSites[activeIndex]?.id || fixedSites[0]?.id || '');
   }, [activeSiteId, sites]);
 
   useEffect(() => {
@@ -949,8 +972,13 @@ function App() {
 
   const handleUpdateStoreConfig = (newConfig: StoreConfig) => {
     setSites(prev => {
+      const targetId = activeSiteId || storeConfig.id;
+      const fallbackIndex = Math.max(0, prev.findIndex(site => site.id === storeConfig.id));
+      const targetIndex = Math.max(0, prev.findIndex(site => site.id === targetId));
+      const indexToUpdate = targetIndex >= 0 ? targetIndex : fallbackIndex;
       const knownNames = prev.map(site => site.name).filter(Boolean);
-      return prev.map((site, index) => site.id === storeConfig.id
+
+      return prev.map((site, index) => index === indexToUpdate
         ? isolateStoreIdentity(makeSite({ ...site, ...newConfig, id: site.id }, index + 1), knownNames)
         : site
       );
@@ -1101,7 +1129,8 @@ function App() {
     }
 
     try {
-      const sitesForSave = sites.map((site, index) => site.id === targetSite.id
+      const targetIndexForSave = Math.max(0, sites.findIndex(site => site.id === targetSite.id));
+      const sitesForSave = sites.map((site, index) => index === targetIndexForSave
         ? makeSite({ ...site, productIds: targetProductIds }, index + 1)
         : site
       );
@@ -1131,7 +1160,9 @@ function App() {
       }
 
       const netlifyUrl = data.url || publicUrl;
-      setSites(prev => prev.map(site => site.id === targetSite.id
+      setSites(prev => {
+        const targetIndex = Math.max(0, prev.findIndex(site => site.id === targetSite.id));
+        return prev.map((site, index) => index === targetIndex
         ? {
             ...site,
             status: 'published',
@@ -1144,7 +1175,8 @@ function App() {
             lastNetlifyDeployId: data.deployId || site.lastNetlifyDeployId
           }
         : site
-      ));
+      );
+      });
 
       if (targetSite.downloadHtmlFallback) {
         downloadHtml(filename, html);
