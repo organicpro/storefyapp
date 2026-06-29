@@ -432,7 +432,7 @@ export default function OperationStudio({
   if (mode === 'profile') return (
     <section className="space-y-6 text-left">
       <header><p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Perfil social automatico</p><h1 className="mt-2 font-display text-3xl font-bold text-white">Uma presenca que conversa com sua vitrine.</h1><p className="mt-2 text-sm text-slate-400">Nome, @, bio e CTA usam o mesmo nicho, identidade e WhatsApp da operacao ativa.</p></header>
-      <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[.09] to-white/[.02] p-6"><div className="flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-2xl text-black" style={{ backgroundColor: niche.accent }}><UserRound /></div><div><p className="font-black text-white">{profile.name}</p><p className="text-sm text-slate-400">{profile.handle}</p></div></div><p className="mt-6 whitespace-pre-line text-sm leading-6 text-slate-200">{profile.bio}</p><div className="mt-6 flex flex-wrap gap-2">{profile.channels.map((channel) => <span key={channel} className="rounded-full border border-white/10 px-3 py-1 text-xs font-bold text-slate-300">{channel === 'instagram' ? 'Instagram' : 'Music2'}</span>)}</div></div><div className="space-y-4 rounded-3xl border border-white/10 bg-white/[.03] p-6"><label className="block text-xs font-black uppercase tracking-wider text-slate-400">@ sugerido<input value={profile.handle} onChange={(event) => saveOperation({ profileHandle: event.target.value })} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm text-white outline-none" /></label><label className="block text-xs font-black uppercase tracking-wider text-slate-400">Bio<input value={profile.bio} onChange={(event) => saveOperation({ profileBio: event.target.value })} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm text-white outline-none" /></label><button onClick={() => copy(`${profile.handle}\n${profile.bio}`)} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black"><Copy size={16} /> Copiar perfil</button></div></div>
+      <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[.09] to-white/[.02] p-6"><div className="flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-2xl text-black" style={{ backgroundColor: niche.accent }}><UserRound /></div><div><p className="font-black text-white">{profile.name}</p><p className="text-sm text-slate-400">{profile.handle}</p></div></div><p className="mt-6 whitespace-pre-line text-sm leading-6 text-slate-200">{profile.bio}</p><div className="mt-6 flex flex-wrap gap-2">{profile.channels.map((channel) => <span key={channel} className="rounded-full border border-white/10 px-3 py-1 text-xs font-bold text-slate-300">{channel === 'instagram' ? 'Instagram' : 'Music2'}</span>)}</div></div><div className="space-y-4 rounded-3xl border border-white/10 bg-white/[.03] p-6"><label className="block text-xs font-black uppercase tracking-wider text-slate-400">@ sugerido<input value={profile.handle} onChange={(event) => saveOperation({ profileHandle: event.target.value })} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm text-white outline-none" /></label><label className="block text-xs font-black uppercase tracking-wider text-slate-400">Bio<input value={profile.bio} onChange={(event) => saveOperation({ profileBio: event.target.value })} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm text-white outline-none" /></label><button onClick={() => copy(`${profile.handle}\n${profile.bio}`)} className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-black text-black"><Copy size={16} /> Copiar perfil</button></div></div>
     </section>
   );
 
@@ -443,8 +443,8 @@ export default function OperationStudio({
       {!videoLibraryPage ? <>
         <header><p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">Videos automaticos</p><h1 className="mt-2 font-display text-3xl font-bold text-white">Escolha o tipo de video.</h1><p className="mt-2 max-w-3xl text-sm text-slate-400">Primeiro escolha uma entrada. A capa de Influencer IA pode usar GIF, mas dentro da biblioteca aparecem apenas os modelos/personas.</p></header>
         <div className="grid max-w-3xl gap-5 sm:grid-cols-2">
-          <VideoCard title="Video viral de moldura" description="Entra na biblioteca de videos viralizados. A Storefy usa o video base e aplica por cima a moldura, @ e legenda da operacao." icon={<LayoutTemplate size={22} />} active={activeVideoLibrary === 'frame'} onChoose={() => chooseVideoLibrary('frame')} accent={viralVideo.color} phrase={viralVideo.hook} mediaUrl={viralVideo.previewGif || viralVideo.baseVideoUrl} badge="Moldura + @" />
-          <VideoCard title="Video Influencer IA" description="Escolha uma modelo IA e gere um criativo com a legenda da sua loja." icon={<Film size={22} />} active={activeVideoLibrary === 'caption'} onChoose={() => chooseVideoLibrary('caption')} accent={influencer.color} phrase={influencer.name} mediaUrl={influencerCover} badge="Legenda IA" />
+          <VideoCard title="Video viral de moldura" description="Entra na biblioteca de videos viralizados. A Storefy usa o video base e aplica por cima a moldura, @ e legenda da operacao." icon={<LayoutTemplate size={22} />} active={activeVideoLibrary === 'frame'} onChoose={() => chooseVideoLibrary('frame')} accent={viralVideo.color} phrase={viralVideo.hook} mediaUrl={viralVideo.previewGif || viralVideo.baseVideoUrl} badge="Moldura + @" previewAlwaysOn />
+          <VideoCard title="Video Influencer IA" description="Escolha uma modelo IA e gere um criativo com a legenda da sua loja." icon={<Film size={22} />} active={activeVideoLibrary === 'caption'} onChoose={() => chooseVideoLibrary('caption')} accent={influencer.color} phrase={influencer.name} mediaUrl={influencerCover} badge="Legenda IA" previewAlwaysOn />
         </div>
       </> : <>
         <header className="flex flex-wrap items-start justify-between gap-4"><div><button onClick={() => { setVideoLibraryPage(null); setGeneratedVideo(null); }} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-white hover:bg-white/[.06]"><ChevronLeft size={15} /> Voltar aos tipos</button><p className="text-xs font-black uppercase tracking-[.28em] text-brand-500">{videoLibraryPage === 'frame' ? 'Biblioteca de moldura' : 'Biblioteca de modelos IA'}</p><h1 className="mt-2 font-display text-3xl font-bold text-white">{videoLibraryPage === 'frame' ? 'Escolha um video viralizado base' : 'Escolha uma modelo'}</h1><p className="mt-2 max-w-3xl text-sm text-slate-400">{videoLibraryPage === 'frame' ? 'O video base fica por baixo. A Storefy aplica apenas a moldura, @ e legenda em cima.' : 'Cada card representa uma persona. Escolha uma modelo para criar o video com a legenda da sua loja.'}</p></div></header>
@@ -479,15 +479,25 @@ export default function OperationStudio({
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500/15 text-brand-500"><Film size={22} /></div>
           </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <button onClick={() => onOpenSection('videos')} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:border-brand-500/40 hover:bg-white/[.06]">
-              <Sparkles className="text-brand-500" size={19} />
-              <b className="mt-3 block text-sm text-white">Conteudo viral</b>
-              <span className="mt-1 block text-xs leading-5 text-slate-400">Entrar nos videos de moldura e escolher uma base viral.</span>
+            <button onClick={() => onOpenSection('videos')} className="group overflow-hidden rounded-2xl border border-white/10 bg-black/20 text-left transition hover:-translate-y-0.5 hover:border-brand-500/40 hover:bg-white/[.06]">
+              <div className="aspect-[9/12] bg-black/30 p-2">
+                <PreviewVideo src={viralVideo.previewGif || viralVideo.baseVideoUrl} active className="h-full w-full rounded-xl object-cover object-center" />
+              </div>
+              <div className="p-4">
+                <Sparkles className="text-brand-500" size={18} />
+                <b className="mt-3 block text-sm text-white">Conteudo viral</b>
+                <span className="mt-1 block text-xs leading-5 text-slate-400">Entrar nos videos de moldura e escolher uma base viral.</span>
+              </div>
             </button>
-            <button onClick={() => onOpenSection('videos')} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:border-brand-500/40 hover:bg-white/[.06]">
-              <UserRound className="text-brand-500" size={19} />
-              <b className="mt-3 block text-sm text-white">Influencer IA</b>
-              <span className="mt-1 block text-xs leading-5 text-slate-400">Escolher uma modelo e gerar o video com o texto da loja.</span>
+            <button onClick={() => onOpenSection('videos')} className="group overflow-hidden rounded-2xl border border-white/10 bg-black/20 text-left transition hover:-translate-y-0.5 hover:border-brand-500/40 hover:bg-white/[.06]">
+              <div className="aspect-[9/12] bg-black/30 p-2">
+                {isVideoAsset(influencerCover) ? <PreviewVideo src={influencerCover} active className="h-full w-full rounded-xl object-cover object-center" /> : <img src={influencerCover} alt="" className="h-full w-full rounded-xl object-cover object-center" />}
+              </div>
+              <div className="p-4">
+                <UserRound className="text-brand-500" size={18} />
+                <b className="mt-3 block text-sm text-white">Influencer IA</b>
+                <span className="mt-1 block text-xs leading-5 text-slate-400">Escolher uma modelo e gerar o video com o texto da loja.</span>
+              </div>
             </button>
           </div>
         </article>
@@ -543,7 +553,7 @@ export default function OperationStudio({
             setPublishState('Publicando...');
             const result = await onPublish();
             setPublishState(result.error ? result.error : 'Publicado: ' + result.url);
-          }} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black">
+          }} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-black text-black">
             <Send size={16} /> Publicar
           </button>
           {publishState && <p className="mt-4 break-words text-xs font-bold text-slate-300">{publishState}</p>}
@@ -819,9 +829,9 @@ function isVideoAsset(url?: string) {
   return Boolean(url && /\.(mp4|webm|ogg)(\?.*)?$/i.test(url));
 }
 
-function VideoCard({ title, description, icon, active, onChoose, accent, phrase, mediaUrl, badge }: { title: string; description: string; icon: React.ReactNode; active: boolean; onChoose: () => void; accent: string; phrase: string; mediaUrl?: string; badge: string }) {
+function VideoCard({ title, description, icon, active, onChoose, accent, phrase, mediaUrl, badge, previewAlwaysOn = false }: { title: string; description: string; icon: React.ReactNode; active: boolean; onChoose: () => void; accent: string; phrase: string; mediaUrl?: string; badge: string; previewAlwaysOn?: boolean }) {
   const isVideo = isVideoAsset(mediaUrl);
-  return <button onClick={onChoose} className={`group overflow-hidden rounded-2xl border text-left transition hover:-translate-y-0.5 ${active ? 'border-brand-500 bg-brand-500/10 shadow-[0_0_0_1px_rgba(212,175,55,.18)]' : 'border-white/10 bg-white/[.03] hover:bg-white/[.06]'}`}><div className="aspect-[9/14] p-3" style={{ background: `linear-gradient(145deg, ${accent}cc, #10111b 58%, #050507)` }}>{mediaUrl ? (isVideo ? <PreviewVideo src={mediaUrl} active={active} className="h-full w-full rounded-xl object-cover object-center" /> : <img src={mediaUrl} alt="" className="h-full w-full rounded-xl object-cover object-center" />) : <div className="flex h-full flex-col justify-between rounded-xl border border-white/25 bg-black/25 p-4"><span className="flex items-center justify-between text-white">{icon}<b className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] uppercase tracking-wider">{badge}</b></span><p className="line-clamp-2 font-display text-2xl font-black leading-tight text-white">{phrase}</p><span className="text-xs font-bold text-white/70">Preview 9:16</span></div>}</div><div className="p-4"><h2 className="font-display text-lg font-bold text-white">{title}</h2><p className="mt-1 text-xs leading-5 text-slate-400">{description}</p><span className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-black">Entrar <ChevronRight size={14} /></span></div></button>;
+  return <button onClick={onChoose} className={`group overflow-hidden rounded-2xl border text-left transition hover:-translate-y-0.5 ${active ? 'border-brand-500 bg-brand-500/10 shadow-[0_0_0_1px_rgba(212,175,55,.18)]' : 'border-white/10 bg-white/[.03] hover:bg-white/[.06]'}`}><div className="aspect-[9/14] p-3" style={{ background: `linear-gradient(145deg, ${accent}cc, #10111b 58%, #050507)` }}>{mediaUrl ? (isVideo ? <PreviewVideo src={mediaUrl} active={previewAlwaysOn || active} className="h-full w-full rounded-xl object-cover object-center" /> : <img src={mediaUrl} alt="" className="h-full w-full rounded-xl object-cover object-center" />) : <div className="flex h-full flex-col justify-between rounded-xl border border-white/25 bg-black/25 p-4"><span className="flex items-center justify-between text-white">{icon}<b className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] uppercase tracking-wider">{badge}</b></span><p className="line-clamp-2 font-display text-2xl font-black leading-tight text-white">{phrase}</p><span className="text-xs font-bold text-white/70">Preview 9:16</span></div>}</div><div className="p-4"><h2 className="font-display text-lg font-bold text-white">{title}</h2><p className="mt-1 text-xs leading-5 text-slate-400">{description}</p><span className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-black">Entrar <ChevronRight size={14} /></span></div></button>;
 }
 
 
@@ -955,6 +965,11 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
     window.localStorage.setItem(storageKey, JSON.stringify(scheduledPosts));
   }, [scheduledPosts, storageKey]);
 
+  useEffect(() => {
+    if (!selectedProfiles.length) return;
+    setScheduledPosts((items) => items.map((item) => ({ ...item, targets: selectedProfiles })));
+  }, [selectedProfiles]);
+
   const updatePost = (id: string, patch: Partial<ScheduledVideoPost>) => {
     setScheduledPosts((items) => items.map((item) => item.id === id ? { ...item, ...patch } : item));
   };
@@ -981,12 +996,12 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
 
   return (
     <div className="fixed inset-0 z-[80] grid min-h-dvh place-items-center overflow-y-auto bg-[#030305]/95 p-3 sm:p-5">
-      <div className="grid w-full max-w-7xl gap-5 rounded-3xl border border-brand-500/30 bg-[#09090d] p-4 shadow-2xl xl:grid-cols-[300px_1fr]">
+      <div className="grid w-full max-w-6xl gap-5 rounded-3xl border border-brand-500/30 bg-[#09090d] p-4 shadow-2xl xl:grid-cols-[280px_1fr]">
         <div className="space-y-4">
-          <video src={generatedVideo.url} autoPlay controls loop muted playsInline preload="auto" className="mx-auto aspect-[9/16] w-full max-w-[300px] rounded-2xl bg-black object-cover" />
+          <video src={generatedVideo.url} autoPlay controls loop muted playsInline preload="auto" className="mx-auto aspect-[9/16] w-full max-w-[280px] rounded-2xl bg-black object-cover" />
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={onDownload} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black"><Download size={16} /> Baixar</button>
-            <button onClick={onClose} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm font-black text-white">Outro video</button>
+            <button onClick={onDownload} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-black text-black"><Download size={16} /> Baixar</button>
+            <button onClick={onClose} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 py-2.5 text-sm font-black text-white">Outro video</button>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/[.035] p-4">
             <p className="text-[10px] font-black uppercase tracking-[.22em] text-brand-500">Gerenciar video postado</p>
@@ -1003,28 +1018,32 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="w-fit rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.22em] text-brand-500">Central de publicacao</span>
-              <h3 className="mt-4 font-display text-3xl font-bold text-white">Programar e gerenciar divulgacao</h3>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Escolha os perfis, ajuste a agenda e acompanhe o video em cada canal. A IA publica conforme a programacao ativa.</p>
+              <h3 className="mt-4 font-display text-2xl font-bold text-white sm:text-3xl">Programar e gerenciar divulgacao</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Escolha os perfis uma vez, ajuste os horarios e acompanhe tudo sem excesso de botoes na tela.</p>
             </div>
-            <button onClick={postInAllProfiles} className="rounded-2xl bg-brand-500 px-4 py-3 text-sm font-black text-black">Postar em todos</button>
+            <button onClick={activateAll} className="rounded-2xl bg-brand-500 px-4 py-3 text-sm font-black text-black">Ativar agenda</button>
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-4">
-            {profiles.map((profile) => {
-              const selected = selectedProfiles.includes(profile.id);
-              return (
-                <button key={profile.id} onClick={() => toggleProfile(profile.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-brand-500 bg-brand-500/10' : 'border-white/10 bg-white/[.035] hover:bg-white/[.06]'}`}>
-                  <span className={`grid h-10 w-10 place-items-center rounded-xl ${selected ? 'bg-brand-500 text-black' : 'bg-white/10 text-white'}`}>{profile.label[0]}</span>
-                  <b className="mt-3 block text-sm text-white">{profile.label}</b>
-                  <span className="mt-1 block text-xs text-slate-400">{profile.handle}</span>
-                  <small className="mt-2 block text-[11px] font-bold text-slate-500">{profile.detail}</small>
-                </button>
-              );
-            })}
+          <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Perfis de postagem</p>
+              <button onClick={postInAllProfiles} className="rounded-lg bg-brand-500 px-3 py-1.5 text-[11px] font-black text-black">Todos</button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {profiles.map((profile) => {
+                const selected = selectedProfiles.includes(profile.id);
+                return (
+                  <button key={profile.id} onClick={() => toggleProfile(profile.id)} className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-black transition ${selected ? 'border-brand-500 bg-brand-500/15 text-white' : 'border-white/10 bg-white/[.035] text-slate-400 hover:text-white'}`}>
+                    <span className={`grid h-6 w-6 place-items-center rounded-full text-[10px] ${selected ? 'bg-brand-500 text-black' : 'bg-white/10 text-white'}`}>{profile.label[0]}</span>
+                    {profile.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
-            {([{ id: 'agenda', label: 'Calendario' }, { id: 'facebook', label: 'Facebook grupos' }, { id: 'gestao', label: 'Gestao do video' }] as const).map((tab) => (
+            {([{ id: 'agenda', label: 'Calendario' }, { id: 'facebook', label: 'Facebook' }, { id: 'gestao', label: 'Status' }] as const).map((tab) => (
               <button key={tab.id} onClick={() => setManagerTab(tab.id)} className={`rounded-xl px-4 py-2 text-xs font-black ${managerTab === tab.id ? 'bg-white text-black' : 'text-slate-400 hover:text-white'}`}>{tab.label}</button>
             ))}
           </div>
@@ -1033,20 +1052,20 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
             <div className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div><p className="text-xs font-black uppercase tracking-[.24em] text-brand-500">Ultimo passo</p><h4 className="mt-1 font-display text-2xl font-bold text-white">Calendario de divulgacao</h4></div>
-                <div className="flex flex-wrap gap-2"><button onClick={addPost} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-black text-white hover:bg-white/[.08]">Adicionar dia</button><button onClick={activateAll} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Ativar postagem IA</button></div>
+                <div className="flex flex-wrap gap-2"><button onClick={addPost} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-black text-white hover:bg-white/[.08]">Adicionar dia</button><button onClick={activateAll} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-black text-black">Ativar agenda</button></div>
               </div>
               <div className="mt-4 space-y-3">
                 {scheduledPosts.map((post, index) => (
-                  <div key={post.id} className="grid gap-2 rounded-2xl border border-white/10 bg-white/[.035] p-3 md:grid-cols-[70px_1fr_105px_130px_1.2fr_95px_auto]">
+                  <div key={post.id} className="grid gap-2 rounded-2xl border border-white/10 bg-white/[.035] p-3 md:grid-cols-[56px_1fr_92px_118px_88px_auto]">
                     <div className="rounded-xl bg-black/25 px-3 py-2"><span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Post</span><b className="block text-sm text-white">#{index + 1}</b></div>
                     <input type="date" value={post.date} onChange={(event) => updatePost(post.id, { date: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
                     <input type="time" value={post.time} onChange={(event) => updatePost(post.id, { time: event.target.value })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none" />
                     <select value={post.channel} onChange={(event) => updatePost(post.id, { channel: event.target.value as ScheduledVideoPost['channel'] })} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs font-bold text-white outline-none"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>WhatsApp</option></select>
-                    <div className="flex flex-wrap gap-1.5 rounded-xl border border-white/10 bg-black/20 p-2">
-                      {profiles.map((profile) => <button key={profile.id} onClick={() => { const targets = post.targets || []; updatePost(post.id, { targets: targets.includes(profile.id) ? targets.filter((id) => id !== profile.id) : [...targets, profile.id] }); }} className={`rounded-lg px-2 py-1 text-[10px] font-black ${post.targets?.includes(profile.id) ? 'bg-brand-500 text-black' : 'bg-white/10 text-slate-300'}`}>{profile.label}</button>)}
+                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-[11px] font-bold text-slate-300">
+                      {(post.targets || selectedProfiles).map((id) => profiles.find((profile) => profile.id === id)?.label).filter(Boolean).slice(0, 2).join(', ') || 'Perfis'}{(post.targets || selectedProfiles).length > 2 ? ` +${(post.targets || selectedProfiles).length - 2}` : ''}
                     </div>
                     <button onClick={() => updatePost(post.id, { status: post.status === 'IA ativa' ? 'Pronto' : 'IA ativa' })} className={`rounded-xl px-3 py-2 text-xs font-black ${post.status === 'IA ativa' ? 'bg-emerald-400/15 text-emerald-300' : post.status === 'Publicado' ? 'bg-sky-400/15 text-sky-300' : 'bg-white/10 text-slate-300'}`}>{post.status}</button>
-                    <button onClick={() => removePost(post.id)} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-slate-400 hover:text-white">Remover</button>
+                    <button onClick={() => removePost(post.id)} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-slate-400 hover:text-white">Excluir</button>
                   </div>
                 ))}
               </div>
