@@ -134,7 +134,7 @@ export default function OperationStudio({
   const calendar = getPostingCalendar(storeConfig);
   const relevantProducts = useMemo(() => getRelevantProducts(storeConfig, products), [storeConfig, products]);
   const selectedProducts = relevantProducts.filter((product) => product.addedToStore);
-  const normalizeCreateStep = (value: number) => value <= 1 ? 1 : value <= 4 ? 2 : value === 5 ? 3 : 4;
+  const normalizeCreateStep = (value: number) => value <= 1 ? 1 : value === 2 ? 2 : value === 3 ? 3 : 4;
   const [step, setStep] = useState(normalizeCreateStep(initialStep));
   const [name, setName] = useState(storeConfig.name || getSuggestedOperationName(niche));
   const [whatsapp, setWhatsapp] = useState(storeConfig.whatsapp || '');
