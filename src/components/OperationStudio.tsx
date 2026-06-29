@@ -160,6 +160,7 @@ export default function OperationStudio({
   const [influencerId, setInfluencerId] = useState<string>(INFLUENCER_LIBRARY[0].id);
   const [generatedVideo, setGeneratedVideo] = useState<{ url: string; blob: Blob; mimeType: string; fileName: string; label: string } | null>(null);
   const [publishState, setPublishState] = useState('');
+  const [generatedSiteUrl, setGeneratedSiteUrl] = useState(storeConfig.publishedUrl || '');
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [tempPrice, setTempPrice] = useState('');
 
@@ -176,7 +177,8 @@ export default function OperationStudio({
     setActiveVideoLibrary(storeConfig.videoFormat || 'frame');
     setGeneratedVideo(null);
     setPublishState('');
-  }, [storeConfig.id]);
+    setGeneratedSiteUrl(storeConfig.publishedUrl || '');
+  }, [storeConfig.id, storeConfig.publishedUrl]);
 
   const saveOperation = (overrides: Partial<StoreConfig> = {}) => {
     const nextName = (overrides.name ?? name).trim() || getSuggestedOperationName(niche);
@@ -830,12 +832,34 @@ export default function OperationStudio({
               <p><b className="text-white">IA</b> prepara os canais na etapa de divulgacao</p>
               <p><b className="text-white">{profile.handle}</b> como marca d'agua opcional</p>
             </div>
+            <div className={`mt-5 rounded-2xl border p-4 ${generatedSiteUrl ? 'border-emerald-400/30 bg-emerald-400/10' : 'border-white/10 bg-black/25'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[.22em] text-slate-500">Link da loja</p>
+              {generatedSiteUrl ? (
+                <>
+                  <a href={generatedSiteUrl} target="_blank" rel="noreferrer" className="mt-2 block break-all text-sm font-black text-emerald-200 hover:text-emerald-100">{generatedSiteUrl}</a>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" onClick={() => copy(generatedSiteUrl)} className="rounded-xl bg-white px-3 py-2 text-xs font-black text-black"><Copy size={14} className="inline" /> Copiar</button>
+                    <button type="button" onClick={() => window.open(generatedSiteUrl, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-emerald-400/30 px-3 py-2 text-xs font-black text-emerald-200">Abrir site</button>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-2 rounded-xl border border-dashed border-white/10 bg-white/[.035] px-3 py-3">
+                  <b className="block text-sm text-white">Aguardando publicacao</b>
+                  <span className="mt-1 block text-xs leading-5 text-slate-400">O link publico aparece aqui assim que voce clicar em Publicar vitrine.</span>
+                </div>
+              )}
+            </div>
             <button onClick={async () => {
               setPublishState('Publicando...');
               const result = await onPublish();
-              setPublishState(result.error ? result.error : 'Publicado: ' + result.url);
-            }} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-black">
-              <Send size={16} /> Publicar vitrine
+              if (result.error) {
+                setPublishState(result.error);
+                return;
+              }
+              setGeneratedSiteUrl(result.url);
+              setPublishState('Loja publicada com sucesso.');
+            }} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-black">
+              <Send size={16} /> {generatedSiteUrl ? 'Atualizar link da vitrine' : 'Publicar vitrine'}
             </button>
             {publishState && <p className="mt-4 break-words text-xs font-bold text-slate-300">{publishState}</p>}
           </aside>
