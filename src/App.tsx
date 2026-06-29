@@ -135,6 +135,36 @@ function makeSite(config: StoreConfig, index = 1): StoreSite {
   };
 }
 
+function makeStoreWelcomeMessage(storeName: string) {
+  const cleanName = (storeName || 'Storefy').trim() || 'Storefy';
+  return `Ol?! Vim pela vitrine ${cleanName} e gostaria de fazer um pedido.`;
+}
+
+function shouldRefreshStoreWelcome(message: string | undefined, currentName: string, knownStoreNames: string[] = []) {
+  const cleanMessage = (message || '').trim();
+  const cleanCurrentName = (currentName || '').trim();
+  if (!cleanMessage) return true;
+
+  const normalizedMessage = cleanMessage.toLowerCase();
+  const normalizedCurrent = cleanCurrentName.toLowerCase();
+  const genericStorefyMessage = /vitrine\s+storefy|storefy\s+digital|atrav[e?]s da vitrine storefy/i.test(cleanMessage);
+  if (genericStorefyMessage && cleanCurrentName && !/^storefy( digital)?$/i.test(cleanCurrentName)) return true;
+
+  return knownStoreNames
+    .filter((name) => name && name.toLowerCase() !== normalizedCurrent)
+    .some((name) => normalizedMessage.includes(name.toLowerCase()));
+}
+
+function isolateStoreIdentity<T extends StoreConfig>(site: T, knownStoreNames: string[] = []): T {
+  if (!shouldRefreshStoreWelcome(site.welcomeMessage, site.name, knownStoreNames)) return site;
+  return { ...site, welcomeMessage: makeStoreWelcomeMessage(site.name) };
+}
+
+function isolateStoreList(sites: StoreSite[]) {
+  const names = sites.map((site) => site.name).filter(Boolean);
+  return sites.map((site) => isolateStoreIdentity(site, names));
+}
+
 function getStoreProductIds(config: StoreConfig, products: Product[]) {
   const availableIds = new Set(products.map(product => product.id));
   return Array.from(new Set((config.productIds || []).filter((id) => availableIds.has(id))));
@@ -687,7 +717,8 @@ function App() {
   const [sites, setSites] = useState<StoreSite[]>(() => {
     const legacyConfig = readStorage<StoreConfig>(STORAGE_KEYS.storeConfig, DEFAULT_STORE_CONFIG);
     const storedSites = readStorage<StoreSite[]>(STORAGE_KEYS.sites, []);
-    return storedSites.length ? storedSites.map((site, index) => makeSite(site, index + 1)) : [makeSite(legacyConfig)];
+    const initialSites = storedSites.length ? storedSites.map((site, index) => makeSite(site, index + 1)) : [makeSite(legacyConfig)];
+    return isolateStoreList(initialSites);
   });
   const [activeSiteId, setActiveSiteId] = useState(() => readStorage<string>(STORAGE_KEYS.activeSiteId, ''));
 
@@ -779,9 +810,9 @@ function App() {
         setProducts(INITIAL_PRODUCTS);
       }
       if (workspace?.sites?.length) {
-        setSites(workspace.sites.map((site, index) => makeSite(site, index + 1)));
+        setSites(isolateStoreList(workspace.sites.map((site, index) => makeSite(site, index + 1))));
       } else {
-        const cleanSite = makeSite(DEFAULT_STORE_CONFIG);
+        const cleanSite = isolateStoreIdentity(makeSite(DEFAULT_STORE_CONFIG));
         setSites([cleanSite]);
         setActiveSiteId(cleanSite.id);
       }
@@ -837,7 +868,7 @@ function App() {
     const explicitIds = forcedProductIds?.length ? forcedProductIds : getStoreProductIds(targetSite, products);
     const visualIds = storeProducts.filter(product => product.addedToStore).map(product => product.id);
     const resolvedProductIds = explicitIds.length ? explicitIds : visualIds;
-    const previewConfig = { ...targetSite, productIds: resolvedProductIds };
+    const previewConfig = isolateStoreIdentity({ ...targetSite, productIds: resolvedProductIds });
     const previewProducts = applyStoreSelection(products, resolvedProductIds);
     return {
       html: buildStoreHtml(previewConfig, previewProducts),
@@ -917,10 +948,13 @@ function App() {
   };
 
   const handleUpdateStoreConfig = (newConfig: StoreConfig) => {
-    setSites(prev => prev.map(site => site.id === storeConfig.id
-      ? makeSite({ ...site, ...newConfig, id: site.id })
-      : site
-    ));
+    setSites(prev => {
+      const knownNames = prev.map(site => site.name).filter(Boolean);
+      return prev.map((site, index) => site.id === storeConfig.id
+        ? isolateStoreIdentity(makeSite({ ...site, ...newConfig, id: site.id }, index + 1), knownNames)
+        : site
+      );
+    });
     showAppToast('Loja atualizada.');
   };
 
@@ -950,12 +984,21 @@ function App() {
 
   const handleCreateSite = () => {
     const nextIndex = sites.length + 1;
+    const nextName = `Storefy Loja ${nextIndex}`;
     const newSite = makeSite({
       ...DEFAULT_STORE_CONFIG,
-      name: `Storefy Loja ${nextIndex}`,
+      id: createId('site'),
+      name: nextName,
       subdomain: `storefy-${nextIndex}`,
       logoUrl: STOREFY_LOGO_URL,
-      productIds: []
+      welcomeMessage: makeStoreWelcomeMessage(nextName),
+      heroTitle: nextName,
+      heroSubtitle: 'Escolha o produto, veja detalhes e envie o pedido direto no WhatsApp.',
+      ctaLabel: 'Ver produtos',
+      productIds: [],
+      publishedUrl: undefined,
+      publishedAt: undefined,
+      publicSlug: undefined
     }, nextIndex);
     setSites(prev => [...prev, newSite]);
     setActiveSiteId(newSite.id);
@@ -964,14 +1007,18 @@ function App() {
 
   const handleDuplicateSite = () => {
     const nextIndex = sites.length + 1;
+    const nextName = `${storeConfig.name} Copia`;
     const duplicated = makeSite({
       ...storeConfig,
       id: createId(),
-      name: `${storeConfig.name} Copia`,
+      name: nextName,
       subdomain: `${storeConfig.subdomain}-${nextIndex}`,
+      welcomeMessage: makeStoreWelcomeMessage(nextName),
+      heroTitle: nextName,
       status: 'draft',
       publishedUrl: undefined,
       publishedAt: undefined,
+      publicSlug: undefined,
       productIds: []
     }, nextIndex);
     setSites(prev => [...prev, duplicated]);
@@ -1016,7 +1063,7 @@ function App() {
   const handlePublishStore = async (siteId = storeConfig.id): Promise<{ mode: string; url: string; error?: string }> => {
     const targetSite = sites.find(site => site.id === siteId) || storeConfig;
     const targetProductIds = getStoreProductIds(targetSite, products);
-    const publishConfig: StoreConfig = { ...targetSite, productIds: targetProductIds };
+    const publishConfig: StoreConfig = isolateStoreIdentity({ ...targetSite, productIds: targetProductIds }, sites.map(site => site.name));
     const selectedProducts = getSelectedProductsForStore(publishConfig, products);
 
     if (!selectedProducts.length) {

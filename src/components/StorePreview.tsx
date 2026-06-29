@@ -135,13 +135,24 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
 
   // Generate WhatsApp Message
   const getWhatsAppMessageLink = () => {
-    let itemsStr = cart.map(item => `- *${item.product.name}* (Qtd: ${item.quantity}) - R$ ${(item.product.salePrice * item.quantity).toFixed(2)}`).join('%0A');
-    let buyerStr = `%0A%0A*Dados do Comprador:*%0A👤 Nome: ${customerName}%0A📱 Contato: ${customerContact}`;
-    let totalStr = `%0A%0A💵 *Preço Total:* R$ ${cartTotalPrice.toFixed(2)}`;
-    let footerStr = `%0A%0A_Enviado via Vitrine Storefy_ ⚡`;
-    
-    const text = `${storeConfig.welcomeMessage}%0A%0A${itemsStr}${buyerStr}${totalStr}${footerStr}`;
-    return `https://api.whatsapp.com/send?phone=${storeConfig.whatsapp}&text=${text}`;
+    const cleanStoreName = storeConfig.name || 'Storefy';
+    const welcomeMessage = storeConfig.welcomeMessage?.trim()
+      ? storeConfig.welcomeMessage
+      : `Ol?! Vim pela vitrine ${cleanStoreName} e gostaria de fazer um pedido.`;
+    const lines = [
+      welcomeMessage,
+      '',
+      ...cart.map(item => `- *${item.product.name}* (Qtd: ${item.quantity}) - R$ ${(item.product.salePrice * item.quantity).toFixed(2)}`),
+      '',
+      '*Dados do Comprador:*',
+      `Nome: ${customerName}`,
+      `Contato: ${customerContact}`,
+      '',
+      `Pre?o Total: R$ ${cartTotalPrice.toFixed(2)}`,
+      '',
+      `_Enviado via vitrine ${cleanStoreName}_`
+    ];
+    return `https://api.whatsapp.com/send?phone=${storeConfig.whatsapp}&text=${encodeURIComponent(lines.join('\n'))}`;
   };
 
   // Launch simulated check

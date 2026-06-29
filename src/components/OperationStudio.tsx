@@ -44,6 +44,18 @@ const copy = async (value: string) => {
   try { await navigator.clipboard.writeText(value); } catch { /* Clipboard can be unavailable in previews. */ }
 };
 
+const makeStoreWelcomeMessage = (storeName: string) => {
+  const cleanName = (storeName || 'Storefy').trim() || 'Storefy';
+  return `Ol?! Vim pela vitrine ${cleanName} e gostaria de fazer um pedido.`;
+};
+
+const shouldRefreshStoreWelcome = (message: string | undefined, currentName: string, nextName: string) => {
+  const cleanMessage = (message || '').trim();
+  if (!cleanMessage) return true;
+  if (currentName && nextName !== currentName && cleanMessage.toLowerCase().includes(currentName.toLowerCase())) return true;
+  return /vitrine\s+storefy|storefy\s+digital|atrav[e?]s da vitrine storefy/i.test(cleanMessage);
+};
+
 const VIRAL_LIBRARY = [
   { id: 'viral-01', title: 'Viral 01', hook: 'Olha isso antes de comprar', caption: 'Base viral pronta para receber sua moldura e CTA.', color: '#f97316', previewGif: '/videos/viral/viral-01.mp4', baseVideoUrl: '/videos/viral/viral-01.mp4' },
   { id: 'viral-02', title: 'Viral 02', hook: 'Esse video prende logo no comeco', caption: 'Entrada rapida para testar CTA curto e visual forte.', color: '#fb7185', previewGif: '/videos/viral/viral-02.mp4', baseVideoUrl: '/videos/viral/viral-02.mp4' },
@@ -155,14 +167,27 @@ export default function OperationStudio({
     if (mode === 'create') setStep(normalizeCreateStep(initialStep));
   }, [initialStep, mode]);
 
+  useEffect(() => {
+    setName(storeConfig.name || getSuggestedOperationName(niche));
+    setWhatsapp(storeConfig.whatsapp || '');
+    setChannels(storeConfig.socialChannels?.length ? storeConfig.socialChannels : ['instagram', 'tiktok']);
+    setVideoCaption(storeConfig.videoCta ?? 'Veja a vitrine e chame no WhatsApp');
+    setShowWatermark(storeConfig.videoWatermarkEnabled ?? true);
+    setActiveVideoLibrary(storeConfig.videoFormat || 'frame');
+    setGeneratedVideo(null);
+    setPublishState('');
+  }, [storeConfig.id]);
+
   const saveOperation = (overrides: Partial<StoreConfig> = {}) => {
     const nextName = (overrides.name ?? name).trim() || getSuggestedOperationName(niche);
     const nextNiche = OPERATION_NICHES.find((item) => item.id === (overrides.operationNiche ?? storeConfig.operationNiche)) || niche;
+    const refreshWelcome = shouldRefreshStoreWelcome(storeConfig.welcomeMessage, storeConfig.name, nextName);
     onUpdateStoreConfig({
       ...storeConfig,
       ...overrides,
       name: nextName,
       whatsapp: overrides.whatsapp ?? whatsapp,
+      welcomeMessage: Object.prototype.hasOwnProperty.call(overrides, 'welcomeMessage') ? overrides.welcomeMessage! : (refreshWelcome ? makeStoreWelcomeMessage(nextName) : storeConfig.welcomeMessage),
       niche: nextNiche.name,
       operationNiche: nextNiche.id,
       socialChannels: overrides.socialChannels ?? channels,
@@ -176,15 +201,20 @@ export default function OperationStudio({
 
   const chooseNiche = (id: string) => {
     const next = OPERATION_NICHES.find((item) => item.id === id) || OPERATION_NICHES[0];
-    setName(getSuggestedOperationName(next));
+    const nextName = getSuggestedOperationName(next);
+    setName(nextName);
     onUpdateStoreConfig({
       ...storeConfig,
       operationNiche: next.id,
       niche: next.name,
       primaryColor: next.accent,
-      name: getSuggestedOperationName(next),
-      profileHandle: `@${slugify(getSuggestedOperationName(next))}`,
-      profileBio: `${next.description}\n↓ Veja a vitrine e chame no WhatsApp`,
+      name: nextName,
+      welcomeMessage: makeStoreWelcomeMessage(nextName),
+      heroTitle: nextName,
+      heroSubtitle: 'Escolha o produto, veja detalhes e envie o pedido direto no WhatsApp.',
+      ctaLabel: storeConfig.ctaLabel || 'Ver produtos',
+      profileHandle: `@${slugify(nextName)}`,
+      profileBio: `${next.description}\n? Veja a vitrine e chame no WhatsApp`,
       socialChannels: channels,
       productIds: []
     });
@@ -1042,9 +1072,26 @@ function GeneratedVideoPreview({ generatedVideo, nicheName, profileName, profile
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
-            {([{ id: 'agenda', label: 'Calendario' }, { id: 'facebook', label: 'Facebook' }, { id: 'gestao', label: 'Status' }] as const).map((tab) => (
-              <button key={tab.id} onClick={() => setManagerTab(tab.id)} className={`rounded-xl px-4 py-2 text-xs font-black ${managerTab === tab.id ? 'bg-white text-black' : 'text-slate-400 hover:text-white'}`}>{tab.label}</button>
+          <div className="mt-4 overflow-hidden rounded-3xl border border-brand-500/30 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,.22),transparent_36%),rgba(212,175,55,.07)] p-4 shadow-[0_18px_60px_rgba(0,0,0,.25)]">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[.24em] text-brand-500">Facebook grupos</p>
+                <h4 className="mt-1 font-display text-xl font-bold text-white">Buscar comunidades certas para esse video</h4>
+                <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">A Storefy cruza nicho e produtos da vitrine para abrir buscas com mais chance de encontrar publico comprador.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setManagerTab('facebook')} className="rounded-xl border border-brand-500/40 bg-black/25 px-4 py-2.5 text-xs font-black text-white hover:bg-white/[.07]">Ver painel</button>
+                <button onClick={() => openFacebookGroupSearch(groupSearchTerms[0])} className="rounded-xl bg-brand-500 px-4 py-2.5 text-xs font-black text-black">Divulgar em grupos</button>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {groupSearchTerms.slice(0, 3).map((term) => <button key={term} onClick={() => openFacebookGroupSearch(term)} className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-[11px] font-bold text-slate-200 hover:border-brand-500/60">{term}</button>)}
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
+            {([{ id: 'agenda', label: 'Calendario' }, { id: 'facebook', label: 'Facebook grupos' }, { id: 'gestao', label: 'Status' }] as const).map((tab) => (
+              <button key={tab.id} onClick={() => setManagerTab(tab.id)} className={`rounded-xl px-4 py-2 text-xs font-black ${managerTab === tab.id ? (tab.id === 'facebook' ? 'bg-brand-500 text-black' : 'bg-white text-black') : (tab.id === 'facebook' ? 'text-brand-500 hover:bg-brand-500/10' : 'text-slate-400 hover:text-white')}`}>{tab.label}</button>
             ))}
           </div>
 
