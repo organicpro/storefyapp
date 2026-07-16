@@ -1,0 +1,291 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  /* Customized Premium High-End Palette (Obsidian & Pearl Gold) */
+  --color-brand-50: #fbf9f4;
+  --color-brand-100: #f4edd9;
+  --color-brand-200: #e8dcb8;
+  --color-brand-500: #d4af37;
+  --color-brand-600: #b8901c;
+  --color-brand-700: #997315;
+}
+
+/* Shopify-inspired Light Theme */
+body {
+  background-color: #1a1a1a;
+  color: #202223;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* ─── Page Transition: fade + slide-up (Shopify-style) ─── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: page-enter 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Sidebar item hover: slide icon right ─── */
+@keyframes nav-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.nav-icon-active {
+  animation: nav-pop 180ms ease both;
+}
+
+/* ─── Card entrance stagger ─── */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter {
+  animation: card-enter 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.card-enter-1 { animation-delay: 40ms; }
+.card-enter-2 { animation-delay: 80ms; }
+.card-enter-3 { animation-delay: 120ms; }
+.card-enter-4 { animation-delay: 160ms; }
+
+/* ─── Shimmer for loading states ─── */
+@keyframes shimmer-slide {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+
+/* Premium Liquid Glass Cards -> Solid Light Cards */
+.glass-premium {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.glass-premium:hover {
+  background: #fafafa;
+  border-color: #c9cccf;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+/* Glowing Accent Liquid Glass Cards -> Subtle Active Cards */
+.glass-premium-glow {
+  background: #ffffff;
+  border: 1px solid #c9cccf;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Premium Glass Form Fields -> Clean Inputs */
+.glass-premium-input {
+  background: #ffffff;
+  border: 1px solid #c9cccf;
+  color: #202223;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.glass-premium-input:focus {
+  background: #ffffff;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 1px #1a1a1a;
+  outline: none;
+}
+
+/* Storefy polish system: subtle, reusable premium UI details */
+.storefy-panel {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+}
+
+.storefy-card {
+  position: relative;
+  isolation: isolate;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  border-radius: 12px;
+}
+
+.storefy-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  z-index: -1;
+}
+
+.storefy-card:hover {
+  transform: translateY(-2px);
+  border-color: #c9cccf;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.storefy-card:hover::before,
+.storefy-card-selected::before {
+  opacity: 1;
+}
+
+.storefy-card-selected {
+  border-color: #1a1a1a;
+  background: #fcfcfc;
+  box-shadow: 0 0 0 1px #1a1a1a;
+}
+
+.storefy-image-frame {
+  background: #f6f6f7;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.storefy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid #e1e3e5;
+  background: #f6f6f7;
+  color: #6d7175;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+}
+
+.storefy-badge-brand {
+  border-color: #b3dfce;
+  background: #e3f1e9;
+  color: #008060;
+}
+
+.storefy-badge-success {
+  border-color: #b3dfce;
+  background: #e3f1e9;
+  color: #008060;
+}
+
+.storefy-badge-muted {
+  background: #f1f2f3;
+  color: #6d7175;
+  border-color: #e1e3e5;
+}
+
+.storefy-primary-action {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s ease;
+}
+
+.storefy-primary-action:hover {
+  background: #333333;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes storefy-shimmer {
+  0% { background-position: -220% 0; }
+  100% { background-position: 220% 0; }
+}
+
+.storefy-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+  background-size: 220% 100%;
+  animation: storefy-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Custom Drifting Liquid Blobs */
+@keyframes morph-liquid {
+  0% {
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  }
+  33% {
+    border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%;
+  }
+  66% {
+    border-radius: 50% 50% 35% 65% / 40% 60% 40% 60%;
+  }
+  100% {
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  }
+}
+
+@keyframes float-fluid-one {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(60px, -40px) scale(1.15);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes float-fluid-two {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-50px, 60px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes float-fluid-three {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(40px, 40px) scale(1.08);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-liquid-one {
+  animation: morph-liquid 18s ease-in-out infinite, float-fluid-one 24s ease-in-out infinite;
+}
+
+.animate-liquid-two {
+  animation: morph-liquid 22s ease-in-out infinite, float-fluid-two 28s ease-in-out infinite;
+}
+
+.animate-liquid-three {
+  animation: morph-liquid 20s ease-in-out infinite, float-fluid-three 22s ease-in-out infinite;
+}

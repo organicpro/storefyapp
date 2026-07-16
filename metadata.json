@@ -1,0 +1,6 @@
+{
+  "name": "Storefy",
+  "description": "Plataforma premium SaaS para criação e gestão de vitrines de produtos digitais integradas ao WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
