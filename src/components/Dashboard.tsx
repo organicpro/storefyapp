@@ -297,6 +297,11 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
              <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
                <path d="M0 10 Q 25 5 50 15 T 100 8" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
              </svg>
+
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
+            </div>
           </div>
         </div>
 
@@ -313,6 +318,11 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
              <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
                <path d="M0 15 Q 25 20 50 10 T 100 5" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
              </svg>
+
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
+            </div>
           </div>
         </div>
 
@@ -329,6 +339,11 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
              <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
                <path d="M0 12 Q 25 5 50 18 T 100 10" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
              </svg>
+
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
+            </div>
           </div>
         </div>
 
@@ -345,6 +360,11 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
              <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
                <path d="M0 18 Q 25 15 50 5 T 100 12" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
              </svg>
+
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
+            </div>
           </div>
         </div>
       </div>
@@ -389,12 +409,12 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-              {/* Legend Dots */}
-              <circle cx="200" cy="320" r="4" fill="#f59e0b" />
-              <text x="210" y="324" fontSize="11" fill="#666" fontFamily="sans-serif">Ontem</text>
-              <circle cx="280" cy="320" r="4" fill="#fcd34d" opacity="0.6" />
-              <text x="290" y="324" fontSize="11" fill="#666" fontFamily="sans-serif">Hoje</text>
             </svg>
+
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
+              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
+            </div>
             
             {/* X-axis labels */}
             <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[11px] text-gray-500 px-2 font-medium">
@@ -582,5 +602,6 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
     </div>
   );
 }
+
 
 
