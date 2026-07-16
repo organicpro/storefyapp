@@ -132,6 +132,38 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
+  const applySecretAdjustment = (direction: 1 | -1) => {
+    const rawAmount = window.prompt('Valor do ajuste (R$):', '100');
+    const amount = Number(String(rawAmount || '').replace(',', '.'));
+    if (!Number.isFinite(amount) || amount <= 0) return;
+
+    const nextSale: ManualSale = {
+      id: 'secret-' + String(Date.now()),
+      amount: direction * amount,
+      note: direction > 0 ? 'Ajuste interno StorefyUp' : 'Ajuste interno StorefyDown',
+      createdAt: new Date().toISOString()
+    };
+    const nextSales = [nextSale, ...currentManualSales];
+    setManualSalesByKey(prev => ({ ...prev, [currentSalesKey]: nextSales }));
+    window.localStorage.setItem(currentSalesKey, JSON.stringify(nextSales));
+  };
+
+  useEffect(() => {
+    let buffer = '';
+    const handleSecretCode = (event: KeyboardEvent) => {
+      if (event.key.length !== 1) return;
+      buffer = (buffer + event.key.toLowerCase()).slice(-12);
+      if (buffer.endsWith('storefyup')) {
+        buffer = '';
+        applySecretAdjustment(1);
+      } else if (buffer.endsWith('storefydown')) {
+        buffer = '';
+        applySecretAdjustment(-1);
+      }
+    };
+    window.addEventListener('keydown', handleSecretCode);
+    return () => window.removeEventListener('keydown', handleSecretCode);
+  }, [currentSalesKey, currentManualSales]);
   const handleAddManualSale = () => {
     const amount = Number(saleAmount.replace(',', '.'));
     if (!Number.isFinite(amount) || amount <= 0) return;
@@ -550,4 +582,5 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
     </div>
   );
 }
+
 
