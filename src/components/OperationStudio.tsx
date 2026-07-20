@@ -282,7 +282,6 @@ export default function OperationStudio({
         context.fillRect(0, 0, viewWidth, viewHeight);
         return;
       }
-      const glow = 0.25 + Math.sin(frame / 12) * 0.12;
       context.fillStyle = '#07070a'; context.fillRect(0, 0, 720, 1280);
       const gradient = context.createLinearGradient(0, 0, 720, 1280);
       gradient.addColorStop(0, `${niche.accent}cc`);
@@ -290,10 +289,6 @@ export default function OperationStudio({
       gradient.addColorStop(1, '#050507');
       context.fillStyle = gradient;
       context.fillRect(0, 0, 720, 1280);
-      context.fillStyle = `rgba(255,255,255,${glow})`;
-      context.beginPath();
-      context.arc(580, 180 + Math.sin(frame / 14) * 24, 220, 0, Math.PI * 2);
-      context.fill();
     };
     const drawCaptionOverlay = () => {
       const caption = selectedVideoCaption.trim();
@@ -332,18 +327,61 @@ export default function OperationStudio({
       if (recorder.state === 'recording') recorder.stop();
     };
 
-    const startRender = () => {
-      if (recorder.state === 'recording') return;
+    let renderStarted = false;
+
+    const drawCompositeFrame = (frame: number, progress: number) => {
+      drawBase(frame);
+      if (format === 'frame') {
+        context.fillStyle = sourceVideo ? 'rgba(4,4,7,.04)' : 'rgba(4,4,7,.88)';
+        drawRoundedRect(44, 90, 632, 1010, 44);
+        context.strokeStyle = niche.accent;
+        context.lineWidth = 5;
+        context.beginPath();
+        context.roundRect(44, 90, 632, 1010, 44);
+        context.stroke();
+        context.fillStyle = niche.accent;
+        drawRoundedRect(76, 124, 568, 96, 24);
+        context.fillStyle = '#07070a';
+        context.font = '700 27px Arial';
+        context.fillText(profile.name, 104, includeWatermark ? 166 : 184);
+        if (includeWatermark) {
+          context.font = '500 20px Arial';
+          context.fillText(profile.handle, 104, 198);
+        }
+        if (!sourceVideo || sourceVideo.readyState < 2) {
+          context.fillStyle = 'rgba(255,255,255,.08)';
+          drawRoundedRect(76, 254, 568, 570, 28);
+        }
+        const frameCaption = selectedVideoCaption.trim();
+        if (frameCaption) {
+          context.fillStyle = '#ffffff';
+          context.font = '900 44px Arial';
+          wrap(frameCaption, 22).slice(0, 3).forEach((line, index) => context.fillText(line.trim(), 88, 880 + index * 56));
+        }
+        if (includeWatermark) {
+          context.fillStyle = niche.accent;
+          context.font = '800 24px Arial';
+          context.fillText(profile.handle, 88, 1040);
+        }
+      } else {
+        drawCaptionOverlay();
+      }
+      context.fillStyle = `rgba(255,255,255,${0.2 + progress * 0.35})`;
+      context.font = '600 15px Arial';
+      context.fillText(`Storefy - ${creativeName}`, 50, 1230);
+    };
+
+    const startRender = (allowFallback = false) => {
+      if (renderStarted || recorder.state === 'recording') return;
+      if (sourceVideo && sourceVideo.readyState < 2 && !allowFallback) return;
+      renderStarted = true;
 
       const sourceDuration = sourceVideo && Number.isFinite(sourceVideo.duration) && sourceVideo.duration > 0
         ? sourceVideo.duration
         : 8;
       const duration = Math.min(12, Math.max(6, sourceDuration));
-      const startedAt = performance.now();
       let animationFrame = 0;
-      let frame = 0;
-
-      recorder.start();
+      let frame = 1;
 
       if (sourceVideo) {
         sourceVideo.currentTime = 0;
@@ -352,51 +390,16 @@ export default function OperationStudio({
         });
       }
 
+      // Paint a complete, stable first frame before capture starts.
+      drawCompositeFrame(0, 0);
+      recorder.start();
+      const startedAt = performance.now();
       const hardStop = window.setTimeout(stopRecorder, Math.ceil(duration * 1000) + 1500);
 
       const draw = () => {
         const elapsedSeconds = (performance.now() - startedAt) / 1000;
         const progress = Math.min(1, elapsedSeconds / duration);
-        drawBase(frame);
-        if (format === 'frame') {
-          context.fillStyle = sourceVideo ? 'rgba(4,4,7,.04)' : 'rgba(4,4,7,.88)';
-          drawRoundedRect(44, 90, 632, 1010, 44);
-          context.strokeStyle = niche.accent;
-          context.lineWidth = 5;
-          context.beginPath();
-          context.roundRect(44, 90, 632, 1010, 44);
-          context.stroke();
-          context.fillStyle = niche.accent;
-          drawRoundedRect(76, 124, 568, 96, 24);
-          context.fillStyle = '#07070a';
-          context.font = '700 27px Arial';
-          context.fillText(profile.name, 104, includeWatermark ? 166 : 184);
-          if (includeWatermark) {
-            context.font = '500 20px Arial';
-            context.fillText(profile.handle, 104, 198);
-          }
-          if (!sourceVideo || sourceVideo.readyState < 2) {
-            context.fillStyle = 'rgba(255,255,255,.08)';
-            drawRoundedRect(76, 254, 568, 570, 28);
-          }
-          const frameCaption = selectedVideoCaption.trim();
-          if (frameCaption) {
-            context.fillStyle = '#ffffff';
-            context.font = '900 44px Arial';
-            wrap(frameCaption, 22).slice(0, 3).forEach((line, index) => context.fillText(line.trim(), 88, 880 + index * 56));
-          }
-          if (includeWatermark) {
-            context.fillStyle = niche.accent;
-            context.font = '800 24px Arial';
-            context.fillText(profile.handle, 88, 1040);
-          }
-        } else {
-          drawCaptionOverlay();
-        }
-        context.fillStyle = `rgba(255,255,255,${0.2 + progress * 0.35})`;
-        context.font = '600 15px Arial';
-        context.fillText(`Storefy - ${creativeName}`, 50, 1230);
-
+        drawCompositeFrame(frame, progress);
         frame += 1;
 
         if (elapsedSeconds < duration && recorder.state === 'recording') {
@@ -412,10 +415,9 @@ export default function OperationStudio({
     };
 
     if (sourceVideo) {
-      let fallbackTimer = window.setTimeout(startRender, 2500);
+      let fallbackTimer = window.setTimeout(() => startRender(true), 2500);
       sourceVideo.onloadedmetadata = () => {
-        window.clearTimeout(fallbackTimer);
-        startRender();
+        sourceVideo.currentTime = 0;
       };
       sourceVideo.onloadeddata = () => {
         window.clearTimeout(fallbackTimer);
@@ -423,7 +425,7 @@ export default function OperationStudio({
       };
       sourceVideo.onerror = () => {
         window.clearTimeout(fallbackTimer);
-        startRender();
+        startRender(true);
       };
       sourceVideo.load();
     } else {
@@ -1094,10 +1096,3 @@ function GeneratedVideoPreview({ generatedVideo, content, calendar, profile, onD
     </div>
   );
 }
-
-
-
-
-
-
-
