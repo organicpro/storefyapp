@@ -35,6 +35,7 @@ interface WizardProps {
   onUpdateStoreConfig: (newConfig: StoreConfig) => void;
   onToggleAddProduct: (productId: string) => void;
   onUpdateSalePrice: (productId: string, newPrice: number) => void;
+  onCreateCustomProduct: (product: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory'>) => void;
   initialStep?: number;
   onNavigateToPreview: (returnStep: number) => void;
   onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
@@ -47,6 +48,7 @@ export default function Wizard({
   onUpdateStoreConfig, 
   onToggleAddProduct,
   onUpdateSalePrice,
+  onCreateCustomProduct,
   initialStep = 1,
   onNavigateToPreview,
   onPublishStore,
@@ -60,6 +62,10 @@ export default function Wizard({
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedFacebookPost, setCopiedFacebookPost] = useState(false);
   const [publishedResult, setPublishedResult] = useState<{ mode: string; url: string; error?: string } | null>(null);
+  const [customProductName, setCustomProductName] = useState('');
+  const [customProductPrice, setCustomProductPrice] = useState('');
+  const [customProductError, setCustomProductError] = useState('');
+  const [customProductAdded, setCustomProductAdded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,6 +102,13 @@ export default function Wizard({
   ];
 
   const selectedNiche = NICHES.find(n => n.id === selectedNicheId) || NICHES[0];
+  const selectedProductCategory: Product['category'] = ({
+    games: 'Games',
+    'redes-sociais': 'Redes Sociais',
+    'assinaturas-digitais': 'Assinaturas Digitais',
+    infoprodutos: 'Infoprodutos',
+    'physical-finds': 'Achados Fisicos'
+  } as Record<string, Product['category']>)[selectedNiche.id] || 'Games';
 
   // Colors list for visual editor
   const colorsList = [
@@ -119,9 +132,37 @@ export default function Wizard({
   ] as const;
 
   // Filter products matching recommendation for selected niche
-  const recommendedProducts = products.filter(p => 
+  const recommendedProducts = products.filter(p =>
     selectedNiche.recommendedSubcategories.includes(p.subcategory)
+    || (p.supplier === 'Produto próprio' && p.category === selectedProductCategory)
   );
+
+  const handleCreateCustomProduct = (event: React.FormEvent) => {
+    event.preventDefault();
+    const name = customProductName.trim();
+    const price = Number(customProductPrice.replace(',', '.'));
+
+    if (!name) {
+      setCustomProductError('Informe o nome do produto.');
+      return;
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      setCustomProductError('Informe um preço maior que zero.');
+      return;
+    }
+
+    onCreateCustomProduct({
+      name,
+      salePrice: price,
+      category: selectedProductCategory,
+      subcategory: selectedNiche.name
+    });
+    setCustomProductName('');
+    setCustomProductPrice('');
+    setCustomProductError('');
+    setCustomProductAdded(true);
+    window.setTimeout(() => setCustomProductAdded(false), 2400);
+  };
 
   const publishedUrl = publishedResult?.url?.startsWith('http')
     ? publishedResult.url
@@ -419,6 +460,52 @@ export default function Wizard({
             <span className="font-sans text-gray-500">Exibindo {recommendedProducts.length} recomendações</span>
           </div>
 
+          <form onSubmit={handleCreateCustomProduct} className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#0f172a] text-white">
+                <Plus className="h-5 w-5" />
+              </span>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Adicionar produto próprio</h4>
+                <p className="mt-1 text-xs text-gray-500">Cadastre uma oferta personalizada para esta loja.</p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px_auto]">
+              <label className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-gray-500">Nome do produto</span>
+                <input
+                  value={customProductName}
+                  onChange={(event) => { setCustomProductName(event.target.value); setCustomProductError(''); }}
+                  placeholder="Ex. Consultoria personalizada"
+                  maxLength={90}
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-[#0f172a]"
+                />
+              </label>
+              <label className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-gray-500">Preço de venda</span>
+                <div className="flex h-11 items-center rounded-lg border border-gray-300 bg-white px-3 focus-within:border-[#0f172a]">
+                  <span className="mr-2 text-xs font-bold text-gray-500">R$</span>
+                  <input
+                    value={customProductPrice}
+                    onChange={(event) => { setCustomProductPrice(event.target.value); setCustomProductError(''); }}
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-gray-900 outline-none"
+                  />
+                </div>
+              </label>
+              <button type="submit" className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#0f172a] px-4 text-xs font-semibold text-white hover:bg-[#1e293b]">
+                <Plus className="h-4 w-4" />
+                Adicionar
+              </button>
+            </div>
+            {(customProductError || customProductAdded) && (
+              <p className={`mt-3 text-xs font-semibold ${customProductError ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {customProductError || 'Produto adicionado e selecionado na loja.'}
+              </p>
+            )}
+          </form>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[32rem] overflow-y-auto pr-1">
             {recommendedProducts.map((p) => {
               const profit = p.salePrice - p.costPrice;
@@ -431,12 +518,18 @@ export default function Wizard({
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <img 
-                        src={p.imageUrl} 
-                        alt={p.name}
-                        referrerPolicy="no-referrer"
-                        className="w-12 h-12 rounded-lg object-cover shrink-0 select-none bg-gray-50"
-                      />
+                      {p.imageUrl ? (
+                        <img
+                          src={p.imageUrl}
+                          alt={p.name}
+                          referrerPolicy="no-referrer"
+                          className="w-12 h-12 rounded-lg object-cover shrink-0 select-none bg-gray-50"
+                        />
+                      ) : (
+                        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gray-100 text-gray-500">
+                          <ShoppingBag className="h-5 w-5" />
+                        </span>
+                      )}
                       <div className="min-w-0">
                         <p className="text-xs font-semibold text-gray-900 truncate" title={p.name}>{p.name}</p>
                         <p className="text-[10px] text-gray-500 font-sans mt-0.5">{p.subcategory} - Forn: {p.supplier}</p>

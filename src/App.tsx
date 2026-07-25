@@ -956,6 +956,44 @@ function App() {
     showAppToast('Preco de venda atualizado.');
   };
 
+  const handleCreateCustomProduct = (input: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory'>) => {
+    const productId = `custom-${createId()}`;
+    const customProduct: Product = {
+      id: productId,
+      name: input.name,
+      category: input.category,
+      subcategory: input.subcategory,
+      supplier: 'Produto próprio',
+      costPrice: 0,
+      salePrice: input.salePrice,
+      imageUrl: '',
+      benefits: ['Oferta personalizada', 'Atendimento direto', 'Pedido pelo WhatsApp'],
+      deliverable: 'Entrega combinada diretamente com a loja.',
+      addedToStore: false
+    };
+
+    setProducts(current => [customProduct, ...current]);
+
+    if (draftStore && draftStore.id === storeConfig.id) {
+      setDraftStore(makeSite({
+        ...draftStore,
+        productIds: Array.from(new Set([...(draftStore.productIds || []), productId])),
+        status: 'draft'
+      }, sites.length + 1));
+    } else {
+      setSites(current => current.map((site, index) => site.id === storeConfig.id
+        ? makeSite({
+            ...site,
+            productIds: Array.from(new Set([...(site.productIds || []), productId])),
+            status: 'draft'
+          }, index + 1)
+        : site
+      ));
+    }
+
+    showAppToast('Produto próprio adicionado à loja.');
+  };
+
   const handleUpdateProductImage = (productId: string, newUrl: string) => {
     setProducts(prev => prev.map(product => product.id === productId
       ? { ...product, imageUrl: newUrl }
@@ -1496,6 +1534,7 @@ function App() {
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onToggleAddProduct={handleToggleAddProduct}
                 onUpdateSalePrice={handleUpdateSalePrice}
+                onCreateCustomProduct={handleCreateCustomProduct}
                 initialStep={previewWizardStep}
                 onNavigateToPreview={(returnStep) => handleOpenGeneratedSite('wizard', returnStep)}
                 onPublishStore={handlePublishStore}
