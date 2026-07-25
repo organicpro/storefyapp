@@ -35,7 +35,7 @@ interface WizardProps {
   onUpdateStoreConfig: (newConfig: StoreConfig) => void;
   onToggleAddProduct: (productId: string) => void;
   onUpdateSalePrice: (productId: string, newPrice: number) => void;
-  onCreateCustomProduct: (product: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory'>) => void;
+  onCreateCustomProduct: (product: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory' | 'imageUrl'>) => void;
   initialStep?: number;
   onNavigateToPreview: (returnStep: number) => void;
   onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
@@ -64,10 +64,12 @@ export default function Wizard({
   const [publishedResult, setPublishedResult] = useState<{ mode: string; url: string; error?: string } | null>(null);
   const [customProductName, setCustomProductName] = useState('');
   const [customProductPrice, setCustomProductPrice] = useState('');
+  const [customProductImageUrl, setCustomProductImageUrl] = useState('');
   const [customProductError, setCustomProductError] = useState('');
   const [customProductAdded, setCustomProductAdded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const customProductImageInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,6 +80,29 @@ export default function Wizard({
         setStoreLogoUrl(ev.target.result);
       }
     };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCustomProductImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setCustomProductError('Escolha um arquivo de imagem.');
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setCustomProductError('A imagem deve ter no máximo 3 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setCustomProductImageUrl(reader.result);
+        setCustomProductError('');
+      }
+    };
+    reader.onerror = () => setCustomProductError('Não foi possível carregar a imagem.');
     reader.readAsDataURL(file);
   };
 
@@ -155,10 +180,12 @@ export default function Wizard({
       name,
       salePrice: price,
       category: selectedProductCategory,
-      subcategory: selectedNiche.name
+      subcategory: selectedNiche.name,
+      imageUrl: customProductImageUrl.trim()
     });
     setCustomProductName('');
     setCustomProductPrice('');
+    setCustomProductImageUrl('');
     setCustomProductError('');
     setCustomProductAdded(true);
     window.setTimeout(() => setCustomProductAdded(false), 2400);
@@ -498,6 +525,28 @@ export default function Wizard({
                 <Plus className="h-4 w-4" />
                 Adicionar
               </button>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-[72px_minmax(0,1fr)_auto] sm:items-end">
+              <div className="grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-lg border border-gray-200 bg-white">
+                {customProductImageUrl
+                  ? <img src={customProductImageUrl} alt="Prévia do produto" className="h-full w-full object-cover" />
+                  : <Camera className="h-5 w-5 text-gray-400" />
+                }
+              </div>
+              <label className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-gray-500">Foto do produto</span>
+                <input
+                  value={customProductImageUrl.startsWith('data:') ? '' : customProductImageUrl}
+                  onChange={(event) => { setCustomProductImageUrl(event.target.value); setCustomProductError(''); }}
+                  placeholder="Cole o link da imagem ou envie uma foto"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-[#0f172a]"
+                />
+              </label>
+              <button type="button" onClick={() => customProductImageInputRef.current?.click()} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-xs font-semibold text-gray-700 hover:bg-gray-100">
+                <Camera className="h-4 w-4" />
+                Escolher foto
+              </button>
+              <input ref={customProductImageInputRef} type="file" accept="image/*" onChange={handleCustomProductImageChange} className="hidden" />
             </div>
             {(customProductError || customProductAdded) && (
               <p className={`mt-3 text-xs font-semibold ${customProductError ? 'text-rose-600' : 'text-emerald-600'}`}>

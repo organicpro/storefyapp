@@ -956,7 +956,7 @@ function App() {
     showAppToast('Preco de venda atualizado.');
   };
 
-  const handleCreateCustomProduct = (input: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory'>) => {
+  const handleCreateCustomProduct = (input: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory' | 'imageUrl'>) => {
     const productId = `custom-${createId()}`;
     const customProduct: Product = {
       id: productId,
@@ -966,7 +966,7 @@ function App() {
       supplier: 'Produto próprio',
       costPrice: 0,
       salePrice: input.salePrice,
-      imageUrl: '',
+      imageUrl: input.imageUrl,
       benefits: ['Oferta personalizada', 'Atendimento direto', 'Pedido pelo WhatsApp'],
       deliverable: 'Entrega combinada diretamente com a loja.',
       addedToStore: false
