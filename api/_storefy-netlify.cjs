@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { createClient } = require("@supabase/supabase-js");
+if (typeof global.WebSocket === "undefined") global.WebSocket = require("ws");
 
 const NETLIFY_API = "https://api.netlify.com/api/v1";
 

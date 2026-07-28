@@ -50,7 +50,6 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
     { id: 'operation', label: t('sidebar.operation'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/StoreFilledIcon.svg' },
     { id: 'promotion', label: t('sidebar.promotion'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/MegaphoneFilledIcon.svg' },
     { id: 'academy', label: 'Academy', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/BookOpenIcon.svg' },
-    ...(isAdmin ? [{ id: 'admin-codes', label: 'Codigos', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/KeyIcon.svg', badge: 'ADMIN' }] : userLevel === 10 ? [{ id: 'invites', label: 'Convites', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ShareIcon.svg', badge: 'N10' }] : []),
   ];
 
   const productItems: NavItemConfig[] = [

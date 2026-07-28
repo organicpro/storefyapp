@@ -1,4 +1,5 @@
-require("dotenv/config");
+require("dotenv").config({ path: ".env.local" });
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const {
@@ -8,7 +9,7 @@ const {
   handleStatus,
   handleValidate
 } = require("./api/_storefy-netlify.cjs");
-const { createCode, expireCode, getProfile, listCodes, redeem } = require("./api/_storefy-levels.cjs");
+const { createCode, deleteCode, expireCode, getProfile, listCodes, redeem } = require("./api/_storefy-levels.cjs");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -34,6 +35,7 @@ app.post("/api/access/redeem", redeem);
 app.get("/api/admin/codes", listCodes);
 app.post("/api/admin/codes", createCode);
 app.patch("/api/admin/codes/:id/expire", expireCode);
+app.delete("/api/admin/codes/:id", deleteCode);
 
 app.post("/api/netlify-publish", (_req, res) => {
   res.status(410).json({

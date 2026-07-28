@@ -36,7 +36,7 @@ export async function generateInviteCode(maxUses = 5, expiresAt?: string) {
   }));
 }
 
-export async function expireInviteCode(id: number) {
+export async function expireInviteCode(id: number | string) {
   return readResponse<{ ok: boolean }>(await fetch(`/api/admin/codes/${id}/expire`, {
     method: 'PATCH', headers: await authHeaders()
   }));
@@ -45,5 +45,10 @@ export async function expireInviteCode(id: number) {
 export async function redeemPartnerCode(code: string) {
   return readResponse<{ ok: boolean; level: number }>(await fetch('/api/access/redeem', {
     method: 'POST', headers: await authHeaders(), body: JSON.stringify({ code })
+  }));
+}
+export async function deleteInviteCode(id: number | string) {
+  return readResponse<{ ok: boolean }>(await fetch(`/api/admin/codes/${encodeURIComponent(id)}`, {
+    method: 'DELETE', headers: await authHeaders()
   }));
 }

@@ -81,7 +81,7 @@ export interface UserAccessProfile {
 }
 
 export interface InviteCode {
-  id: number;
+  id: number | string;
   code: string;
   uses: number;
   maxUses: number;

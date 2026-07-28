@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Bell,
   Check,
@@ -9,7 +9,8 @@ import {
   Save,
   Shield,
   UserRound,
-  Camera
+  Camera,
+  Users
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StoreConfig } from '../types';
@@ -19,6 +20,9 @@ interface SettingsViewProps {
   accountName: string;
   onUpdateStoreConfig: (newConfig: StoreConfig) => void;
   onUpdateAccountName: (name: string) => void | Promise<void>;
+  userLevel?: number;
+  isAdmin?: boolean;
+  onNavigate?: (page: string) => void;
 }
 
 interface NetlifyStatus {
@@ -28,7 +32,7 @@ interface NetlifyStatus {
   tokenLast4: string;
 }
 
-export default function SettingsView({ storeConfig, accountName, onUpdateStoreConfig, onUpdateAccountName }: SettingsViewProps) {
+export default function SettingsView({ storeConfig, accountName, onUpdateStoreConfig, onUpdateAccountName, userLevel = 1, isAdmin = false, onNavigate }: SettingsViewProps) {
   const [accountDisplayName, setAccountDisplayName] = useState(accountName);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('');
   const [netlifyToken, setNetlifyToken] = useState('');
@@ -372,6 +376,15 @@ export default function SettingsView({ storeConfig, accountName, onUpdateStoreCo
         </div>
       </section>
 
+      {(isAdmin || userLevel === 10) && (
+        <section className="rounded-[16px] border border-amber-200 bg-amber-50 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-amber-400 text-black"><Users size={19} /></div>
+            <div><p className="text-[13px] font-black text-gray-950">Convites de socio</p><p className="mt-1 text-[12px] text-gray-600">Copie seu codigo, acompanhe usos e gerencie acessos Nivel 10.</p></div>
+          </div>
+          <button type="button" onClick={() => onNavigate?.(isAdmin ? 'admin-codes' : 'invites')} className="rounded-lg bg-gray-950 px-4 py-2.5 text-xs font-black text-white">Abrir convites</button>
+        </section>
+      )}
       {/* â”€â”€â”€ Info banner: store-level settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="rounded-[20px] border border-gray-200 bg-gray-50 p-5 flex gap-4 items-start">
         <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center shrink-0">
