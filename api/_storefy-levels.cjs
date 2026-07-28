@@ -45,8 +45,10 @@ function publicCode(row) {
   const uses = Number(source.usos || 0);
   return { id: row.id ?? row.slug, code: source.codigo, uses, maxUses, status: source.status || "ativo", createdAt: source.criado_em || row.updated_at, expiresAt: source.expira_em || null, remaining: Math.max(0, maxUses - uses) };
 }
-async function fallbackCodeRows(supabase) {
-  const { data, error } = await supabase.from("storefy_public_stores").select("slug,store_config,updated_at").like("slug", "__storefy_invite__%").order("updated_at", { ascending: false });
+async function fallbackCodeRows(supabase, userId) {
+  let query = supabase.from("storefy_public_stores").select("slug,user_id,store_config,updated_at").like("slug", "__storefy_invite__%").order("updated_at", { ascending: false });
+  if (userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
   if (error) throw error;
   return data || [];
 }
@@ -67,11 +69,12 @@ async function listCodes(req, res) {
     if (!isAdmin && Number(profile.nivel) !== 10) return json(res, 403, { error: "Area disponivel apenas para socios Nivel 10." });
     let rows;
     let query = supabase.from("codigos_convite").select("id,codigo,usos,max_usos,status,criado_em,expira_em").order("criado_em", { ascending: false });
-    if (!isAdmin) query = query.eq("codigo", profile.codigo_socio || "");
+    if (isAdmin) query = query.eq("criado_por", user.id);
+    else query = query.eq("codigo", profile.codigo_socio || "");
     const primary = await query;
     if (primary.error && !isMissingCodesTable(primary.error)) throw primary.error;
     if (primary.error) {
-      rows = await fallbackCodeRows(supabase);
+      rows = await fallbackCodeRows(supabase, isAdmin ? user.id : undefined);
       if (!isAdmin) rows = rows.filter(row => row.store_config?.codigo === profile.codigo_socio);
     } else rows = primary.data || [];
     const codes = rows.map(publicCode);
@@ -82,8 +85,8 @@ async function createCode(req, res) {
   try {
     const { supabase, user } = await authenticated(req); const profile = await profileFor(supabase, user);
     if (!configuredAdmin(user, profile)) return json(res, 403, { error: "Apenas administradores podem gerar codigos." });
-    const existingPrimary = await supabase.from("codigos_convite").select("id").limit(1);
-    const existingRows = existingPrimary.error && isMissingCodesTable(existingPrimary.error) ? await fallbackCodeRows(supabase) : (existingPrimary.data || []);
+    const existingPrimary = await supabase.from("codigos_convite").select("id").eq("criado_por", user.id).limit(1);
+    const existingRows = existingPrimary.error && isMissingCodesTable(existingPrimary.error) ? await fallbackCodeRows(supabase, user.id) : (existingPrimary.data || []);
     if (existingPrimary.error && !isMissingCodesTable(existingPrimary.error)) throw existingPrimary.error;
     if (existingRows.length) return json(res, 409, { error: "Ja existe um codigo. Exclua-o antes de gerar outro." });
     const maxUses = 5;
@@ -107,11 +110,11 @@ async function deleteCode(req, res) {
     if (!configuredAdmin(user, profile)) return json(res, 403, { error: "Apenas administradores podem excluir codigos." });
     const numericId = Number(req.params.id);
     if (Number.isFinite(numericId)) {
-      const primary = await supabase.from("codigos_convite").delete().eq("id", numericId);
+      const primary = await supabase.from("codigos_convite").delete().eq("id", numericId).eq("criado_por", user.id);
       if (!primary.error) return json(res, 200, { ok: true });
       if (!isMissingCodesTable(primary.error)) throw primary.error;
     }
-    const { error } = await supabase.from("storefy_public_stores").delete().eq("slug", req.params.id);
+    const { error } = await supabase.from("storefy_public_stores").delete().eq("slug", req.params.id).eq("user_id", user.id);
     if (error) throw error;
     return json(res, 200, { ok: true });
   } catch (error) { return json(res, error.statusCode || 500, { error: error.message }); }
@@ -119,12 +122,12 @@ async function deleteCode(req, res) {
   try {
     const { supabase, user } = await authenticated(req); const profile = await profileFor(supabase, user);
     if (!configuredAdmin(user, profile)) return json(res, 403, { error: "Apenas administradores podem expirar codigos." });
-    const primary = await supabase.from("codigos_convite").update({ status: "expirado" }).eq("id", Number(req.params.id));
+    const primary = await supabase.from("codigos_convite").update({ status: "expirado" }).eq("id", Number(req.params.id)).eq("criado_por", user.id);
     if (primary.error && !isMissingCodesTable(primary.error)) throw primary.error;
     if (primary.error) {
-      const { data: row, error } = await supabase.from("storefy_public_stores").select("store_config").eq("slug", req.params.id).single();
+      const { data: row, error } = await supabase.from("storefy_public_stores").select("store_config").eq("slug", req.params.id).eq("user_id", user.id).single();
       if (error) throw error;
-      const { error: updateError } = await supabase.from("storefy_public_stores").update({ store_config: { ...row.store_config, status: "expirado" }, updated_at: new Date().toISOString() }).eq("slug", req.params.id);
+      const { error: updateError } = await supabase.from("storefy_public_stores").update({ store_config: { ...row.store_config, status: "expirado" }, updated_at: new Date().toISOString() }).eq("slug", req.params.id).eq("user_id", user.id);
       if (updateError) throw updateError;
     }
     return json(res, 200, { ok: true });

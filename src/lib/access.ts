@@ -9,8 +9,14 @@ async function authHeaders() {
 }
 
 async function readResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Nao foi possivel concluir a operacao.');
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json') ? await response.json().catch(() => ({})) : {};
+  if (!response.ok) {
+    const routeMissing = response.status === 404
+      ? 'A rota de codigos ainda nao foi publicada. Envie a atualizacao ao Git e aguarde o novo deploy.'
+      : '';
+    throw new Error(data.error || routeMissing || `Nao foi possivel concluir a operacao (erro ${response.status}).`);
+  }
   return data as T;
 }
 
