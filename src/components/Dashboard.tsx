@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   TrendingUp, 
   Eye, 
@@ -28,9 +28,10 @@ interface DashboardProps {
   metricsScope?: string;
   accountName?: string;
   stores?: DashboardStoreContext[];
+  userLevel?: number;
 }
 
-export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local', accountName = '', stores = [] }: DashboardProps) {
+export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local', accountName = '', stores = [], userLevel = 1 }: DashboardProps) {
   const [metricTimeframe, setMetricTimeframe] = useState<'7d' | '30d' | 'today'>('7d');
   const [metricView, setMetricView] = useState<'current' | 'all'>('current');
   const [manualSalesByKey, setManualSalesByKey] = useState<Record<string, ManualSale[]>>({});
@@ -206,7 +207,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
-        <h1 className="text-xl font-sans font-semibold text-gray-900 tracking-tight">Visão geral</h1>
+        <h1 className="text-xl font-sans font-semibold text-gray-900 tracking-tight">Visão geral</h1><span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${userLevel === 10 ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'}`}>{userLevel === 10 ? <><span aria-hidden>&#128293;</span> SÓCIO NÍVEL 10</> : <><span aria-hidden>&#128100;</span> NÍVEL 1</>}</span>
         <span className="text-[13px] text-gray-500 font-medium ml-1 mt-0.5">Última atualização: {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
       </div>
 

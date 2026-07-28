@@ -1,4 +1,4 @@
-﻿require("dotenv/config");
+require("dotenv/config");
 const express = require("express");
 const path = require("path");
 const {
@@ -8,6 +8,7 @@ const {
   handleStatus,
   handleValidate
 } = require("./api/_storefy-netlify.cjs");
+const { createCode, expireCode, getProfile, listCodes, redeem } = require("./api/_storefy-levels.cjs");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -28,6 +29,12 @@ app.post("/api/integrations/netlify/validate", handleValidate);
 app.post("/api/integrations/netlify/save", handleSave);
 app.post("/api/projects/:projectId/publish/netlify", handlePublish);
 
+app.get("/api/access/profile", getProfile);
+app.post("/api/access/redeem", redeem);
+app.get("/api/admin/codes", listCodes);
+app.post("/api/admin/codes", createCode);
+app.patch("/api/admin/codes/:id/expire", expireCode);
+
 app.post("/api/netlify-publish", (_req, res) => {
   res.status(410).json({
     error: "Use /api/projects/:projectId/publish/netlify com token salvo no backend."
@@ -42,4 +49,3 @@ app.get("*", (_req, res) => {
 app.listen(port, "0.0.0.0", () => {
   console.log(`Storefy front running at http://localhost:${port}`);
 });
-

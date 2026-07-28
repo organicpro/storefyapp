@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
@@ -33,12 +33,14 @@ import MarketingKit from './components/MarketingKit';
 import SettingsView from './components/SettingsView';
 import StorePreview from './components/StorePreview';
 import LoginScreen from './components/LoginScreen';
+import AdminCodes from './components/AdminCodes';
 import { DEFAULT_STORE_CONFIG, INITIAL_PRODUCTS, INITIAL_SUPPLIERS } from './data';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { loadPublicStore, PublicStorePayload, savePublicStore } from './lib/publicStores';
 import { loadWorkspace, saveWorkspace } from './lib/workspaceSync';
+import { loadAccessProfile } from './lib/access';
 import { productFallbackImage } from './productImages';
-import { Product, StoreConfig, Supplier } from './types';
+import { Product, StoreConfig, Supplier, UserAccessProfile } from './types';
 import { useLanguage } from './i18n/LanguageContext';
 
 const DATA_VERSION = '2026-06-18-ai-subscriptions-v1';
@@ -322,8 +324,9 @@ function getAntiAiStorefrontVoice(category?: string) {
       };
   }
 }
-function buildStoreHtml(config: StoreConfig, products: Product[]) {
+function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1) {
   const activeProducts = getSelectedProductsForStore(config, products);
+  const levelBadge = userLevel === 10 ? '&#128293; SOCIO NIVEL 10' : '&#128100; NIVEL 1';
   const categories = Array.from(new Set(activeProducts.map(product => product.category)));
   const collectionLabels = Array.from(new Set(activeProducts.map(product => product.subcategory || product.category).filter(Boolean))).slice(0, 8);
   const pricedProducts = activeProducts.filter(product => product.salePrice > 0);
@@ -478,7 +481,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
     .hero{padding:0;background:var(--sf-bg)}.storefront-header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--sf-border);background:color-mix(in srgb,var(--sf-bg) 90%,transparent);backdrop-filter:blur(16px)}.storefront-nav{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}.storefront-brand{display:flex;align-items:center;gap:12px;min-width:0}.storefront-brand img{width:104px;max-width:28vw;height:auto;object-fit:contain;border-radius:12px;background:#060607;padding:7px 9px;box-shadow:0 8px 24px rgba(0,0,0,.16)}.storefront-brand strong{color:var(--sf-text);font-size:18px;font-weight:900;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.storefront-links{display:flex;align-items:center;gap:18px;margin-left:auto}.storefront-links a{color:var(--sf-muted);font-size:13px;font-weight:800}.storefront-nav-cta{box-shadow:none;padding:10px 15px}.retail-hero{border-bottom:1px solid var(--sf-border);background:linear-gradient(180deg,color-mix(in srgb,var(--sf-bg) 94%,white 6%),var(--sf-bg));padding:34px 0 30px}.retail-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,410px);gap:42px;align-items:center}.retail-copy{min-width:0}.retail-kicker{display:inline-flex;align-items:center;border:1px solid var(--sf-border);background:var(--sf-surface);color:var(--sf-muted);border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.retail-copy h1{margin:16px 0 12px;color:var(--sf-text);font-size:clamp(34px,4.8vw,58px);line-height:1;letter-spacing:-.055em;max-width:720px}.retail-copy p{margin:0;color:var(--sf-muted);font-size:17px;line-height:1.62;max-width:620px}.retail-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}.retail-cats{margin-top:20px}.retail-cats a{background:transparent;border-color:var(--sf-border);font-size:10px}.retail-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:26px}.retail-facts span{border-top:1px solid var(--sf-border);padding-top:12px;color:var(--sf-muted);font-size:12px;font-weight:800;line-height:1.35}.hero-feature{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:22px;padding:14px;box-shadow:0 22px 70px rgba(0,0,0,.16)}.hero-feature-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.hero-feature-head span{color:var(--sf-muted);font-size:11px;font-weight:1000;text-transform:uppercase;letter-spacing:.12em}.hero-feature-head strong{color:var(--sf-text);font-size:20px;font-weight:1000;white-space:nowrap}.hero-feature-media{aspect-ratio:4/3;border:1px solid var(--sf-border);border-radius:16px;overflow:hidden;background:#fff;display:grid;place-items:center}.hero-feature-media img{width:100%;height:100%;display:block}.hero-feature-media img.photo{object-fit:cover}.hero-feature-media img.logo-img{object-fit:contain;padding:34px;background:#08080a}.hero-feature-body{padding:14px 2px 2px}.hero-feature-body small{display:block;color:var(--sf-muted);font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.12em}.hero-feature-body b{display:block;margin-top:5px;color:var(--sf-text);font-size:17px;line-height:1.24}.hero-feature-body p{margin:8px 0 0;color:var(--sf-muted);font-size:13px;line-height:1.5}.collection-strip{border-bottom:1px solid var(--sf-border);background:var(--sf-bg);padding:24px 0}.strip-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}.strip-head h2{margin:0;color:var(--sf-text);font-size:22px;letter-spacing:-.035em}.strip-head p{margin:4px 0 0;color:var(--sf-muted);font-size:13px}.collection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.collection-tile{display:grid;grid-template-columns:56px 1fr;align-items:center;gap:11px;border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:16px;padding:9px;min-width:0;transition:border-color .18s,transform .18s}.collection-tile:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--sf-accent) 45%,var(--sf-border))}.collection-thumb{width:56px;height:56px;border-radius:12px;overflow:hidden;background:#fff;display:grid;place-items:center}.collection-thumb img{width:100%;height:100%;object-fit:cover}.collection-thumb img.logo-img{object-fit:contain;padding:8px;background:#09090b}.collection-tile span{display:block;color:var(--sf-text);font-size:12px;font-weight:1000;text-transform:uppercase;letter-spacing:.055em;line-height:1.15}.collection-tile strong{display:block;margin-top:4px;color:var(--sf-muted);font-size:12px}.collection-tile small{display:block;margin-top:4px;color:var(--sf-accent);font-size:12px;font-weight:1000}.section-title{margin-top:34px}.card{border-radius:18px;box-shadow:0 16px 44px rgba(0,0,0,.14)}.media{height:214px;background:#fff}.media img.logo-img{background:#09090b}.deal-badge{border-radius:8px;box-shadow:none}.contact-box{border-radius:20px;background:var(--sf-surface)}@media(max-width:860px){.storefront-links{display:none}.retail-layout{grid-template-columns:1fr;gap:24px}.retail-facts{grid-template-columns:1fr}.hero-feature{max-width:520px}.storefront-nav{min-height:66px}.storefront-brand strong{max-width:46vw}}@media(max-width:620px){.retail-hero{padding:24px 0}.retail-copy h1{font-size:38px}.retail-copy p{font-size:15px}.retail-actions .cta,.retail-actions .secondary-btn{width:100%;margin-top:0}.collection-grid{grid-template-columns:1fr}.strip-head{display:block}.storefront-nav-cta{display:none}.hero-feature-head{align-items:flex-start;flex-direction:column}.hero-feature-head strong{white-space:normal}.media{height:220px}}
   </style>
   <style data-storefy-commerce-polish>
-    .offer-bar{background:var(--sf-accent);color:var(--sf-accent-text);font-size:11px;font-weight:900;text-align:center;padding:9px 16px}.offer-bar span{opacity:.76;margin:0 9px}.storefront-search{position:relative;flex:0 1 280px}.storefront-search input{width:100%;height:40px;border:1px solid var(--sf-border);border-radius:10px;background:var(--sf-surface);color:var(--sf-text);padding:0 42px 0 13px;outline:none}.storefront-search input:focus{border-color:var(--sf-accent)}.storefront-search button{position:absolute;right:4px;top:4px;width:32px;height:32px;border:0;border-radius:8px;background:var(--sf-accent);color:var(--sf-accent-text);font-weight:1000}.category-nav{border-bottom:1px solid var(--sf-border);background:var(--sf-bg)}.category-nav-inner{display:flex;gap:22px;align-items:center;overflow:auto;min-height:44px;scrollbar-width:none}.category-nav a{white-space:nowrap;color:var(--sf-muted);font-size:11px;font-weight:900;text-transform:uppercase}.category-nav a:hover{color:var(--sf-accent)}.commerce-benefits{border-bottom:1px solid var(--sf-border);background:var(--sf-bg);padding:22px 0}.benefit-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--sf-border);border-radius:16px;overflow:hidden;background:var(--sf-border)}.benefit-row div{background:var(--sf-surface);padding:16px}.benefit-row b{display:block;color:var(--sf-text);font-size:13px}.benefit-row span{display:block;margin-top:5px;color:var(--sf-muted);font-size:11px;line-height:1.45}.card{box-shadow:0 10px 32px rgba(0,0,0,.12)}.card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--sf-accent) 45%,var(--sf-border))}.buy-btn,.secondary-btn{border-radius:10px}.social-proof{padding:46px 0;border-top:1px solid var(--sf-border)}.proof-heading{text-align:center}.proof-heading small{color:var(--sf-accent);font-size:10px;font-weight:1000;text-transform:uppercase}.proof-heading h2{margin:8px 0 5px;color:var(--sf-text);font-size:28px}.proof-heading p{margin:0;color:var(--sf-muted);font-size:13px}.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.review{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:16px;padding:18px}.review-stars{color:var(--sf-accent);font-size:15px;letter-spacing:2px}.review p{min-height:44px;color:var(--sf-text);font-size:13px;line-height:1.55}.review b{color:var(--sf-muted);font-size:11px}.contact{padding-bottom:34px}.footer-meta{display:flex;justify-content:space-between;gap:18px;padding-top:22px;color:var(--sf-muted);font-size:11px}.footer-meta nav{display:flex;gap:16px}.empty-search{display:none;grid-column:1/-1;padding:36px;text-align:center;border:1px dashed var(--sf-border);border-radius:16px;color:var(--sf-muted)}@media(max-width:900px){.storefront-search{order:4;flex-basis:100%}.storefront-nav{flex-wrap:wrap;padding:12px 0}.benefit-row{grid-template-columns:repeat(2,1fr)}.review-grid{grid-template-columns:1fr}.footer-meta{flex-direction:column}.category-nav-inner{gap:16px}}@media(max-width:620px){.offer-bar{font-size:10px}.offer-bar span{display:none}.benefit-row{grid-template-columns:1fr}.storefront-brand img{width:88px}.review-grid{gap:9px}.footer-meta nav{flex-wrap:wrap}}
+    .offer-bar{background:var(--sf-accent);color:var(--sf-accent-text);font-size:11px;font-weight:900;text-align:center;padding:9px 16px}.level-badge{display:inline-flex;margin-left:12px;border:1px solid currentColor;border-radius:999px;padding:3px 8px;font-size:9px;vertical-align:middle}.offer-bar span{opacity:.76;margin:0 9px}.storefront-search{position:relative;flex:0 1 280px}.storefront-search input{width:100%;height:40px;border:1px solid var(--sf-border);border-radius:10px;background:var(--sf-surface);color:var(--sf-text);padding:0 42px 0 13px;outline:none}.storefront-search input:focus{border-color:var(--sf-accent)}.storefront-search button{position:absolute;right:4px;top:4px;width:32px;height:32px;border:0;border-radius:8px;background:var(--sf-accent);color:var(--sf-accent-text);font-weight:1000}.category-nav{border-bottom:1px solid var(--sf-border);background:var(--sf-bg)}.category-nav-inner{display:flex;gap:22px;align-items:center;overflow:auto;min-height:44px;scrollbar-width:none}.category-nav a{white-space:nowrap;color:var(--sf-muted);font-size:11px;font-weight:900;text-transform:uppercase}.category-nav a:hover{color:var(--sf-accent)}.commerce-benefits{border-bottom:1px solid var(--sf-border);background:var(--sf-bg);padding:22px 0}.benefit-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--sf-border);border-radius:16px;overflow:hidden;background:var(--sf-border)}.benefit-row div{background:var(--sf-surface);padding:16px}.benefit-row b{display:block;color:var(--sf-text);font-size:13px}.benefit-row span{display:block;margin-top:5px;color:var(--sf-muted);font-size:11px;line-height:1.45}.card{box-shadow:0 10px 32px rgba(0,0,0,.12)}.card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--sf-accent) 45%,var(--sf-border))}.buy-btn,.secondary-btn{border-radius:10px}.social-proof{padding:46px 0;border-top:1px solid var(--sf-border)}.proof-heading{text-align:center}.proof-heading small{color:var(--sf-accent);font-size:10px;font-weight:1000;text-transform:uppercase}.proof-heading h2{margin:8px 0 5px;color:var(--sf-text);font-size:28px}.proof-heading p{margin:0;color:var(--sf-muted);font-size:13px}.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.review{border:1px solid var(--sf-border);background:var(--sf-surface);border-radius:16px;padding:18px}.review-stars{color:var(--sf-accent);font-size:15px;letter-spacing:2px}.review p{min-height:44px;color:var(--sf-text);font-size:13px;line-height:1.55}.review b{color:var(--sf-muted);font-size:11px}.contact{padding-bottom:34px}.footer-meta{display:flex;justify-content:space-between;gap:18px;padding-top:22px;color:var(--sf-muted);font-size:11px}.footer-meta nav{display:flex;gap:16px}.empty-search{display:none;grid-column:1/-1;padding:36px;text-align:center;border:1px dashed var(--sf-border);border-radius:16px;color:var(--sf-muted)}@media(max-width:900px){.storefront-search{order:4;flex-basis:100%}.storefront-nav{flex-wrap:wrap;padding:12px 0}.benefit-row{grid-template-columns:repeat(2,1fr)}.review-grid{grid-template-columns:1fr}.footer-meta{flex-direction:column}.category-nav-inner{gap:16px}}@media(max-width:620px){.offer-bar{font-size:10px}.offer-bar span{display:none}.benefit-row{grid-template-columns:1fr}.storefront-brand img{width:88px}.review-grid{gap:9px}.footer-meta nav{flex-wrap:wrap}}
   </style>
   <style data-storefy-reference-theme>
     body{background:#f5f6f8;color:#17191d}.wrap{width:min(1240px,calc(100% - 40px))}
@@ -495,7 +498,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[]) {
     @media(max-width:1040px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.storefront-links{display:none}}@media(max-width:900px){.storefront-search{order:4;flex-basis:100%;max-width:none}.retail-layout{grid-template-columns:1fr;gap:28px}.hero-feature{max-width:560px}.benefit-row{grid-template-columns:repeat(2,1fr)}.benefit-row div:nth-child(2){border-right:0}.benefit-row div:nth-child(-n+2){border-bottom:1px solid #e4e5e8}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.wrap{width:min(100% - 24px,1240px)}.storefront-brand img{width:88px}.retail-hero{padding:34px 0}.retail-copy h1{font-size:39px}.retail-facts{grid-template-columns:1fr;gap:8px}.benefit-row{grid-template-columns:1fr}.benefit-row div{border-right:0;border-bottom:1px solid #e4e5e8}.grid{grid-template-columns:1fr;gap:12px}.media{aspect-ratio:16/10}}
   </style></head>
 <body>
-  <div class="offer-bar">Compra segura <span>•</span> Atendimento direto <span>•</span> Ofertas selecionadas</div>
+  <div class="offer-bar">Compra segura <span>•</span> Atendimento direto <span>•</span> Ofertas selecionadas <b class="level-badge">${levelBadge}</b></div>
   <header class="storefront-header">
     <div class="wrap storefront-nav">
       <a class="storefront-brand" href="#">${normalizedLogoUrl ? `<img src="${escapeHtml(normalizedLogoUrl)}" alt="${escapeHtml(config.name)}" />` : ''}<strong>${escapeHtml(config.name)}</strong></a>
@@ -712,7 +715,7 @@ function HtmlStorePreview({
 
 function App() {
   const { language, setLanguage, t } = useLanguage();
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState(() => window.location.pathname === '/admin/codigos' ? 'admin-codes' : window.location.pathname === '/convites' ? 'invites' : 'dashboard');
   const [previewReturnPage, setPreviewReturnPage] = useState('dashboard');
   const [previewWizardStep, setPreviewWizardStep] = useState(1);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -721,6 +724,7 @@ function App() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [appToast, setAppToast] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [accessProfile, setAccessProfile] = useState<UserAccessProfile | null>(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [localAccess, setLocalAccess] = useState(() => readStorage<boolean>(STORAGE_KEYS.localAuth, false));
   const [localAccountName, setLocalAccountName] = useState(() => readStorage<string>(STORAGE_KEYS.accountName, ''));
@@ -830,6 +834,27 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!session?.user?.id) {
+      setAccessProfile(null);
+      return;
+    }
+    let mounted = true;
+    loadAccessProfile().then(profile => {
+      if (mounted) setAccessProfile(profile);
+    }).catch(() => {
+      if (mounted) setAccessProfile({ userId: session.user.id, email: session.user.email || '', name: getAccountDisplayName(session), level: 1, partnerCode: null, isAdmin: false });
+    });
+    return () => { mounted = false; };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!accessProfile) return;
+    if ((activePage === 'admin-codes' || activePage === 'invites') && !accessProfile.isAdmin && accessProfile.level !== 10) {
+      setActivePage('dashboard');
+      window.history.replaceState({}, '', '/');
+    }
+  }, [accessProfile, activePage]);
+  useEffect(() => {
     if (!session?.user?.id || workspaceReady) return;
 
     loadWorkspace(session.user.id).then(workspace => {
@@ -889,6 +914,8 @@ function App() {
   };
 
   const handleNavigate = (page: string) => {
+    const path = page === 'admin-codes' ? '/admin/codigos' : page === 'invites' ? '/convites' : '/';
+    if (window.location.pathname !== path) window.history.pushState({}, '', path);
     setActivePage(page);
     setMobileSidebarOpen(false);
   };
@@ -1119,7 +1146,7 @@ function App() {
       return { mode: 'error', url: '', error: message };
     }
 
-    const html = buildStoreHtml(publishConfig, products);
+    const html = buildStoreHtml(publishConfig, products, accessProfile?.level || 1);
     const filename = `${slugifyStore(targetSite.name || targetSite.subdomain || 'storefy')}-loja.html`;
     const slug = slugifyStore(`${targetSite.subdomain || targetSite.name}-${targetSite.id || activeSiteId || createId('store')}`);
     const publicUrl = getPublicStoreUrl(slug);
@@ -1129,7 +1156,8 @@ function App() {
       status: 'published',
       publishedUrl: publicUrl,
       publishedAt,
-      publicSlug: slug
+      publicSlug: slug,
+      ownerLevel: accessProfile?.level || 1
     };
     const payload: PublicStorePayload = {
       slug,
@@ -1253,7 +1281,7 @@ function App() {
   if (activePage === 'shop-preview') {
     return (
       <HtmlStorePreview
-        html={buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)}
+        html={buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.level || 1)}
         storeName={storeConfig.name}
         onBackToSaaS={() => handleNavigate(previewReturnPage)}
         onPromotion={() => handleNavigate('promotion')}
@@ -1281,6 +1309,8 @@ function App() {
               storePrimaryColor={storeConfig.primaryColor}
               accountName={accountDisplayName}
               logoUrl={storeConfig.logoUrl}
+            userLevel={accessProfile?.level || 1}
+            isAdmin={Boolean(accessProfile?.isAdmin)}
             />
           </div>
         </div>
@@ -1425,6 +1455,7 @@ function App() {
               <span className="text-[13px] font-medium text-gray-100 hidden md:block tracking-wide">
                 {accountDisplayName || 'Usuário'}
               </span>
+              <span className={`hidden rounded-full px-2 py-0.5 text-[9px] font-black lg:inline-flex ${accessProfile?.level === 10 ? 'bg-amber-400 text-black' : 'bg-white/10 text-gray-300'}`}>{accessProfile?.level === 10 ? 'N10' : 'N1'}</span>
               <ChevronDown size={14} className="text-gray-400 opacity-80" />
             </button>
 
@@ -1466,6 +1497,8 @@ function App() {
             storePrimaryColor={storeConfig.primaryColor}
             accountName={accountDisplayName}
             logoUrl={storeConfig.logoUrl}
+          userLevel={accessProfile?.level || 1}
+          isAdmin={Boolean(accessProfile?.isAdmin)}
           />
         </div>
 
@@ -1479,6 +1512,7 @@ function App() {
                 metricsScope={session?.user?.id || 'local'}
                 accountName={accountDisplayName}
                 stores={dashboardStores}
+              userLevel={accessProfile?.level || 1}
               />
             )}
 
@@ -1509,23 +1543,23 @@ function App() {
             )}
 
             {activePage === 'profile' && (
-              <OperationStudio mode="profile" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('profile')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)} />
+              <OperationStudio mode="profile" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('profile')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.level || 1)} />
             )}
 
             {activePage === 'videos' && (
-              <OperationStudio mode="videos" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('videos')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)} />
+              <OperationStudio mode="videos" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('videos')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.level || 1)} />
             )}
 
             {activePage === 'promotion' && (
-              <OperationStudio mode="promotion" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('promotion')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)} />
+              <OperationStudio mode="promotion" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('promotion')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.level || 1)} />
             )}
 
             {activePage === 'calendar' && (
-              <OperationStudio mode="calendar" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('calendar')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)} />
+              <OperationStudio mode="calendar" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('calendar')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.level || 1)} />
             )}
 
             {activePage === 'export' && (
-              <OperationStudio mode="export" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('export')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products)} />
+              <OperationStudio mode="export" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('export')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.level || 1)} />
             )}
             {activePage === 'wizard' && (
               <Wizard
@@ -1713,6 +1747,7 @@ function App() {
             {activePage === 'suppliers' && <SuppliersList suppliers={suppliers} products={storeProducts} />}
             {activePage === 'marketing' && <MarketingKit storeConfig={storeConfig} />}
             {activePage === 'academy' && <Academy />}
+            {(activePage === 'admin-codes' || activePage === 'invites') && accessProfile && <AdminCodes profile={accessProfile} onToast={showAppToast} />}
             {activePage === 'settings' && (
               <SettingsView
                 storeConfig={storeConfig}

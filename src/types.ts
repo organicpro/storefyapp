@@ -1,4 +1,4 @@
-﻿export type MainCategory = 'Games' | 'Redes Sociais' | 'Assinaturas Digitais' | 'Infoprodutos' | 'Achados Fisicos';
+export type MainCategory = 'Games' | 'Redes Sociais' | 'Assinaturas Digitais' | 'Infoprodutos' | 'Achados Fisicos';
 
 export interface Product {
   id: string;
@@ -57,6 +57,7 @@ export interface StoreConfig {
   videoFormat?: 'frame' | 'caption';
   videoCta?: string;
   videoWatermarkEnabled?: boolean;
+  ownerLevel?: number;
 }
 
 export interface Niche {
@@ -69,3 +70,23 @@ export interface Niche {
 
 export type StoreSite = StoreConfig & { id: string };
 
+
+export interface UserAccessProfile {
+  userId: string;
+  email: string;
+  name: string;
+  level: number;
+  partnerCode: string | null;
+  isAdmin: boolean;
+}
+
+export interface InviteCode {
+  id: number;
+  code: string;
+  uses: number;
+  maxUses: number;
+  status: 'ativo' | 'expirado';
+  createdAt: string;
+  expiresAt: string | null;
+  remaining: number;
+}

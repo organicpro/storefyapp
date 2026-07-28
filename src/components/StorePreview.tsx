@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   ShoppingBag, 
   Trash2, 
@@ -224,7 +224,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                   storeConfig.name.charAt(0).toUpperCase()
                 )}
               </div>
-              <span className="font-sans font-bold text-base text-gray-900 tracking-tight truncate max-w-40">{storeConfig.name}</span>
+              <span className="font-sans font-bold text-base text-gray-900 tracking-tight truncate max-w-40">{storeConfig.name}</span><span className={`hidden rounded-full px-2 py-1 text-[9px] font-black sm:inline-flex ${storeConfig.ownerLevel === 10 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500'}`}>{storeConfig.ownerLevel === 10 ? <><span aria-hidden>&#128293;</span>&nbsp;SOCIO NIVEL 10</> : <><span aria-hidden>&#128100;</span>&nbsp;NIVEL 1</>}</span>
             </div>
 
             {/* Float cart indicator */}

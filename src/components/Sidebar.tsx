@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Sparkles,
   ExternalLink,
@@ -13,6 +13,8 @@ interface SidebarProps {
   storePrimaryColor: string;
   accountName?: string;
   logoUrl?: string;
+  userLevel?: number;
+  isAdmin?: boolean;
 }
 
 type NavItemConfig = {
@@ -40,7 +42,7 @@ const PolarisIcon = ({ url, className = '' }: { url: string; className?: string 
   />
 );
 
-export default function Sidebar({ activePage, onPageChange, storeName, storePrimaryColor, accountName, logoUrl }: SidebarProps) {
+export default function Sidebar({ activePage, onPageChange, storeName, storePrimaryColor, accountName, logoUrl, userLevel = 1, isAdmin = false }: SidebarProps) {
   const { t } = useLanguage();
 
   const mainItems: NavItemConfig[] = [
@@ -48,6 +50,7 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
     { id: 'operation', label: t('sidebar.operation'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/StoreFilledIcon.svg' },
     { id: 'promotion', label: t('sidebar.promotion'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/MegaphoneFilledIcon.svg' },
     { id: 'academy', label: 'Academy', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/BookOpenIcon.svg' },
+    ...(isAdmin ? [{ id: 'admin-codes', label: 'Codigos', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/KeyIcon.svg', badge: 'ADMIN' }] : userLevel === 10 ? [{ id: 'invites', label: 'Convites', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ShareIcon.svg', badge: 'N10' }] : []),
   ];
 
   const productItems: NavItemConfig[] = [
