@@ -775,6 +775,10 @@ function App() {
   }, [products, sites]);
 
   const accountDisplayName = getAccountDisplayName(session, !session ? localAccountName : '');
+  const sessionMetadataLevel = Number(session?.user?.user_metadata?.nivel || 1);
+  const sessionMetadataAdmin = session?.user?.user_metadata?.is_admin === true;
+  const effectiveIsAdmin = Boolean(accessProfile?.isAdmin || sessionMetadataAdmin);
+  const effectiveUserLevel = effectiveIsAdmin ? 10 : Math.max(Number(accessProfile?.level || 1), sessionMetadataLevel);
 
   useEffect(() => {
     document.title = 'Storefy | Operacao de nicho';
@@ -813,9 +817,15 @@ function App() {
 
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
-      setSession(data.session);
+      let verifiedSession = data.session;
+      if (verifiedSession) {
+        const verified = await supabase.auth.getUser(verifiedSession.access_token);
+        if (verified.data.user) verifiedSession = { ...verifiedSession, user: verified.data.user };
+      }
+      if (!mounted) return;
+      setSession(verifiedSession);
       setAuthReady(true);
     });
 
@@ -849,11 +859,11 @@ function App() {
 
   useEffect(() => {
     if (!accessProfile) return;
-    if ((activePage === 'admin-codes' || activePage === 'invites') && !accessProfile.isAdmin && accessProfile.level !== 10) {
+    if ((activePage === 'admin-codes' || activePage === 'invites') && !effectiveIsAdmin && effectiveUserLevel !== 10) {
       setActivePage('dashboard');
       window.history.replaceState({}, '', '/');
     }
-  }, [accessProfile, activePage]);
+  }, [accessProfile, activePage, effectiveIsAdmin, effectiveUserLevel]);
   useEffect(() => {
     if (!session?.user?.id || workspaceReady) return;
 
@@ -1146,7 +1156,7 @@ function App() {
       return { mode: 'error', url: '', error: message };
     }
 
-    const html = buildStoreHtml(publishConfig, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1);
+    const html = buildStoreHtml(publishConfig, products, effectiveUserLevel);
     const filename = `${slugifyStore(targetSite.name || targetSite.subdomain || 'storefy')}-loja.html`;
     const slug = slugifyStore(`${targetSite.subdomain || targetSite.name}-${targetSite.id || activeSiteId || createId('store')}`);
     const publicUrl = getPublicStoreUrl(slug);
@@ -1157,7 +1167,7 @@ function App() {
       publishedUrl: publicUrl,
       publishedAt,
       publicSlug: slug,
-      ownerLevel: accessProfile?.isAdmin ? 10 : accessProfile?.level || 1
+      ownerLevel: effectiveUserLevel
     };
     const payload: PublicStorePayload = {
       slug,
@@ -1281,7 +1291,7 @@ function App() {
   if (activePage === 'shop-preview') {
     return (
       <HtmlStorePreview
-        html={buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1)}
+        html={buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)}
         storeName={storeConfig.name}
         onBackToSaaS={() => handleNavigate(previewReturnPage)}
         onPromotion={() => handleNavigate('promotion')}
@@ -1309,8 +1319,8 @@ function App() {
               storePrimaryColor={storeConfig.primaryColor}
               accountName={accountDisplayName}
               logoUrl={storeConfig.logoUrl}
-            userLevel={accessProfile?.isAdmin ? 10 : accessProfile?.level || 1}
-            isAdmin={Boolean(accessProfile?.isAdmin)}
+            userLevel={effectiveUserLevel}
+            isAdmin={effectiveIsAdmin}
             />
           </div>
         </div>
@@ -1455,7 +1465,7 @@ function App() {
               <span className="text-[13px] font-medium text-gray-100 hidden md:block tracking-wide">
                 {accountDisplayName || 'Usuário'}
               </span>
-              <span className={`hidden rounded-full px-2 py-0.5 text-[9px] font-black lg:inline-flex ${accessProfile?.level === 10 ? 'bg-amber-400 text-black' : 'bg-white/10 text-gray-300'}`}>{accessProfile?.level === 10 ? 'N10' : 'N1'}</span>
+              <span className={`hidden rounded-full px-2 py-0.5 text-[9px] font-black lg:inline-flex ${effectiveUserLevel === 10 ? 'bg-amber-400 text-black' : 'bg-white/10 text-gray-300'}`}>{effectiveUserLevel === 10 ? 'N10' : 'N1'}</span>
               <ChevronDown size={14} className="text-gray-400 opacity-80" />
             </button>
 
@@ -1471,11 +1481,11 @@ function App() {
                   >
                     {t('header.editProfile')}
                   </button>
-                  {(accessProfile?.isAdmin || accessProfile?.level === 10) && (
+                  {(effectiveIsAdmin || effectiveUserLevel === 10) && (
                     <button
                       onClick={() => {
                         setProfileMenuOpen(false);
-                        handleNavigate(accessProfile?.isAdmin ? 'admin-codes' : 'invites');
+                        handleNavigate(effectiveIsAdmin ? 'admin-codes' : 'invites');
                       }}
                       className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left hover:bg-amber-50 text-[13px] font-medium text-amber-800"
                     >
@@ -1508,8 +1518,8 @@ function App() {
             storePrimaryColor={storeConfig.primaryColor}
             accountName={accountDisplayName}
             logoUrl={storeConfig.logoUrl}
-          userLevel={accessProfile?.isAdmin ? 10 : accessProfile?.level || 1}
-          isAdmin={Boolean(accessProfile?.isAdmin)}
+          userLevel={effectiveUserLevel}
+          isAdmin={effectiveIsAdmin}
           />
         </div>
 
@@ -1523,7 +1533,7 @@ function App() {
                 metricsScope={session?.user?.id || 'local'}
                 accountName={accountDisplayName}
                 stores={dashboardStores}
-              userLevel={accessProfile?.isAdmin ? 10 : accessProfile?.level || 1}
+              userLevel={effectiveUserLevel}
               />
             )}
 
@@ -1554,23 +1564,23 @@ function App() {
             )}
 
             {activePage === 'profile' && (
-              <OperationStudio mode="profile" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('profile')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1)} />
+              <OperationStudio mode="profile" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('profile')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)} />
             )}
 
             {activePage === 'videos' && (
-              <OperationStudio mode="videos" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('videos')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1)} />
+              <OperationStudio mode="videos" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('videos')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)} />
             )}
 
             {activePage === 'promotion' && (
-              <OperationStudio mode="promotion" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('promotion')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1)} />
+              <OperationStudio mode="promotion" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('promotion')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)} />
             )}
 
             {activePage === 'calendar' && (
-              <OperationStudio mode="calendar" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('calendar')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1)} />
+              <OperationStudio mode="calendar" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('calendar')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)} />
             )}
 
             {activePage === 'export' && (
-              <OperationStudio mode="export" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('export')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, accessProfile?.isAdmin ? 10 : accessProfile?.level || 1)} />
+              <OperationStudio mode="export" products={storeProducts} storeConfig={storeConfig} onUpdateStoreConfig={handleUpdateStoreConfig} onToggleAddProduct={handleToggleAddProduct} onOpenSection={handleNavigate} onPreview={() => handleOpenGeneratedSite('export')} onPublish={handlePublishStore} onBuildHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)} />
             )}
             {activePage === 'wizard' && (
               <Wizard
@@ -1765,8 +1775,8 @@ function App() {
                 accountName={accountDisplayName}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onUpdateAccountName={handleUpdateAccountName}
-                userLevel={accessProfile?.isAdmin ? 10 : accessProfile?.level || 1}
-                isAdmin={Boolean(accessProfile?.isAdmin)}
+                userLevel={effectiveUserLevel}
+                isAdmin={effectiveIsAdmin}
                 onNavigate={handleNavigate}
               />
             )}

@@ -25,9 +25,16 @@ export default function LoginScreen({ onLocalAccess }: LoginScreenProps) {
       const result = await supabase.auth.signInWithPassword({ email, password });
       if (result.error) throw result.error;
       if (partnerCode.trim()) {
-        try { await redeemPartnerCode(partnerCode); } catch (cause) { await supabase.auth.signOut(); throw cause; }
+        try {
+          await redeemPartnerCode(partnerCode);
+          window.location.reload();
+          return;
+        } catch (cause) { await supabase.auth.signOut(); throw cause; }
       }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Nao foi possivel concluir o acesso.'); }
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Nao foi possivel concluir o acesso.';
+      setError(/invalid login credentials/i.test(message) ? 'E-mail ou senha invalidos. O codigo administrativo nao substitui a senha da conta.' : message);
+    }
     finally { setIsLoading(false); }
   };
 

@@ -172,6 +172,8 @@ async function redeemAdminCode(supabase, user, code) {
   if (config.status !== "ativo" || Number(config.usos || 0) >= 1) throw new Error("Codigo administrativo invalido ou utilizado");
   const { error: profileError } = await supabase.from("storefy_profiles").update({ nivel: 10, is_admin: true, codigo_socio: code, atualizado_em: new Date().toISOString() }).eq("user_id", user.id);
   if (profileError) throw profileError;
+  const metadataResult = await supabase.auth.admin.updateUserById(user.id, { user_metadata: { ...(user.user_metadata || {}), nivel: 10, is_admin: true } });
+  if (metadataResult.error) throw metadataResult.error;
   const { error: codeError } = await supabase.from("storefy_public_stores").update({ store_config: { ...config, usos: 1, status: "expirado" }, updated_at: new Date().toISOString() }).eq("slug", slug);
   if (codeError) throw codeError;
   return true;
@@ -187,6 +189,8 @@ async function redeemAdminCode(supabase, user, code) {
   if (codeError) throw codeError;
   const { error: profileError } = await supabase.from("storefy_profiles").update({ nivel: 10, codigo_socio: code, atualizado_em: new Date().toISOString() }).eq("user_id", user.id);
   if (profileError) throw profileError;
+  const metadataResult = await supabase.auth.admin.updateUserById(user.id, { user_metadata: { ...(user.user_metadata || {}), nivel: 10, is_admin: false } });
+  if (metadataResult.error) throw metadataResult.error;
   return 10;
 }
 async function redeem(req, res) {
@@ -196,7 +200,7 @@ async function redeem(req, res) {
     if (!code) return json(res, 400, { error: "Informe o codigo de socio." });
     if (await redeemAdminCode(supabase, user, code)) return json(res, 200, { ok: true, level: 10, isAdmin: true });
     const primary = await supabase.rpc("storefy_redeem_code", { p_user_id: user.id, p_codigo: code });
-    if (!primary.error) { const row = Array.isArray(primary.data) ? primary.data[0] : primary.data; return json(res, 200, { ok: true, level: Number(row?.nivel || 10) }); }
+    if (!primary.error) { const row = Array.isArray(primary.data) ? primary.data[0] : primary.data; await supabase.auth.admin.updateUserById(user.id, { user_metadata: { ...(user.user_metadata || {}), nivel: 10, is_admin: false } }); return json(res, 200, { ok: true, level: Number(row?.nivel || 10) }); }
     const level = await redeemFallback(supabase, user, profile, code);
     return json(res, 200, { ok: true, level });
   } catch (error) {
