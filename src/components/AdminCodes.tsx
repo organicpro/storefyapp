@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Copy, Crown, Flame, Plus, ShieldCheck, Trash2, Users, XCircle } from 'lucide-react';
-import { deleteInviteCode, expireInviteCode, generateInviteCode, loadInviteCodes } from '../lib/access';
+import { deleteInviteCode, deleteRootAdminCode, expireInviteCode, generateInviteCode, generateRootAdminCode, loadInviteCodes, loadRootAdminCode } from '../lib/access';
 import { InviteCode, UserAccessProfile } from '../types';
 
 interface Props { profile: UserAccessProfile; onToast: (message: string) => void; }
@@ -9,6 +9,8 @@ export default function AdminCodes({ profile, onToast }: Props) {
   const [codes, setCodes] = useState<InviteCode[]>([]);
   const [totalUsed, setTotalUsed] = useState(0);
   const [canManage, setCanManage] = useState(profile.isAdmin);
+  const [adminCode, setAdminCode] = useState<InviteCode | null>(null);
+  const isRootAdmin = profile.email.toLowerCase() === 'admin-storefy@example.com';
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +23,16 @@ export default function AdminCodes({ profile, onToast }: Props) {
   };
   useEffect(() => { void refresh(); }, []);
 
-  const copy = async (code: string) => { await navigator.clipboard.writeText(code); onToast('Codigo copiado.'); };
+  const generateAdmin = async () => {
+    setWorking(true); setError('');
+    try { const result = await generateRootAdminCode(); setAdminCode(result.code); onToast(`Codigo administrativo ${result.code.code} gerado.`); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Nao foi possivel gerar o codigo administrativo.'); }
+    finally { setWorking(false); }
+  };
+  const removeAdmin = async () => {
+    if (!adminCode || !window.confirm(`Excluir o codigo administrativo ${adminCode.code}?`)) return;
+    await deleteRootAdminCode(adminCode.id); setAdminCode(null); onToast('Codigo administrativo excluido.');
+  };  const copy = async (code: string) => { await navigator.clipboard.writeText(code); onToast('Codigo copiado.'); };
   const generate = async () => {
     setWorking(true); setError('');
     try { const result = await generateInviteCode(5); setCodes(current => [result.code, ...current]); onToast(`Codigo ${result.code.code} gerado.`); }
@@ -44,6 +55,13 @@ export default function AdminCodes({ profile, onToast }: Props) {
       <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"><Users className="text-emerald-600" size={22} /><div><p className="text-xs font-bold text-gray-500">Convites usados</p><p className="text-xl font-black text-gray-950">{totalUsed}</p></div></div>
     </header>
 
+    {isRootAdmin && <section className="border-2 border-red-300 bg-red-50 p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div><p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Somente administrador principal</p><h2 className="mt-1 text-lg font-black text-gray-950">Criar outro administrador</h2><p className="mt-1 text-xs text-gray-600">Codigo de uso unico. A conta existente informa este codigo no login e vira administradora.</p></div>
+        {!adminCode && <button type="button" disabled={working} onClick={() => void generateAdmin()} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 px-5 text-xs font-black text-white hover:bg-red-800 disabled:opacity-60"><Plus size={17} /> GERAR CODIGO ADMIN</button>}
+      </div>
+      {adminCode && <div className="mt-4 flex flex-col gap-3 border-t border-red-200 pt-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-mono text-xl font-black text-gray-950">{adminCode.code}</p><p className="text-xs font-bold text-red-700">Uso unico: 0 / 1 administrador</p></div><div className="flex gap-2"><button type="button" onClick={() => void copy(adminCode.code)} className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-black text-gray-800"><Copy size={16} /> Copiar</button><button type="button" onClick={() => void removeAdmin()} title="Excluir codigo administrativo" className="grid h-10 w-10 place-items-center rounded-lg border border-red-300 bg-white text-red-700"><Trash2 size={17} /></button></div></div>}
+    </section>}
     {canManage && <section className="flex flex-col gap-4 border-y border-gray-200 bg-white py-5 sm:flex-row sm:items-center sm:justify-between">
       <div><p className="text-sm font-black text-gray-950">Convite exclusivo</p><p className="mt-1 text-xs text-gray-500">Apenas um codigo por vez, limitado a 5 pessoas.</p></div>
       <button type="button" disabled={working || codes.length > 0} onClick={() => void generate()} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-sm font-black text-white hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"><Plus size={18} /> {working ? 'GERANDO...' : codes.length > 0 ? 'CODIGO UNICO JA GERADO' : 'GERAR CODIGO PARA 5 PESSOAS'}</button>

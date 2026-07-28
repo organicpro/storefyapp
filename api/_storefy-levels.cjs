@@ -17,6 +17,9 @@ async function authenticated(req) {
   if (error || !data.user) { const authError = new Error("Sessao invalida."); authError.statusCode = 401; throw authError; }
   return { supabase, user: data.user };
 }
+function isRootAdmin(user) {
+  return String(user.email || "").toLowerCase() === String(process.env.STOREFY_ROOT_ADMIN_EMAIL || "admin-storefy@example.com").toLowerCase();
+}
 function configuredAdmin(user, profile) {
   const configured = String(process.env.STOREFY_ADMIN_EMAILS || "").split(",").map(value => value.trim().toLowerCase()).filter(Boolean);
   return Boolean(profile?.is_admin || configured.includes(String(user.email || "").toLowerCase()));
@@ -37,7 +40,7 @@ function isMissingCodesTable(error) {
   return error?.code === "42P01" || /codigos_convite|schema cache/i.test(error?.message || "");
 }
 function publicCode(row) {
-  const source = row.store_config?.__storefyInvite ? row.store_config : row;
+  const source = row.store_config?.__storefyInvite || row.store_config?.__storefyAdminInvite ? row.store_config : row;
   const maxUses = Number(source.max_usos || 5);
   const uses = Number(source.usos || 0);
   return { id: row.id ?? row.slug, code: source.codigo, uses, maxUses, status: source.status || "ativo", createdAt: source.criado_em || row.updated_at, expiresAt: source.expira_em || null, remaining: Math.max(0, maxUses - uses) };
@@ -127,7 +130,52 @@ async function deleteCode(req, res) {
     return json(res, 200, { ok: true });
   } catch (error) { return json(res, error.statusCode || 500, { error: error.message }); }
 }
-async function redeemFallback(supabase, user, profile, code) {
+async function rootAdminCode(req, res) {
+  try {
+    const { supabase, user } = await authenticated(req);
+    if (!isRootAdmin(user)) return json(res, 403, { error: "Apenas o administrador principal pode acessar este codigo." });
+    const { data, error } = await supabase.from("storefy_public_stores").select("slug,store_config,updated_at").like("slug", "__storefy_admin_invite__%").order("updated_at", { ascending: false }).limit(1);
+    if (error) throw error;
+    return json(res, 200, { code: data?.[0] ? publicCode(data[0]) : null });
+  } catch (error) { return json(res, error.statusCode || 500, { error: error.message }); }
+}
+async function createRootAdminCode(req, res) {
+  try {
+    const { supabase, user } = await authenticated(req);
+    if (!isRootAdmin(user)) return json(res, 403, { error: "Apenas o administrador principal pode gerar administradores." });
+    const existing = await supabase.from("storefy_public_stores").select("slug").like("slug", "__storefy_admin_invite__%").limit(1);
+    if (existing.error) throw existing.error;
+    if (existing.data?.length) return json(res, 409, { error: "Ja existe um codigo administrativo. Exclua-o antes de gerar outro." });
+    const code = `ADMIN${crypto.randomInt(1000, 10000)}`;
+    const createdAt = new Date().toISOString();
+    const row = { slug: `__storefy_admin_invite__${code.toLowerCase()}`, user_id: user.id, store_config: { __storefyAdminInvite: true, codigo: code, usos: 0, max_usos: 1, status: "ativo", criado_em: createdAt, expira_em: null }, products: [], updated_at: createdAt };
+    const { data, error } = await supabase.from("storefy_public_stores").insert(row).select("slug,store_config,updated_at").single();
+    if (error) throw error;
+    return json(res, 201, { code: publicCode(data) });
+  } catch (error) { return json(res, error.statusCode || 500, { error: error.message }); }
+}
+async function deleteRootAdminCode(req, res) {
+  try {
+    const { supabase, user } = await authenticated(req);
+    if (!isRootAdmin(user)) return json(res, 403, { error: "Apenas o administrador principal pode excluir este codigo." });
+    const { error } = await supabase.from("storefy_public_stores").delete().eq("slug", req.params.id);
+    if (error) throw error;
+    return json(res, 200, { ok: true });
+  } catch (error) { return json(res, error.statusCode || 500, { error: error.message }); }
+}
+async function redeemAdminCode(supabase, user, code) {
+  const slug = `__storefy_admin_invite__${code.toLowerCase()}`;
+  const { data: row, error } = await supabase.from("storefy_public_stores").select("store_config").eq("slug", slug).maybeSingle();
+  if (error) throw error;
+  if (!row) return false;
+  const config = row.store_config || {};
+  if (config.status !== "ativo" || Number(config.usos || 0) >= 1) throw new Error("Codigo administrativo invalido ou utilizado");
+  const { error: profileError } = await supabase.from("storefy_profiles").update({ nivel: 10, is_admin: true, codigo_socio: code, atualizado_em: new Date().toISOString() }).eq("user_id", user.id);
+  if (profileError) throw profileError;
+  const { error: codeError } = await supabase.from("storefy_public_stores").update({ store_config: { ...config, usos: 1, status: "expirado" }, updated_at: new Date().toISOString() }).eq("slug", slug);
+  if (codeError) throw codeError;
+  return true;
+}async function redeemFallback(supabase, user, profile, code) {
   if (Number(profile.nivel) === 10 || configuredAdmin(user, profile)) return 10;
   const slug = `__storefy_invite__${code.toLowerCase()}`;
   const { data: row, error } = await supabase.from("storefy_public_stores").select("store_config").eq("slug", slug).maybeSingle();
@@ -146,6 +194,7 @@ async function redeem(req, res) {
     const { supabase, user } = await authenticated(req); const profile = await profileFor(supabase, user);
     const code = String(req.body?.code || "").trim().toUpperCase();
     if (!code) return json(res, 400, { error: "Informe o codigo de socio." });
+    if (await redeemAdminCode(supabase, user, code)) return json(res, 200, { ok: true, level: 10, isAdmin: true });
     const primary = await supabase.rpc("storefy_redeem_code", { p_user_id: user.id, p_codigo: code });
     if (!primary.error) { const row = Array.isArray(primary.data) ? primary.data[0] : primary.data; return json(res, 200, { ok: true, level: Number(row?.nivel || 10) }); }
     const level = await redeemFallback(supabase, user, profile, code);
@@ -155,4 +204,4 @@ async function redeem(req, res) {
     return json(res, error.statusCode || 400, { error: message });
   }
 }
-module.exports = { createCode, deleteCode, expireCode, getProfile, listCodes, redeem };
+module.exports = { createCode, createRootAdminCode, deleteCode, deleteRootAdminCode, expireCode, getProfile, listCodes, redeem, rootAdminCode };

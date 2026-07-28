@@ -52,3 +52,14 @@ export async function deleteInviteCode(id: number | string) {
     method: 'DELETE', headers: await authHeaders()
   }));
 }
+export async function loadRootAdminCode() {
+  return readResponse<{ code: InviteCode | null }>(await fetch('/api/root/admin-code', { headers: await authHeaders() }));
+}
+
+export async function generateRootAdminCode() {
+  return readResponse<{ code: InviteCode }>(await fetch('/api/root/admin-code', { method: 'POST', headers: await authHeaders() }));
+}
+
+export async function deleteRootAdminCode(id: number | string) {
+  return readResponse<{ ok: boolean }>(await fetch(`/api/root/admin-code/${encodeURIComponent(id)}`, { method: 'DELETE', headers: await authHeaders() }));
+}

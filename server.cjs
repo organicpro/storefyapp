@@ -9,7 +9,7 @@ const {
   handleStatus,
   handleValidate
 } = require("./api/_storefy-netlify.cjs");
-const { createCode, deleteCode, expireCode, getProfile, listCodes, redeem } = require("./api/_storefy-levels.cjs");
+const { createCode, createRootAdminCode, deleteCode, deleteRootAdminCode, expireCode, getProfile, listCodes, redeem, rootAdminCode } = require("./api/_storefy-levels.cjs");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -36,6 +36,9 @@ app.get("/api/admin/codes", listCodes);
 app.post("/api/admin/codes", createCode);
 app.patch("/api/admin/codes/:id/expire", expireCode);
 app.delete("/api/admin/codes/:id", deleteCode);
+app.get("/api/root/admin-code", rootAdminCode);
+app.post("/api/root/admin-code", createRootAdminCode);
+app.delete("/api/root/admin-code/:id", deleteRootAdminCode);
 
 app.post("/api/netlify-publish", (_req, res) => {
   res.status(410).json({
