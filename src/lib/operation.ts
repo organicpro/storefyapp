@@ -69,7 +69,7 @@ export function getContentPack(config: StoreConfig, products: Product[]) {
     tiktok: `${profile.niche.captionPhrase} Temos novidades na vitrine da ${profile.name}.\n\n${hashtags}`,
     story: `Novidade na ${profile.name}: ${highlight}. Toque no link da bio ou chama no WhatsApp.`,
     whatsapp: `Olá! Vi ${highlight} na ${profile.name} e quero mais informações.`,
-    groups: `Pessoal, separei ofertas de ${profile.niche.name} na ${profile.name}. A vitrine está pronta para consultar: ${profile.cta}.`,
+    groups: `Pessoal, encontrei ${highlight} para quem gosta de ${profile.niche.name}. Organizei os detalhes e o valor na vitrine ${profile.name}. Quem quiser conferir, pode acessar e me chamar no WhatsApp: ${profile.cta}.`,
     bioCta: `${profile.cta} ↓`,
     hashtags
   };

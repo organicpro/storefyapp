@@ -457,7 +457,7 @@ export default function OperationStudio({
   if (mode === 'videos') return (
     <section className="space-y-6 text-left animate-fade-in">
       {generating && <GenerationOverlay />}
-      {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} content={content} calendar={calendar} profile={profile} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
+      {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} content={content} calendar={calendar} profile={profile} products={selectedProducts} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
       
       {!videoLibraryPage ? <>
         <div className="mb-6">
@@ -1008,14 +1008,17 @@ function GenerationOverlay() {
   );
 }
 
-function GeneratedVideoPreview({ generatedVideo, content, calendar, profile, onDownload, onClose }: {
+function GeneratedVideoPreview({ generatedVideo, content, calendar, profile, products, onDownload, onClose }: {
   generatedVideo: { url: string; fileName: string; label: string };
   content: ReturnType<typeof getContentPack>;
   calendar: ReturnType<typeof getPostingCalendar>;
   profile: ReturnType<typeof getOperationProfile>;
+  products: Product[];
   onDownload: () => void;
   onClose: () => void;
 }) {
+  const [copiedAction, setCopiedAction] = useState('');
+
   const handleLoadedMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
     if (video.duration === Infinity || isNaN(video.duration)) {
@@ -1027,70 +1030,177 @@ function GeneratedVideoPreview({ generatedVideo, content, calendar, profile, onD
     }
   };
 
+  const copyWithFeedback = async (key: string, value: string) => {
+    await copy(value);
+    setCopiedAction(key);
+    window.setTimeout(() => setCopiedAction(current => current === key ? '' : current), 1800);
+  };
+
   const suggestedPosts = calendar.flatMap((day) => day.posts.map((post) => ({ ...post, day: day.day }))).slice(0, 4);
-  const facebookSearches = [
-    `${profile.niche.name} ofertas`,
-    `${profile.niche.name} compra e venda`,
-    `${profile.niche.name} achados`,
+  const productTopics = Array.from(new Set(products
+    .map(product => product.subcategory?.trim())
+    .filter((topic): topic is string => Boolean(topic))))
+    .slice(0, 2);
+  const primaryTopic = productTopics[0] || profile.niche.name;
+  const secondaryTopic = productTopics[1] || primaryTopic;
+  const searchesByNiche: Record<string, string[]> = {
+    games: [
+      `${primaryTopic} jogadores Brasil`,
+      `${secondaryTopic} comunidade e ofertas`,
+      `${primaryTopic} compra venda e trocas`
+    ],
+    subscriptions: [
+      `${primaryTopic} promoções e descontos`,
+      `${secondaryTopic} assinaturas Brasil`,
+      'streaming e aplicativos ofertas'
+    ],
+    streaming: [
+      `${primaryTopic} fãs e assinantes`,
+      `${secondaryTopic} filmes séries e promoções`,
+      'streaming Brasil ofertas e dicas'
+    ],
+    'apps-tools': [
+      `${primaryTopic} usuários Brasil`,
+      `${secondaryTopic} ferramentas digitais`,
+      'inteligência artificial produtividade e apps'
+    ],
+    'digital-products': [
+      `${primaryTopic} dicas e comunidade`,
+      `${secondaryTopic} materiais digitais`,
+      'ebooks cursos e produtos digitais Brasil'
+    ],
+    income: [
+      `${primaryTopic} iniciantes e dicas`,
+      `${secondaryTopic} empreendedores digitais`,
+      'renda extra trabalho em casa Brasil'
+    ],
+    beauty: [
+      `${primaryTopic} beleza e autocuidado`,
+      `${secondaryTopic} promoções e achadinhos`,
+      'beleza feminina ofertas Brasil'
+    ],
+    pet: [
+      `${primaryTopic} tutores e cuidados`,
+      `${secondaryTopic} produtos pet`,
+      'cachorros gatos e achadinhos pet'
+    ],
+    fitness: [
+      `${primaryTopic} treino e bem estar`,
+      `${secondaryTopic} produtos fitness`,
+      'academia treino em casa ofertas'
+    ],
+    home: [
+      `${primaryTopic} casa e decoração`,
+      `${secondaryTopic} utilidades domésticas`,
+      'achadinhos para casa e cozinha'
+    ],
+    electronics: [
+      `${primaryTopic} tecnologia Brasil`,
+      `${secondaryTopic} gadgets e acessórios`,
+      'eletrônicos ofertas e promoções'
+    ],
+    'physical-finds': [
+      `${primaryTopic} achadinhos e ofertas`,
+      `${secondaryTopic} compra e venda Brasil`,
+      `${profile.niche.name} produtos úteis`
+    ]
+  };
+  const facebookSearches = Array.from(new Set(
+    searchesByNiche[profile.niche.id] || [
+      `${primaryTopic} comunidade Brasil`,
+      `${secondaryTopic} ofertas e promoções`,
+      `${profile.niche.name} compra e venda`
+    ]
+  )).slice(0, 3);
+  const copyOptions = [
+    { key: 'instagram', label: 'Reels / Instagram', text: content.instagram },
+    { key: 'tiktok', label: 'TikTok', text: content.tiktok },
+    { key: 'story', label: 'Story', text: content.story },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
-      <div className="grid max-h-[92vh] w-full max-w-6xl gap-6 overflow-auto rounded-2xl bg-white p-5 shadow-2xl lg:grid-cols-[320px_1fr]">
-        <div className="rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
-          <video src={generatedVideo.url} autoPlay controls loop muted playsInline onLoadedMetadata={handleLoadedMetadata} className="mx-auto aspect-[9/16] w-full max-w-[320px] object-cover" />
-        </div>
-        <div className="grid gap-4 text-left xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="flex flex-col justify-center rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <span className="w-fit rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700">Pronto para postar</span>
-            <h3 className="mt-4 text-[25px] font-bold text-gray-900 leading-tight">{generatedVideo.label}</h3>
-            <p className="mt-3 text-[14px] leading-relaxed text-gray-600">Baixe o vídeo e use as copies ao lado para publicar sem perder o ritmo.</p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button onClick={onDownload} className="inline-flex items-center gap-2 rounded-lg bg-[#0f172a] hover:bg-[#1e293b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-colors">
-                <Download size={16} /> Baixar vídeo
-              </button>
-              <button onClick={onClose} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 px-5 py-2.5 text-[13px] font-semibold text-gray-700 shadow-sm transition-colors">
-                Criar outra versão
-              </button>
-            </div>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-3 backdrop-blur-sm animate-fade-in sm:p-5">
+      <div className="grid max-h-[94vh] w-full max-w-5xl gap-5 overflow-auto rounded-2xl bg-white p-4 shadow-2xl lg:grid-cols-[300px_minmax(0,1fr)] sm:p-5">
+        <div className="lg:sticky lg:top-0 lg:self-start">
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+            <video src={generatedVideo.url} autoPlay controls loop muted playsInline onLoadedMetadata={handleLoadedMetadata} className="mx-auto aspect-[9/16] w-full max-w-[300px] object-cover" />
           </div>
+          <button onClick={onClose} className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white text-[12px] font-semibold text-gray-700 hover:bg-gray-50">
+            <ChevronLeft size={15} /> Criar outro vídeo
+          </button>
+        </div>
 
-          <aside className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="space-y-4 text-left">
+          <header className="rounded-xl border border-gray-200 bg-gray-50 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-widest text-[#d4af37]">Divulgação rápida</p>
-              <h4 className="mt-1 text-[16px] font-bold text-gray-900">Copies, horários e grupos</h4>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase text-emerald-700"><Check size={14} /> Vídeo pronto</span>
+              <h3 className="mt-1 text-[21px] font-bold leading-tight text-gray-900">{generatedVideo.label}</h3>
             </div>
+            <button onClick={onDownload} className="mt-3 inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#0f172a] px-5 text-[13px] font-semibold text-white hover:bg-[#1e293b] sm:mt-0">
+              <Download size={16} /> 1. Baixar vídeo
+            </button>
+          </header>
 
-            <div className="grid gap-2 sm:grid-cols-2">
-              <button onClick={() => copy(content.instagram)} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-[12px] font-bold text-gray-800 hover:bg-gray-100">Copiar Reels</button>
-              <button onClick={() => copy(content.tiktok)} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-[12px] font-bold text-gray-800 hover:bg-gray-100">Copiar TikTok</button>
-              <button onClick={() => copy(content.story)} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-[12px] font-bold text-gray-800 hover:bg-gray-100">Copiar Story</button>
-              <button onClick={() => copy(content.groups)} className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-left text-[12px] font-bold text-blue-800 hover:bg-blue-100">Copiar grupos</button>
+          <section className="rounded-xl border border-gray-200 bg-white p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#0f172a] text-[11px] font-bold text-white">2</span>
+              <div>
+                <h4 className="text-[14px] font-bold text-gray-900">Copie a legenda da rede onde vai postar</h4>
+                <p className="mt-0.5 text-[12px] text-gray-500">Escolha somente uma opção. O texto já vem pronto.</p>
+              </div>
             </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {copyOptions.map(option => (
+                <button key={option.key} onClick={() => copyWithFeedback(option.key, option.text)} className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-3 text-left text-[12px] font-semibold transition-colors ${copiedAction === option.key ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-50 text-gray-800 hover:bg-gray-100'}`}>
+                  <span>{option.label}</span>
+                  {copiedAction === option.key ? <Check size={15} /> : <Copy size={15} className="text-gray-400" />}
+                </button>
+              ))}
+            </div>
+          </section>
 
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <p className="text-[12px] font-bold text-gray-900">Marcação de horário sugerida</p>
-              <div className="mt-2 grid gap-2">
-                {suggestedPosts.map((post) => (
-                  <button key={`${post.day}-${post.time}-${post.channel}`} onClick={() => copy(post.caption)} className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-left text-[12px] text-gray-700 hover:bg-gray-100">
-                    <span><b className="text-gray-900">{post.time}</b> · {post.channel}</span>
-                    <span className="text-[10px] font-bold uppercase text-gray-400">copiar</span>
+          <section className="rounded-xl border border-gray-200 bg-white p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#0f172a] text-[11px] font-bold text-white">3</span>
+              <div>
+                <h4 className="text-[14px] font-bold text-gray-900">Escolha um horário sugerido</h4>
+                <p className="mt-0.5 text-[12px] text-gray-500">Ao clicar, você copia a legenda correspondente.</p>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {suggestedPosts.map((post) => {
+                const key = `schedule-${post.day}-${post.time}-${post.channel}`;
+                return (
+                  <button key={key} onClick={() => copyWithFeedback(key, post.caption)} className={`flex min-h-12 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left ${copiedAction === key ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'}`}>
+                    <span><b className="block text-[13px] text-gray-900">{post.time} · {post.channel}</b><small className="text-[11px] text-gray-500">{post.day}</small></span>
+                    <span className={`text-[10px] font-bold uppercase ${copiedAction === key ? 'text-emerald-700' : 'text-gray-400'}`}>{copiedAction === key ? 'Copiado' : 'Copiar'}</span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
+          </section>
 
-            <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-              <p className="text-[12px] font-bold text-blue-950">Grupos do Facebook</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {facebookSearches.map((term) => (
-                  <a key={term} href={`https://www.facebook.com/search/groups/?q=${encodeURIComponent(term)}`} target="_blank" rel="noreferrer" className="rounded-md bg-white px-3 py-2 text-[12px] font-bold text-blue-700 shadow-sm hover:bg-blue-100">
-                    {term}
-                  </a>
-                ))}
+          <section className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-700 text-[11px] font-bold text-white">4</span>
+              <div>
+                <h4 className="text-[14px] font-bold text-blue-950">Publique em grupos do Facebook</h4>
+                <p className="mt-0.5 text-[12px] text-blue-700">Primeiro copie o texto. Depois abra uma das buscas abaixo.</p>
               </div>
             </div>
-          </aside>
+            <button onClick={() => copyWithFeedback('facebook-groups', content.groups)} className={`mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg font-semibold ${copiedAction === 'facebook-groups' ? 'bg-emerald-600 text-white' : 'bg-blue-700 text-white hover:bg-blue-800'}`}>
+              {copiedAction === 'facebook-groups' ? <Check size={16} /> : <Copy size={16} />}
+              {copiedAction === 'facebook-groups' ? 'Texto copiado' : 'Copiar texto para os grupos'}
+            </button>
+            <div className="mt-3 grid gap-2">
+              {facebookSearches.map((term, index) => (
+                <a key={term} href={`https://www.facebook.com/search/groups/?q=${encodeURIComponent(term)}`} target="_blank" rel="noreferrer" className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-3 py-2 text-[12px] font-semibold text-blue-800 hover:bg-blue-100">
+                  <span>Abrir busca {index + 1}: {term}</span>
+                  <ChevronRight size={15} />
+                </a>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </div>
