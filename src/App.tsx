@@ -1768,7 +1768,7 @@ function App() {
             {activePage === 'suppliers' && <SuppliersList suppliers={suppliers} products={storeProducts} />}
             {activePage === 'marketing' && <MarketingKit storeConfig={storeConfig} />}
             {activePage === 'academy' && <Academy />}
-            {(activePage === 'admin-codes' || activePage === 'invites') && accessProfile && <AdminCodes profile={accessProfile} onToast={showAppToast} />}
+            {(activePage === 'admin-codes' || activePage === 'invites') && accessProfile && <AdminCodes profile={{ ...accessProfile, isAdmin: effectiveIsAdmin, level: effectiveUserLevel }} onToast={showAppToast} />}
             {activePage === 'settings' && (
               <SettingsView
                 storeConfig={storeConfig}

@@ -22,7 +22,7 @@ function isRootAdmin(user) {
 }
 function configuredAdmin(user, profile) {
   const configured = String(process.env.STOREFY_ADMIN_EMAILS || "").split(",").map(value => value.trim().toLowerCase()).filter(Boolean);
-  return Boolean(profile?.is_admin || configured.includes(String(user.email || "").toLowerCase()));
+  return Boolean(profile?.is_admin || user?.user_metadata?.is_admin === true || configured.includes(String(user.email || "").toLowerCase()));
 }
 async function profileFor(supabase, user) {
   const { data, error } = await supabase.from("storefy_profiles").select("user_id,nome,nivel,codigo_socio,is_admin").eq("user_id", user.id).maybeSingle();
