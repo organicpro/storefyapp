@@ -1,4 +1,19 @@
-﻿import { Product, Supplier, Niche, StoreConfig } from './types';
+import { Product, Supplier, Niche, StoreConfig } from './types';
+import { VELODS_PHYSICAL_PRODUCTS } from './data/velodsPhysicalProducts';
+
+const VELODS_REMOTE_IMAGE_PRODUCTS: Product[] = VELODS_PHYSICAL_PRODUCTS.map(product => {
+  const images = product.images?.map(image => ({
+    ...image,
+    imageUrl: image.sourceUrl || image.imageUrl
+  }));
+  const primaryImage = images?.[0]?.imageUrl || product.imageUrl;
+
+  return {
+    ...product,
+    imageUrl: primaryImage,
+    images
+  };
+});
 
 export const INITIAL_SUPPLIERS: Supplier[] = [
   {
@@ -20,12 +35,12 @@ export const INITIAL_SUPPLIERS: Supplier[] = [
     "featured": true
   },
   {
-    "id": "supplier-achados-fisicos",
-    "name": "Curadoria Achados Fisicos",
+    "id": "c7drop",
+    "name": "C7 Drop",
     "rating": 4.8,
     "deliveryRate": "97.5%",
     "category": "Achados Fisicos",
-    "productsCount": 79,
+    "productsCount": 846,
     "featured": true
   }
 ];
@@ -114,7 +129,7 @@ export const NICHES: Niche[] = [
   }
 ];
 
-export const INITIAL_PRODUCTS: Product[] = [
+const INITIAL_PRODUCTS_BASE: Product[] = [
   {
     "id": "gm-01-conta-efootball-forca-3069",
     "name": "Conta efootball força 3069",
@@ -4499,6 +4514,11 @@ export const INITIAL_PRODUCTS: Product[] = [
     "addedToStore": false,
     "sourceUrl": "https://pt.aliexpress.com/item/1005008844326362.html"
   }
+];
+
+export const INITIAL_PRODUCTS: Product[] = [
+  ...INITIAL_PRODUCTS_BASE.filter(product => product.category !== 'Achados Fisicos'),
+  ...VELODS_REMOTE_IMAGE_PRODUCTS
 ];
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {

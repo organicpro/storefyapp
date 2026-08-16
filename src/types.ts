@@ -2,18 +2,57 @@ export type MainCategory = 'Games' | 'Redes Sociais' | 'Assinaturas Digitais' | 
 
 export interface Product {
   id: string;
+  productId?: string;
+  externalId?: string;
   name: string;
   category: MainCategory;
   subcategory: string;
   supplier: string;
+  brand?: string;
+  model?: string;
+  sku?: string;
+  source?: string;
   costPrice: number;
   salePrice: number;
+  originalPrice?: number;
+  marginPercent?: number;
+  stockQuantity?: number;
+  weightKg?: number;
+  rating?: number;
+  ordersCount?: number;
+  reviewsCount?: number;
   imageUrl: string;
   fallbackImageUrl?: string;
+  images?: Array<{
+    productId: string;
+    externalId: string;
+    imageNumber: number;
+    localPath: string;
+    imageUrl: string;
+    sourceUrl: string;
+    downloadStatus: string;
+    fileSizeBytes: number;
+  }>;
+  variants?: Array<{
+    productId: string;
+    externalId: string;
+    title: string;
+    name: string;
+    value: string;
+    sku: string;
+    stock: number;
+    costPrice: number;
+  }>;
+  descriptionHtml?: string;
+  descriptionText?: string;
   benefits: string[];
   deliverable: string;
   addedToStore: boolean;
   sourceUrl?: string;
+  productUrl?: string;
+  detailUrl?: string;
+  importUrl?: string;
+  allLocalImages?: string;
 }
 
 export interface Supplier {

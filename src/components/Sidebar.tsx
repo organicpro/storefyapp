@@ -53,6 +53,7 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
   ];
 
   const productItems: NavItemConfig[] = [
+    { id: 'ranking', label: 'Ranking', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ChartVerticalFilledIcon.svg' },
     { id: 'products', label: t('sidebar.products'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ProductFilledIcon.svg' },
     { id: 'suppliers', label: t('sidebar.suppliers'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/DeliveryFilledIcon.svg' },
   ];

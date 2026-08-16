@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-08-16T21:02:59.430002+00:00",
+  "workbook": "C:\\Users\\USER\\Downloads\\velods_catalogo_importacao.xlsx",
+  "products": 846,
+  "variants": 1009,
+  "images": 6563,
+  "productsWithImages": 846,
+  "productsWithoutImages": [],
+  "duplicateExternalIds": [],
+  "missingVariantLinks": 0,
+  "missingImageLinks": 0,
+  "failedOriginalImageDownloads": [
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 1,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/2-3.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_01.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 2,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/3-3.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_02.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 3,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/1-2.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_03.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 4,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/9-2.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_04.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 5,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/7-2.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_05.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 6,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/8.webp",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_06.webp",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 7,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/4.webp",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_07.webp",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 8,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/5-2.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_08.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "7da3a82d-ec58-494d-a5b9-74c1272a9088",
+      "externalId": "mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas",
+      "imageNumber": 9,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/06/6-3.jpg",
+      "localPath": "images/0493_mini-cabine-led-uv-secador-18w-prata-portatil-para-unhas-gel-e-posticas_09.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 1,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/3-26.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_01.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 2,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/4-26.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_02.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 3,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/2-26.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_03.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 4,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/5-25.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_04.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 5,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/7-24.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_05.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 6,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/6-25.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_06.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "8517913e-e218-4bdf-9556-ff0240591f3a",
+      "externalId": "smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx",
+      "imageNumber": 7,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2026/02/1-28.jpg",
+      "localPath": "images/0602_smartphone-xiaomi-redmi-15c-128gb-6gb-ram-50mpx_07.jpg",
+      "status": "error"
+    },
+    {
+      "productId": "2d5efbff-c42c-4499-a87c-56a9fa96e242",
+      "externalId": "cabo-hdtv-usb-3-1-4k-compativel-com-c-to-para-android-phone",
+      "imageNumber": 5,
+      "sourceUrl": "https://c7drop.com.br/wp-content/uploads/2024/04/4-22.png",
+      "localPath": "images/0832_cabo-hdtv-usb-3-1-4k-compativel-com-c-to-para-android-phone_05.png",
+      "status": "error"
+    }
+  ]
+}

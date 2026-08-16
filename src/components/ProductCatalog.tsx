@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   Search, 
   Check, 
@@ -18,6 +18,8 @@ import {
 import { Product, MainCategory, Supplier } from '../types';
 import { productFallbackImage } from '../productImages';
 
+const PAGE_SIZE = 48;
+
 interface ProductCatalogProps {
   products: Product[];
   suppliers: Supplier[];
@@ -34,7 +36,7 @@ export default function ProductCatalog({
   onUpdateProductImage 
 }: ProductCatalogProps) {
   // Filters state
-  const [activeTab, setActiveTab] = useState<MainCategory | 'Todos'>('Todos');
+  const [activeTab, setActiveTab] = useState<MainCategory | 'Todos'>('Achados Fisicos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'added' | 'not-added'>('all');
@@ -47,9 +49,11 @@ export default function ProductCatalog({
   const [tempImageUrl, setTempImageUrl] = useState('');
   const [simulatedFileUploading, setSimulatedFileUploading] = useState(false);
   const [brokenImageIds, setBrokenImageIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const physicalProductsCount = products.filter(product => product.category === 'Achados Fisicos').length;
 
   // Filter products logic
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = useMemo(() => products.filter(product => {
     // Tab category filter
     if (activeTab !== 'Todos' && product.category !== activeTab) return false;
     
@@ -70,11 +74,29 @@ export default function ProductCatalog({
     if (selectedStatus === 'not-added' && product.addedToStore) return false;
 
     return true;
-  });
+  }), [activeTab, products, searchQuery, selectedStatus, selectedSupplier]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, selectedSupplier, selectedStatus]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const pageStart = (safeCurrentPage - 1) * PAGE_SIZE;
+  const visibleProducts = useMemo(
+    () => filteredProducts.slice(pageStart, pageStart + PAGE_SIZE),
+    [filteredProducts, pageStart]
+  );
+  const pageNumbers = useMemo(() => {
+    const pages = new Set<number>([1, totalPages, safeCurrentPage - 1, safeCurrentPage, safeCurrentPage + 1]);
+    return Array.from(pages)
+      .filter(page => page >= 1 && page <= totalPages)
+      .sort((a, b) => a - b);
+  }, [safeCurrentPage, totalPages]);
 
   // Group by subcategory
   const subcategoriesMap: { [key: string]: Product[] } = {};
-  filteredProducts.forEach(product => {
+  visibleProducts.forEach(product => {
     if (!subcategoriesMap[product.subcategory]) {
       subcategoriesMap[product.subcategory] = [];
     }
@@ -138,7 +160,7 @@ export default function ProductCatalog({
         <div>
           <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Catálogo de Produtos</h1>
           <p className="text-[14px] text-gray-500 mt-1 leading-relaxed">
-            Escolha as melhores ofertas dos fornecedores, veja quanto você paga e defina o valor de venda da sua vitrine.
+            Escolha as melhores ofertas dos fornecedores, veja quanto você paga e defina o valor de venda da sua vitrine. {physicalProductsCount} produtos físicos carregados.
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg select-none whitespace-nowrap shadow-sm">
@@ -289,6 +311,8 @@ export default function ProductCatalog({
                             <img
                               src={product.imageUrl}
                               alt={product.name}
+                              loading="lazy"
+                              decoding="async"
                               referrerPolicy="no-referrer"
                               onError={(event) => handleProductImageError(event, product)}
                               className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${
@@ -472,6 +496,47 @@ export default function ProductCatalog({
               </div>
             );
           })}
+          <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+            <p className="text-[13px] font-semibold text-gray-600">
+              Mostrando {pageStart + 1}-{pageStart + visibleProducts.length} de {filteredProducts.length} produtos encontrados.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                disabled={safeCurrentPage === 1}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Anterior
+              </button>
+              {pageNumbers.map((page, index) => (
+                <React.Fragment key={page}>
+                  {index > 0 && page - pageNumbers[index - 1] > 1 && (
+                    <span className="px-1 text-[12px] font-bold text-gray-400">...</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`min-w-9 rounded-lg px-3 py-2 text-[12px] font-bold shadow-sm transition ${
+                      safeCurrentPage === page
+                        ? 'bg-[#0f172a] text-white'
+                        : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                </React.Fragment>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                disabled={safeCurrentPage === totalPages}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Proxima
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

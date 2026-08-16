@@ -129,6 +129,7 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
   // Calculations
   const cartTotalItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotalPrice = cart.reduce((acc, item) => acc + (item.product.salePrice * item.quantity), 0);
+  const hasPhysicalCartItem = cart.some(item => item.product.category === 'Achados Fisicos');
 
   // Mapped hex lighter color for gradients
   const primaryColorHex = storeConfig.primaryColor;
@@ -138,9 +139,10 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
     let itemsStr = cart.map(item => `- *${item.product.name}* (Qtd: ${item.quantity}) - R$ ${(item.product.salePrice * item.quantity).toFixed(2)}`).join('%0A');
     let buyerStr = `%0A%0A*Dados do Comprador:*%0AðŸ‘¤ Nome: ${customerName}%0AðŸ“± Contato: ${customerContact}`;
     let totalStr = `%0A%0AðŸ’µ *Preço Total:* R$ ${cartTotalPrice.toFixed(2)}`;
+    let deliveryStr = hasPhysicalCartItem ? `%0A%0A*Entrega:* ate 15 dias uteis apos a confirmacao do pedido.` : '';
     let footerStr = `%0A%0A_Enviado via Vitrine Storefy_ ⚡`;
     
-    const text = `${storeConfig.welcomeMessage}%0A%0A${itemsStr}${buyerStr}${totalStr}${footerStr}`;
+    const text = `${storeConfig.welcomeMessage}%0A%0A${itemsStr}${buyerStr}${totalStr}${deliveryStr}${footerStr}`;
     return `https://api.whatsapp.com/send?phone=${storeConfig.whatsapp}&text=${text}`;
   };
 
@@ -636,6 +638,13 @@ export default function StorePreview({ storeConfig, products, onBackToSaaS }: St
                 {/* Footer and calculations */}
                 {checkoutStep === 'cart' && cart.length > 0 && (
                   <div className="p-6 border-t border-gray-100 bg-white space-y-4">
+                    {hasPhysicalCartItem && (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-left text-[11px] leading-relaxed text-amber-900">
+                        <p className="font-black uppercase tracking-wider">Entrega dropshipping</p>
+                        <p>Produtos fisicos chegam em ate 15 dias uteis apos a confirmacao do pedido.</p>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between text-gray-800">
                       <p className="text-xs font-semibold">Subtotal:</p>
                       <p className="text-sm font-extrabold text-gray-900 font-sans">
