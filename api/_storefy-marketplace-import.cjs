@@ -247,21 +247,9 @@ function applyScrapingBeeTier(endpoint, tier) {
   if (tier.stealthProxy) endpoint.searchParams.set("stealth_proxy", "true");
 }
 
-function htmlLooksBlocked(html) {
-  const sample = String(html || "").slice(0, 250000).toLowerCase();
-  return [
-    "captcha",
-    "access denied",
-    "acesso negado",
-    "robot",
-    "unusual traffic",
-    "verifique que voce nao e um robo",
-    "verifique que você não é um robô"
-  ].some(pattern => sample.includes(pattern));
-}
-
 async function fetchHtmlViaScrapingBeeKey(rawUrl, marketplace, apiKey, tier) {
   const endpoint = new URL("https://app.scrapingbee.com/api/v1");
+  endpoint.searchParams.set("api_key", apiKey);
   endpoint.searchParams.set("url", rawUrl);
   applyScrapingBeeTier(endpoint, tier);
 
@@ -271,7 +259,6 @@ async function fetchHtmlViaScrapingBeeKey(rawUrl, marketplace, apiKey, tier) {
     const response = await fetch(endpoint, {
       signal: controller.signal,
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         Accept: "text/html,application/xhtml+xml"
       }
     });
@@ -291,12 +278,6 @@ async function fetchHtmlViaScrapingBeeKey(rawUrl, marketplace, apiKey, tier) {
     if (Buffer.byteLength(html, "utf8") > MAX_HTML_BYTES) {
       const error = new Error("A página do produto é grande demais para importar.");
       error.statusCode = 413;
-      throw error;
-    }
-    if (htmlLooksBlocked(html)) {
-      const error = new Error("O marketplace bloqueou esta camada de importação.");
-      error.statusCode = 502;
-      error.providerStatus = 403;
       throw error;
     }
     return { html, marketplace, finalUrl: rawUrl };
