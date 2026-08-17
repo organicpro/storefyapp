@@ -27,6 +27,7 @@ import Wizard from './components/Wizard';
 import OperationStudio from './components/OperationStudio';
 import StoresHub from './components/StoresHub';
 import ProductCatalog from './components/ProductCatalog';
+import type { MarketplaceImportInput } from './components/MarketplaceImporter';
 import ProductRanking from './components/ProductRanking';
 import SuppliersList from './components/SuppliersList';
 import Academy from './components/Academy';
@@ -155,7 +156,10 @@ function applyStoreSelection(products: Product[], productIds: string[]) {
 }
 
 function isCustomProduct(product: Product) {
-  return product.id.startsWith('custom-') || product.supplier === 'Produto próprio';
+  return product.id.startsWith('custom-')
+    || product.id.startsWith('imported-')
+    || product.supplier === 'Produto próprio'
+    || product.supplier.startsWith('Marketplace •');
 }
 
 const physicalBaselineById = new Map(
@@ -1123,6 +1127,67 @@ function App() {
     showAppToast('Produto próprio adicionado à loja.');
   };
 
+  const handleImportMarketplaceProduct = (input: MarketplaceImportInput) => {
+    const existing = products.find(product =>
+      product.source === input.marketplace
+      && ((input.externalId && product.externalId === input.externalId) || product.sourceUrl === input.sourceUrl)
+    );
+    const productId = existing?.id || `imported-${createId()}`;
+    const importedProduct: Product = {
+      ...(existing || {}),
+      id: productId,
+      productId,
+      externalId: input.externalId || productId,
+      name: input.name,
+      category: 'Achados Fisicos',
+      subcategory: input.marketplaceLabel,
+      supplier: `Marketplace • ${input.marketplaceLabel}`,
+      brand: input.brand || undefined,
+      source: input.marketplace,
+      costPrice: input.costPrice,
+      salePrice: input.salePrice,
+      originalPrice: input.costPrice,
+      marginPercent: input.marginPercent,
+      imageUrl: input.imageUrl,
+      images: input.images.map((image, index) => ({
+        productId,
+        externalId: input.externalId || productId,
+        imageNumber: index + 1,
+        localPath: '',
+        imageUrl: image,
+        sourceUrl: image,
+        downloadStatus: 'remote',
+        fileSizeBytes: 0
+      })),
+      descriptionText: input.description,
+      benefits: [
+        `Importado do ${input.marketplaceLabel}`,
+        `Margem configurada: ${input.marginPercent}%`,
+        'Título, preço e imagem editáveis na Storefy'
+      ],
+      deliverable: 'Produto físico importado. Prazo e disponibilidade dependem do fornecedor.',
+      addedToStore: false,
+      sourceUrl: input.sourceUrl,
+      productUrl: input.sourceUrl,
+      importUrl: input.sourceUrl
+    };
+
+    setProducts(current => existing
+      ? current.map(product => product.id === productId ? importedProduct : product)
+      : [importedProduct, ...current]
+    );
+
+    setSites(current => current.map((site, index) => site.id === storeConfig.id
+      ? makeSite({
+          ...site,
+          productIds: Array.from(new Set([...(site.productIds || []), productId])),
+          status: 'draft'
+        }, index + 1)
+      : site
+    ));
+    showAppToast(existing ? 'Produto importado atualizado na vitrine.' : 'Produto importado e adicionado à vitrine.');
+  };
+
   const handleUpdateProductImage = (productId: string, newUrl: string) => {
     setProducts(prev => prev.map(product => product.id === productId
       ? { ...product, imageUrl: newUrl }
@@ -1682,6 +1747,7 @@ function App() {
                 onToggleAddProduct={handleToggleAddProduct}
                 onUpdateSalePrice={handleUpdateSalePrice}
                 onCreateCustomProduct={handleCreateCustomProduct}
+                onImportProduct={handleImportMarketplaceProduct}
                 initialStep={previewWizardStep}
                 onNavigateToPreview={(returnStep) => handleOpenGeneratedSite('wizard', returnStep)}
                 onPublishStore={handlePublishStore}
@@ -1854,6 +1920,7 @@ function App() {
                 onToggleAddProduct={handleToggleAddProduct}
                 onUpdateSalePrice={handleUpdateSalePrice}
                 onUpdateProductImage={handleUpdateProductImage}
+                onImportProduct={handleImportMarketplaceProduct}
               />
             )}
 
@@ -1911,5 +1978,3 @@ function App() {
 }
 
 export default App;
-
-

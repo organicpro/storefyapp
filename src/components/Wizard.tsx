@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Niche, Product, StoreConfig } from '../types';
 import { NICHES } from '../data';
+import MarketplaceImporter, { MarketplaceImportInput } from './MarketplaceImporter';
 
 interface WizardProps {
   products: Product[];
@@ -36,6 +37,7 @@ interface WizardProps {
   onToggleAddProduct: (productId: string) => void;
   onUpdateSalePrice: (productId: string, newPrice: number) => void;
   onCreateCustomProduct: (product: Pick<Product, 'name' | 'salePrice' | 'category' | 'subcategory' | 'imageUrl'>) => void;
+  onImportProduct: (product: MarketplaceImportInput) => void;
   initialStep?: number;
   onNavigateToPreview: (returnStep: number) => void;
   onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
@@ -49,6 +51,7 @@ export default function Wizard({
   onToggleAddProduct,
   onUpdateSalePrice,
   onCreateCustomProduct,
+  onImportProduct,
   initialStep = 1,
   onNavigateToPreview,
   onPublishStore,
@@ -486,6 +489,8 @@ export default function Wizard({
             <span className="font-semibold text-gray-900">Sugestões baseadas no nicho: {selectedNiche.name}</span>
             <span className="font-sans text-gray-500">Exibindo {recommendedProducts.length} recomendações</span>
           </div>
+
+          <MarketplaceImporter onImportProduct={onImportProduct} variant="setup" />
 
           <form onSubmit={handleCreateCustomProduct} className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left shadow-sm">
             <div className="flex items-start gap-3">
@@ -1022,7 +1027,6 @@ export default function Wizard({
     </div>
   );
 }
-
 
 
 

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Product, MainCategory, Supplier } from '../types';
 import { productFallbackImage } from '../productImages';
+import MarketplaceImporter, { MarketplaceImportInput } from './MarketplaceImporter';
 
 const PAGE_SIZE = 48;
 
@@ -26,6 +27,7 @@ interface ProductCatalogProps {
   onToggleAddProduct: (productId: string) => void;
   onUpdateSalePrice: (productId: string, newPrice: number) => void;
   onUpdateProductImage: (productId: string, newUrl: string) => void;
+  onImportProduct: (input: MarketplaceImportInput) => void;
 }
 
 export default function ProductCatalog({ 
@@ -33,7 +35,8 @@ export default function ProductCatalog({
   suppliers, 
   onToggleAddProduct, 
   onUpdateSalePrice, 
-  onUpdateProductImage 
+  onUpdateProductImage,
+  onImportProduct
 }: ProductCatalogProps) {
   // Filters state
   const [activeTab, setActiveTab] = useState<MainCategory | 'Todos'>('Achados Fisicos');
@@ -173,9 +176,12 @@ export default function ProductCatalog({
             Escolha as melhores ofertas dos fornecedores, veja quanto você paga e defina o valor de venda da sua vitrine. {physicalProductsCount} produtos físicos carregados.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg select-none whitespace-nowrap shadow-sm">
-          <CheckCircle className="w-4 h-4 text-emerald-600" />
-          <span className="text-[13px] font-bold text-emerald-800">{products.filter(p => p.addedToStore).length} ativos na vitrine</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <MarketplaceImporter onImportProduct={onImportProduct} />
+          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 shadow-sm select-none whitespace-nowrap">
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
+            <span className="text-[13px] font-bold text-emerald-800">{products.filter(p => p.addedToStore).length} ativos na vitrine</span>
+          </div>
         </div>
       </div>
 
