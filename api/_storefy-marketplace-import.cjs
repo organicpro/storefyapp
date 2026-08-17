@@ -3,7 +3,7 @@ const path = require("path");
 
 const MAX_HTML_BYTES = 5 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 12000;
-const SCRAPER_TIMEOUT_MS = 45000;
+const SCRAPER_TIMEOUT_MS = process.env.VERCEL || process.env.NETLIFY ? 52000 : 45000;
 const PREVIEW_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const PREVIEW_CACHE_FILE = path.join(__dirname, "..", ".storefy-marketplace-cache.json");
 const SCRAPINGBEE_TIERS = [
@@ -11,6 +11,12 @@ const SCRAPINGBEE_TIERS = [
   { label: "classic-js", renderJs: true },
   { label: "premium-js", renderJs: true, premiumProxy: true },
   { label: "stealth-js", renderJs: true, stealthProxy: true }
+];
+const SCRAPINGBEE_FAST_TIERS = [
+  { label: "stealth-js", renderJs: true, stealthProxy: true },
+  { label: "premium-js", renderJs: true, premiumProxy: true },
+  { label: "classic-js", renderJs: true },
+  { label: "classic", renderJs: false }
 ];
 
 let scrapingBeeKeyCursor = 0;
@@ -239,9 +245,19 @@ function isRetryableScrapingBeeStatus(status) {
   return [401, 402, 403, 408, 409, 425, 429, 500, 502, 503, 504].includes(Number(status));
 }
 
+function getScrapingBeeTiers(marketplace) {
+  const mode = String(process.env.SCRAPINGBEE_IMPORT_MODE || "").trim().toLowerCase();
+  if (mode === "economy") return SCRAPINGBEE_TIERS;
+  if (mode === "fast" || process.env.VERCEL || process.env.NETLIFY || marketplace?.id === "mercado_livre") {
+    return SCRAPINGBEE_FAST_TIERS;
+  }
+  return SCRAPINGBEE_TIERS;
+}
+
 function applyScrapingBeeTier(endpoint, tier) {
   endpoint.searchParams.set("render_js", tier.renderJs ? "true" : "false");
   endpoint.searchParams.set("country_code", "br");
+  endpoint.searchParams.set("timeout", String(SCRAPER_TIMEOUT_MS));
   if (tier.renderJs) endpoint.searchParams.set("wait", "1500");
   if (tier.premiumProxy) endpoint.searchParams.set("premium_proxy", "true");
   if (tier.stealthProxy) endpoint.searchParams.set("stealth_proxy", "true");
@@ -299,7 +315,7 @@ async function fetchHtmlViaScrapingBee(rawUrl, marketplace) {
   if (keys.length === 0) return null;
 
   const errors = [];
-  for (const tier of SCRAPINGBEE_TIERS) {
+  for (const tier of getScrapingBeeTiers(marketplace)) {
     for (const apiKey of keys) {
       try {
         return await fetchHtmlViaScrapingBeeKey(rawUrl, marketplace, apiKey, tier);
