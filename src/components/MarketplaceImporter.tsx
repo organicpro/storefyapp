@@ -287,6 +287,12 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
                       <span className={`rounded-full px-3 py-1.5 text-[10px] font-black ${draft.marketplace === 'mercado_livre' ? 'bg-[#fff4a6] text-[#4b4300]' : 'bg-orange-100 text-orange-700'}`}>{draft.marketplaceLabel}</span>
                     </div>
 
+                    {draft.price == null && (
+                      <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] font-medium text-amber-900">
+                        Produto encontrado. O Mercado Livre ocultou apenas o preço; informe o custo abaixo para concluir.
+                      </div>
+                    )}
+
                     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
                       <div>
                         <div className="aspect-square overflow-hidden rounded-xl border border-gray-200 bg-gray-50">

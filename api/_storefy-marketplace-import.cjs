@@ -3,7 +3,8 @@ const path = require("path");
 
 const MAX_HTML_BYTES = 5 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 12000;
-const SCRAPER_TIMEOUT_MS = process.env.VERCEL || process.env.NETLIFY ? 52000 : 45000;
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.NETLIFY);
+const SCRAPER_TIMEOUT_MS = IS_SERVERLESS ? 9000 : 45000;
 const PREVIEW_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const PREVIEW_CACHE_FILE = path.join(__dirname, "..", ".storefy-marketplace-cache.json");
 const SCRAPINGBEE_TIERS = [
@@ -17,6 +18,9 @@ const SCRAPINGBEE_FAST_TIERS = [
   { label: "premium-js", renderJs: true, premiumProxy: true },
   { label: "classic-js", renderJs: true },
   { label: "classic", renderJs: false }
+];
+const SCRAPINGBEE_SERVERLESS_TIERS = [
+  { label: "premium-metadata", renderJs: false, premiumProxy: true }
 ];
 
 let scrapingBeeKeyCursor = 0;
@@ -247,8 +251,9 @@ function isRetryableScrapingBeeStatus(status) {
 
 function getScrapingBeeTiers(marketplace) {
   const mode = String(process.env.SCRAPINGBEE_IMPORT_MODE || "").trim().toLowerCase();
+  if (IS_SERVERLESS) return SCRAPINGBEE_SERVERLESS_TIERS;
   if (mode === "economy") return SCRAPINGBEE_TIERS;
-  if (mode === "fast" || process.env.VERCEL || process.env.NETLIFY || marketplace?.id === "mercado_livre") {
+  if (mode === "fast" || marketplace?.id === "mercado_livre") {
     return SCRAPINGBEE_FAST_TIERS;
   }
   return SCRAPINGBEE_TIERS;
@@ -258,7 +263,7 @@ function applyScrapingBeeTier(endpoint, tier) {
   endpoint.searchParams.set("render_js", tier.renderJs ? "true" : "false");
   endpoint.searchParams.set("country_code", "br");
   endpoint.searchParams.set("timeout", String(SCRAPER_TIMEOUT_MS));
-  if (tier.renderJs) endpoint.searchParams.set("wait", "1500");
+  if (tier.renderJs) endpoint.searchParams.set("wait", "500");
   if (tier.premiumProxy) endpoint.searchParams.set("premium_proxy", "true");
   if (tier.stealthProxy) endpoint.searchParams.set("stealth_proxy", "true");
 }
