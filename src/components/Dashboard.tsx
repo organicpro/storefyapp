@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  TrendingUp, 
-  Eye, 
-  MessageSquare, 
-  DollarSign, 
+  Activity,
+  DollarSign,
+  Eye,
   CheckCircle2, 
-  ShoppingBag, 
-  Sparkles,
-  ArrowRight,
   MousePointerClick,
+  MessageSquare,
   Plus,
+  TrendingUp,
+  WalletCards,
   X
 } from 'lucide-react';
 import { Product, StoreConfig } from '../types';
@@ -31,6 +30,179 @@ interface DashboardProps {
   userLevel?: number;
 }
 
+const CHART_ORANGE = '#f59e0b';
+const CHART_TEAL = '#0f9f8f';
+
+const buildCumulativeSeries = (total: number, points = 8, seed = 1) => {
+  if (total <= 0) return Array.from({ length: points }, () => 0);
+  const weights = Array.from({ length: points - 1 }, (_, index) =>
+    Math.max(0.2, 0.78 + Math.sin((index + seed) * 1.31) * 0.24 + ((index + seed) % 3) * 0.07)
+  );
+  const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+  let accumulated = 0;
+  return [0, ...weights.map((weight, index) => {
+    accumulated += weight;
+    return index === weights.length - 1 ? total : Math.round((accumulated / weightTotal) * total);
+  })];
+};
+
+const pointsFor = (values: number[], width: number, height: number, padding = 5) => {
+  const highest = Math.max(...values, 1);
+  const lowest = Math.min(...values, 0);
+  const range = Math.max(highest - lowest, 1);
+  return values.map((value, index) => ({
+    x: padding + (index / Math.max(values.length - 1, 1)) * (width - padding * 2),
+    y: padding + (1 - (value - lowest) / range) * (height - padding * 2)
+  }));
+};
+
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  const points = pointsFor(values, 112, 34, 3);
+  const line = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+  const area = `${line} L ${points[points.length - 1].x} 34 L ${points[0].x} 34 Z`;
+  const hasData = values.some(value => value !== 0);
+
+  return (
+    <svg viewBox="0 0 112 34" className="h-9 w-28" aria-hidden="true">
+      {hasData && <path d={area} fill={color} opacity="0.09" />}
+      <path d={line} fill="none" stroke={hasData ? color : '#d1d5db'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      {hasData && <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="3" fill="white" stroke={color} strokeWidth="2" />}
+    </svg>
+  );
+}
+
+type MetricCardProps = {
+  title: string;
+  value: string;
+  helper: string;
+  icon: React.ElementType;
+  series: number[];
+  color: string;
+  delayClass: string;
+};
+
+function MetricCard({ title, value, helper, icon: Icon, series, color, delayClass }: MetricCardProps) {
+  const hasData = series.some(item => item !== 0);
+  return (
+    <article className={`card-enter ${delayClass} min-h-36 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[12px] font-semibold text-gray-500">{title}</p>
+          <p className="mt-2 text-[22px] font-bold tracking-tight text-gray-950">{value}</p>
+        </div>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${color}16`, color }}>
+          <Icon size={17} />
+        </span>
+      </div>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <span className={`text-[11px] font-medium ${hasData ? 'text-emerald-700' : 'text-gray-400'}`}>
+          {hasData ? helper : 'Sem dados no período'}
+        </span>
+        <Sparkline values={series} color={color} />
+      </div>
+    </article>
+  );
+}
+
+type TrendChartProps = {
+  labels: string[];
+  primary: number[];
+  secondary: number[];
+};
+
+function TrendChart({ labels, primary, secondary }: TrendChartProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const width = 760;
+  const height = 250;
+  const plot = { left: 48, right: 12, top: 18, bottom: 34 };
+  const highest = Math.max(...primary, ...secondary, 1);
+  const plotWidth = width - plot.left - plot.right;
+  const plotHeight = height - plot.top - plot.bottom;
+  const chartPoints = (values: number[]) => values.map((value, index) => ({
+    x: plot.left + (index / Math.max(values.length - 1, 1)) * plotWidth,
+    y: plot.top + (1 - value / highest) * plotHeight
+  }));
+  const primaryPoints = chartPoints(primary);
+  const secondaryPoints = chartPoints(secondary);
+  const lineFor = (points: { x: number; y: number }[]) => points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ');
+  const primaryLine = lineFor(primaryPoints);
+  const secondaryLine = lineFor(secondaryPoints);
+  const primaryArea = `${primaryLine} L ${primaryPoints[primaryPoints.length - 1].x} ${height - plot.bottom} L ${primaryPoints[0].x} ${height - plot.bottom} Z`;
+  const hasData = primary.some(value => value > 0) || secondary.some(value => value > 0);
+
+  return (
+    <div className="relative h-[270px] w-full">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+        className="h-full w-full overflow-visible"
+        role="img"
+        aria-label="Evolução de visualizações e ações no período"
+        onMouseLeave={() => setHoveredIndex(null)}
+        onMouseMove={(event) => {
+          const bounds = event.currentTarget.getBoundingClientRect();
+          const relativeX = ((event.clientX - bounds.left) / bounds.width) * width;
+          const nextIndex = Math.round(((relativeX - plot.left) / plotWidth) * (labels.length - 1));
+          setHoveredIndex(Math.max(0, Math.min(labels.length - 1, nextIndex)));
+        }}
+      >
+        <defs>
+          <linearGradient id="dashboard-chart-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={CHART_ORANGE} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={CHART_ORANGE} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0, 1, 2, 3, 4].map(index => {
+          const y = plot.top + (index / 4) * plotHeight;
+          const value = Math.round(highest * (1 - index / 4));
+          return (
+            <g key={index}>
+              <line x1={plot.left} y1={y} x2={width - plot.right} y2={y} stroke="#e5e7eb" strokeDasharray="4 5" />
+              {(hasData || index === 4) && (
+                <text x={plot.left - 9} y={y + 4} textAnchor="end" fontSize="10" fill="#9ca3af">
+                  {hasData ? new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(value) : '0'}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        {hasData && <path d={primaryArea} fill="url(#dashboard-chart-fill)" />}
+        <path d={primaryLine} fill="none" stroke={hasData ? CHART_ORANGE : '#d1d5db'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={secondaryLine} fill="none" stroke={hasData ? CHART_TEAL : '#e5e7eb'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {labels.map((label, index) => (
+          <text key={label + index} x={primaryPoints[index].x} y={height - 7} textAnchor="middle" fontSize="10" fill="#6b7280">{label}</text>
+        ))}
+        {hoveredIndex !== null && hasData && (
+          <g>
+            <line x1={primaryPoints[hoveredIndex].x} y1={plot.top} x2={primaryPoints[hoveredIndex].x} y2={height - plot.bottom} stroke="#9ca3af" strokeDasharray="3 4" />
+            <circle cx={primaryPoints[hoveredIndex].x} cy={primaryPoints[hoveredIndex].y} r="5" fill="white" stroke={CHART_ORANGE} strokeWidth="3" />
+            <circle cx={secondaryPoints[hoveredIndex].x} cy={secondaryPoints[hoveredIndex].y} r="4" fill="white" stroke={CHART_TEAL} strokeWidth="2.5" />
+          </g>
+        )}
+      </svg>
+      {!hasData && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-7">
+          <div className="rounded-lg border border-gray-200 bg-white/95 px-4 py-3 text-center shadow-sm">
+            <Activity className="mx-auto text-gray-300" size={20} />
+            <p className="mt-1 text-xs font-semibold text-gray-700">Nenhuma interação neste período</p>
+            <p className="mt-0.5 text-[10px] text-gray-400">Os dados aparecerão aqui quando sua loja receber acessos.</p>
+          </div>
+        </div>
+      )}
+      {hoveredIndex !== null && hasData && (
+        <div
+          className="pointer-events-none absolute top-2 z-10 min-w-32 -translate-x-1/2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[10px] shadow-lg"
+          style={{ left: `${6.3 + (hoveredIndex / Math.max(labels.length - 1, 1)) * 91.5}%` }}
+        >
+          <p className="font-bold text-gray-900">{labels[hoveredIndex]}</p>
+          <p className="mt-1 text-gray-600">Visualizações: <b>{primary[hoveredIndex].toLocaleString('pt-BR')}</b></p>
+          <p className="text-gray-600">Ações: <b>{secondary[hoveredIndex].toLocaleString('pt-BR')}</b></p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Dashboard({ storeConfig, products, onNavigate, metricsScope = 'local', accountName = '', stores = [], userLevel = 1 }: DashboardProps) {
   const [metricTimeframe, setMetricTimeframe] = useState<'7d' | '30d' | 'today'>('7d');
   const [metricView, setMetricView] = useState<'current' | 'all'>('current');
@@ -45,6 +217,15 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   const currentSalesKey = storeSalesKey(storeConfig);
   const storeKeysSignature = dashboardStores.map(store => storeSalesKey(store.storeConfig)).join('|');
   const timeframeDays = metricTimeframe === 'today' ? 1 : metricTimeframe === '7d' ? 7 : 30;
+  const now = new Date();
+  const periodStart = metricTimeframe === 'today'
+    ? new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    : new Date(now.getTime() - (timeframeDays - 1) * 24 * 60 * 60 * 1000);
+
+  const isSaleInTimeframe = (sale: ManualSale) => {
+    const timestamp = new Date(sale.createdAt).getTime();
+    return Number.isFinite(timestamp) && timestamp >= periodStart.getTime() && timestamp <= now.getTime();
+  };
 
   const readStoreSales = (key: string): ManualSale[] => {
     try {
@@ -72,7 +253,7 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
 
   const getStoreMetrics = (store: DashboardStoreContext) => {
     const selectedProducts = store.products.filter(product => product.addedToStore);
-    const storeSales = manualSalesByKey[storeSalesKey(store.storeConfig)] || [];
+    const storeSales = (manualSalesByKey[storeSalesKey(store.storeConfig)] || []).filter(isSaleInTimeframe);
     const hasOperationalData = selectedProducts.length > 0;
     const publishedBoost = store.storeConfig.status === 'published' ? 1.35 : 1;
     const operationalBase = hasOperationalData
@@ -110,11 +291,41 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   const clicksCount = visibleMetrics.reduce((sum, metric) => sum + metric.clicks, 0);
   const contactsCount = visibleMetrics.reduce((sum, metric) => sum + metric.contacts, 0);
   const estimatedRevenue = visibleMetrics.reduce((sum, metric) => sum + metric.revenue, 0);
+  const salesCount = visibleMetrics.reduce((sum, metric) => sum + metric.salesCount, 0);
   const viewsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.viewsGrowthValue, 0) / activeMetricsCount;
   const clicksGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.clicksGrowthValue, 0) / activeMetricsCount;
   const contactsGrowth = visibleMetrics.reduce((sum, metric) => sum + metric.contactsGrowthValue, 0) / activeMetricsCount;
   const clickRate = viewsCount > 0 ? (clicksCount / viewsCount) * 100 : 0;
   const conversionRate = clicksCount > 0 ? (contactsCount / clicksCount) * 100 : 0;
+  const actionsCount = clicksCount + contactsCount;
+  const interactionsCount = viewsCount + actionsCount;
+  const periodLabels = metricTimeframe === 'today'
+    ? ['00h', '03h', '06h', '09h', '12h', '15h', '18h', '21h']
+    : metricTimeframe === '7d'
+      ? Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(now.getTime() - (6 - index) * 24 * 60 * 60 * 1000);
+        return date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+      })
+      : Array.from({ length: 8 }, (_, index) => {
+        const date = new Date(now.getTime() - (29 - Math.round(index * 29 / 7)) * 24 * 60 * 60 * 1000);
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      });
+  const viewsSeries = buildCumulativeSeries(viewsCount, periodLabels.length, 2);
+  const actionsSeries = buildCumulativeSeries(actionsCount, periodLabels.length, 5);
+  const clicksSeries = buildCumulativeSeries(clicksCount, periodLabels.length, 7);
+  const contactsSeries = buildCumulativeSeries(contactsCount, periodLabels.length, 9);
+  const revenueBuckets = Array.from({ length: periodLabels.length }, () => 0);
+  const periodDuration = Math.max(now.getTime() - periodStart.getTime(), 1);
+  visibleMetrics.flatMap(metric => metric.storeSales).forEach(sale => {
+    const progress = (new Date(sale.createdAt).getTime() - periodStart.getTime()) / periodDuration;
+    const bucket = Math.max(0, Math.min(periodLabels.length - 1, Math.floor(progress * periodLabels.length)));
+    revenueBuckets[bucket] += sale.amount;
+  });
+  let cumulativeRevenue = 0;
+  const revenueSeries = revenueBuckets.map(value => {
+    cumulativeRevenue += value;
+    return cumulativeRevenue;
+  });
   const viewLabel = metricView === 'all' ? 'Todas as lojas' : storeConfig.name;
   const viewDescription = metricView === 'all'
     ? `Visão consolidada de ${dashboardStores.length} lojas. Faturamento soma apenas vendas lançadas manualmente.`
@@ -201,26 +412,26 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-1">
+      <div className="mb-1 flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="flex items-center justify-center p-1.5 rounded-lg bg-gray-100">
           <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
-        <h1 className="text-xl font-sans font-semibold text-gray-900 tracking-tight">Visão geral</h1><span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${userLevel === 10 ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'}`}>{userLevel === 10 ? <><span aria-hidden>&#128293;</span> SÓCIO NÍVEL 10</> : <><span aria-hidden>&#128100;</span> NÍVEL 1</>}</span>
-        <span className="text-[13px] text-gray-500 font-medium ml-1 mt-0.5">Última atualização: {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+        <h1 className="whitespace-nowrap font-sans text-xl font-semibold tracking-tight text-gray-900">Visão geral</h1><span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${userLevel === 10 ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'}`}>{userLevel === 10 ? <><span aria-hidden>&#128293;</span> SÓCIO NÍVEL 10</> : <><span aria-hidden>&#128100;</span> NÍVEL 1</>}</span>
+        <span className="basis-full text-[12px] font-medium text-gray-500 sm:ml-1 sm:mt-0.5 sm:basis-auto">Última atualização: {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
       </div>
 
       {/* Filters and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
           {/* Timeframe pill */}
-          <div className="inline-flex items-center bg-white border border-gray-300 rounded-lg shadow-sm p-0.5">
+          <div className="inline-flex items-center rounded-lg border border-gray-300 bg-white p-0.5 shadow-sm">
             {(['today', '7d', '30d'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setMetricTimeframe(t)}
-                className={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                className={`flex-1 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
                   metricTimeframe === t
                     ? 'bg-gray-100 text-gray-900 shadow-sm'
                     : 'text-gray-600 hover:bg-gray-50'
@@ -232,12 +443,12 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
           </div>
 
           {/* View Mode Pill */}
-          <div className="inline-flex items-center bg-white border border-gray-300 rounded-lg shadow-sm p-0.5">
+          <div className="inline-flex items-center rounded-lg border border-gray-300 bg-white p-0.5 shadow-sm">
              {(['current', 'all'] as const).map((view) => (
               <button
                 key={view}
                 onClick={() => setMetricView(view)}
-                className={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                className={`flex-1 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
                   metricView === view
                     ? 'bg-gray-100 text-gray-900 shadow-sm'
                     : 'text-gray-600 hover:bg-gray-50'
@@ -284,207 +495,107 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
       </div>
 
       {/* Metric Cards Grid (4 columns) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Vendas Brutal / Faturamento */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between card-enter card-enter-1 h-32 hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-[13px] font-medium text-gray-600 border-b border-gray-100 pb-2 border-dashed">Faturamento</h3>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-xl font-semibold text-gray-900">R$ {estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-[13px] text-gray-500">-</span>
-            </div>
-          </div>
-          <div className="self-end w-16 h-4 mt-auto">
-             <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
-               <path d="M0 10 Q 25 5 50 15 T 100 8" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-             </svg>
-
-            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Visualizações */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between card-enter card-enter-2 h-32 hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-[13px] font-medium text-gray-600 border-b border-gray-100 pb-2 border-dashed">Visualizações</h3>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-xl font-semibold text-gray-900">{viewsCount.toLocaleString()}</span>
-              <span className="text-[13px] text-gray-500">-</span>
-            </div>
-          </div>
-          <div className="self-end w-16 h-4 mt-auto">
-             <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
-               <path d="M0 15 Q 25 20 50 10 T 100 5" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-             </svg>
-
-            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Cliques */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between card-enter card-enter-3 h-32 hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-[13px] font-medium text-gray-600 border-b border-gray-100 pb-2 border-dashed">Cliques na Loja</h3>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-xl font-semibold text-gray-900">{clicksCount.toLocaleString()}</span>
-              <span className="text-[13px] text-gray-500">-</span>
-            </div>
-          </div>
-          <div className="self-end w-16 h-4 mt-auto">
-             <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
-               <path d="M0 12 Q 25 5 50 18 T 100 10" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-             </svg>
-
-            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Contatos WhatsApp */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between card-enter card-enter-4 h-32 hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-[13px] font-medium text-gray-600 border-b border-gray-100 pb-2 border-dashed">Contatos WhatsApp</h3>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-xl font-semibold text-gray-900">{contactsCount.toLocaleString()}</span>
-              <span className="text-[13px] text-gray-500">-</span>
-            </div>
-          </div>
-          <div className="self-end w-16 h-4 mt-auto">
-             <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
-               <path d="M0 18 Q 25 15 50 5 T 100 12" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-             </svg>
-
-            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Faturamento"
+          value={`R$ ${estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          helper={`${salesCount} ${salesCount === 1 ? 'venda registrada' : 'vendas registradas'}`}
+          icon={WalletCards}
+          series={revenueSeries}
+          color="#16a34a"
+          delayClass="card-enter-1"
+        />
+        <MetricCard
+          title="Visualizações"
+          value={viewsCount.toLocaleString('pt-BR')}
+          helper={`${metricTimeframe === 'today' ? 'Hoje' : `Últimos ${timeframeDays} dias`}`}
+          icon={Eye}
+          series={viewsSeries}
+          color={CHART_ORANGE}
+          delayClass="card-enter-2"
+        />
+        <MetricCard
+          title="Cliques na loja"
+          value={clicksCount.toLocaleString('pt-BR')}
+          helper={`${clickRate.toFixed(1)}% das visualizações`}
+          icon={MousePointerClick}
+          series={clicksSeries}
+          color="#2563eb"
+          delayClass="card-enter-3"
+        />
+        <MetricCard
+          title="Contatos WhatsApp"
+          value={contactsCount.toLocaleString('pt-BR')}
+          helper={`${conversionRate.toFixed(1)}% dos cliques`}
+          icon={MessageSquare}
+          series={contactsSeries}
+          color={CHART_TEAL}
+          delayClass="card-enter-4"
+        />
       </div>
 
       {/* Main Content Area (Chart + Breakdown) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left">
         {/* Main Chart Card */}
-        <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm lg:col-span-2 flex flex-col">
-          <div className="mb-8">
-            <h3 className="text-[13px] font-medium text-gray-900">Total de interações ao longo do tempo</h3>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-semibold text-gray-900">{viewsCount.toLocaleString()}</span>
-              <span className="text-[14px] text-gray-500">-</span>
-            </div>
-          </div>
-
-          <div className="relative flex-1 min-h-[300px] w-full mt-auto">
-            {/* Chart Simulation */}
-            <div className="absolute inset-0 flex flex-col justify-between pb-8">
-              <div className="border-t border-gray-100 w-full flex-1"></div>
-              <div className="border-t border-gray-100 w-full flex-1"></div>
-              <div className="border-t border-gray-100 w-full flex-1"></div>
-              <div className="border-t border-gray-100 w-full flex-1 relative">
-                {/* Horizontal X Axis line */}
-                <div className="absolute bottom-0 left-0 right-0 border-b-2 border-[#f59e0b]"></div>
+        <article className="flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-2">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-[12px] font-semibold text-gray-500">Interações ao longo do tempo</p>
+              <div className="mt-1 flex items-end gap-2">
+                <span className="text-3xl font-bold tracking-tight text-gray-950">{interactionsCount.toLocaleString('pt-BR')}</span>
+                <span className="mb-1 text-[11px] font-medium text-gray-400">total no período</span>
               </div>
             </div>
-
-            <svg viewBox="0 0 500 300" className="w-full h-full absolute inset-0 overflow-visible" preserveAspectRatio="none">
-              <path
-                d="M 0 290 L 100 290 Q 200 290 250 290 T 500 290"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2"
-                strokeDasharray="4 4"
-                opacity="0.3"
-              />
-              <path
-                d="M 0 290 L 100 285 Q 200 270 250 250 T 500 200"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-5 text-[11px] font-medium text-gray-600">
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Ontem</span>
-              <span className="inline-flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#fcd34d]" />Hoje</span>
-            </div>
-            
-            {/* X-axis labels */}
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[11px] text-gray-500 px-2 font-medium">
-              <span>00</span>
-              <span>03</span>
-              <span>06</span>
-              <span>09</span>
-              <span>12</span>
-              <span>15</span>
-              <span>18</span>
-              <span>21</span>
+            <div className="flex flex-wrap items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 text-[10px] font-semibold text-gray-600">
+              <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#f59e0b]" />Visualizações</span>
+              <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#0f9f8f]" />Cliques + contatos</span>
             </div>
           </div>
-        </div>
+          <div className="mt-4 border-t border-gray-100 pt-3">
+            <TrendChart labels={periodLabels} primary={viewsSeries} secondary={actionsSeries} />
+          </div>
+        </article>
 
         {/* Breakdown Card */}
-        <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col">
-          <h3 className="text-[13px] font-medium text-gray-900 mb-4">Detalhamento do funil</h3>
-          
-          <div className="flex-1 space-y-0 text-[13px] font-medium">
-            <div className="flex justify-between py-3 border-b border-gray-100 bg-gray-50/50 px-3 rounded-md">
-              <span className="text-gray-600 font-normal">Visualizações</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-900">{viewsCount.toLocaleString()}</span>
-                <span className="text-gray-400 w-4 text-right">-</span>
-              </div>
+        <aside className="flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-[13px] font-semibold text-gray-900">Detalhamento do funil</h3>
+              <p className="mt-1 text-[10px] text-gray-400">Da visita até o contato</p>
             </div>
-            
-            <div className="flex justify-between py-3 px-3 border-b border-gray-100">
-              <span className="text-gray-600 font-normal">Taxa de clique</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-900">{clickRate.toFixed(1)}%</span>
-                <span className="text-gray-400 w-4 text-right">-</span>
-              </div>
-            </div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600"><TrendingUp size={17} /></span>
+          </div>
 
-            <div className="flex justify-between py-3 bg-gray-50/50 px-3 rounded-md border-b border-gray-100">
-              <span className="text-gray-600 font-normal">Cliques na Loja</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-900">{clicksCount.toLocaleString()}</span>
-                <span className="text-gray-400 w-4 text-right">-</span>
+          <div className="mt-6 space-y-5">
+            {[
+              { label: 'Visualizações', value: viewsCount, rate: viewsCount > 0 ? 100 : 0, color: CHART_ORANGE },
+              { label: 'Cliques na loja', value: clicksCount, rate: clickRate, color: '#2563eb' },
+              { label: 'Contatos WhatsApp', value: contactsCount, rate: viewsCount > 0 ? (contactsCount / viewsCount) * 100 : 0, color: CHART_TEAL },
+            ].map(item => (
+              <div key={item.label}>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-medium text-gray-600">{item.label}</span>
+                  <span className="font-bold text-gray-900">{item.value.toLocaleString('pt-BR')}</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(0, Math.min(item.rate, 100))}%`, backgroundColor: item.color }} />
+                </div>
+                <p className="mt-1 text-right text-[9px] font-medium text-gray-400">{item.rate.toFixed(1)}% das visualizações</p>
               </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="flex justify-between py-3 px-3 border-b border-gray-100">
-              <span className="text-gray-600 font-normal">Conversão Total</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-900">{conversionRate.toFixed(1)}%</span>
-                <span className="text-gray-400 w-4 text-right">-</span>
-              </div>
+          <div className="mt-auto grid grid-cols-2 gap-2 border-t border-gray-100 pt-5">
+            <div className="rounded-lg bg-gray-50 p-3">
+              <p className="text-[9px] font-semibold uppercase text-gray-400">Conversão</p>
+              <p className="mt-1 text-base font-bold text-gray-900">{conversionRate.toFixed(1)}%</p>
             </div>
-
-            <div className="flex justify-between py-3 bg-gray-50/50 px-3 rounded-md border-b border-gray-100">
-              <span className="text-gray-600 font-normal">Contatos WhatsApp</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-900">{contactsCount.toLocaleString()}</span>
-                <span className="text-gray-400 w-4 text-right">-</span>
-              </div>
-            </div>
-
-            <div className="flex justify-between py-3 px-3 border-b border-gray-100">
-              <span className="text-[#f59e0b] font-normal">Faturamento</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-900">R$ {estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                <span className="text-gray-400 w-4 text-right">-</span>
-              </div>
+            <div className="rounded-lg bg-emerald-50 p-3">
+              <p className="text-[9px] font-semibold uppercase text-emerald-700">Faturamento</p>
+              <p className="mt-1 truncate text-base font-bold text-emerald-800">R$ {estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
       
       {/* Footer Area for previous activities */}

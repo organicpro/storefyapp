@@ -1,7 +1,8 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
-  CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Download, Film, Instagram,
-  LayoutTemplate, MessageCircle, PackageCheck, Play, Send, Sparkles, Store, Music2, UserRound
+  CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Download, Film, Flame, Heart, Instagram,
+  LayoutTemplate, MessageCircle, PackageCheck, Play, Send, Sparkles, Store, ThumbsUp,
+  Music2, UserRound, Users
 } from 'lucide-react';
 import { Product, StoreConfig } from '../types';
 import {
@@ -544,70 +545,44 @@ export default function OperationStudio({
           onClick={() => onOpenSection('videos')}
           className="group relative overflow-hidden rounded-[24px] border border-gray-200 bg-white text-left transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 [box-shadow:0_2px_8px_rgba(0,0,0,0.06)] hover:[box-shadow:0_8px_24px_rgba(0,0,0,0.22),0_2px_8px_rgba(0,0,0,0.08)]"
         >
-          {/* Hero area with floating video frames */}
-          <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] relative overflow-hidden">
-            {/* Subtle glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,rgba(255,255,255,0.07),transparent_60%)] transition-opacity duration-500 group-hover:opacity-150" />
+          {/* Hero area with a clear video editor preview */}
+          <div className="aspect-[16/9] min-h-[300px] w-full bg-[#151d2b] relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_52%_22%,rgba(245,158,11,0.16),transparent_43%)]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-white/15" />
 
-            {/* Floating video thumbnail cards */}
-            {/* Card back-left */}
-            <div className="absolute left-[12%] top-[18%] w-[110px] h-[68px] rounded-[10px] bg-gradient-to-br from-[#334155] to-[#1e293b] border border-white/10 shadow-xl rotate-[-8deg] transition-all duration-500 ease-out group-hover:rotate-[-12deg] group-hover:-translate-x-2 group-hover:-translate-y-2 group-hover:scale-105 overflow-hidden">
-              <div className="w-full h-full flex flex-col justify-between p-2">
-                <div className="w-6 h-1 bg-white/20 rounded-full" />
-                <div className="flex justify-between items-end">
-                  <div className="space-y-0.5">
-                    <div className="w-10 h-1 bg-white/15 rounded-full" />
-                    <div className="w-7 h-1 bg-white/10 rounded-full" />
-                  </div>
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                    <Play size={8} className="text-white fill-white ml-0.5" />
-                  </div>
+            <div className="absolute left-1/2 top-[10%] w-[72%] max-w-[340px] -translate-x-1/2 overflow-hidden rounded-2xl border border-white/15 bg-[#0b101a] shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+              <div className="flex h-8 items-center justify-between border-b border-white/10 px-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#f97316]" />
+                  <span className="h-2 w-2 rounded-full bg-white/20" />
+                  <span className="h-2 w-2 rounded-full bg-white/20" />
                 </div>
+                <span className="text-[8px] font-bold uppercase tracking-wider text-white/45">Prévia do criativo</span>
+              </div>
+              <div className="relative h-[116px] overflow-hidden bg-[#263247]">
+                <div className="absolute left-5 top-5 h-14 w-20 rotate-[-5deg] rounded-lg border border-white/10 bg-[#334155]" />
+                <div className="absolute right-6 top-3 h-20 w-14 rotate-[6deg] rounded-lg border border-white/10 bg-[#0f172a]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#111827] shadow-lg transition-transform duration-300 group-hover:scale-110">
+                    <Play size={17} className="ml-0.5 fill-current" />
+                  </span>
+                </div>
+                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/65 px-2.5 py-1 text-[9px] font-bold text-white">Veja antes de comprar</span>
+              </div>
+              <div className="flex h-8 items-center gap-2 px-3">
+                <Play size={10} className="fill-white text-white" />
+                <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/15"><div className="h-full w-[42%] rounded-full bg-[#f59e0b]" /></div>
+                <span className="text-[8px] font-semibold text-white/45">0:04 / 0:09</span>
               </div>
             </div>
 
-            {/* Main center card */}
-            <div className="absolute left-[28%] top-[12%] w-[140px] h-[90px] rounded-[12px] bg-gradient-to-br from-[#475569] to-[#1e293b] border border-white/15 shadow-2xl rotate-[2deg] transition-all duration-500 ease-out group-hover:rotate-[0deg] group-hover:-translate-y-4 group-hover:scale-[1.08] overflow-hidden">
-              <div className="w-full h-full relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                <div className="absolute inset-0 flex flex-col justify-between p-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <div className="w-12 h-1 bg-white/30 rounded-full" />
-                  </div>
-                  <div>
-                    <div className="w-4 h-4 rounded-full bg-white/90 flex items-center justify-center mx-auto mb-1">
-                      <Play size={7} className="text-gray-900 fill-gray-900 ml-0.5" />
-                    </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      <div className="flex-1 h-0.5 bg-white/20 rounded-full overflow-hidden">
-                        <div className="w-1/3 h-full bg-white/70 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="absolute left-[8%] top-[30%] hidden items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-2.5 py-2 text-white/75 shadow-lg backdrop-blur sm:flex transition-transform duration-500 group-hover:-translate-x-1">
+              <Sparkles size={12} className="text-[#fbbf24]" />
+              <span className="text-[9px] font-bold">Legenda automática</span>
             </div>
-
-            {/* Card back-right */}
-            <div className="absolute right-[14%] top-[22%] w-[100px] h-[62px] rounded-[10px] bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-white/10 shadow-xl rotate-[10deg] transition-all duration-500 ease-out group-hover:rotate-[14deg] group-hover:translate-x-2 group-hover:-translate-y-1 group-hover:scale-105 overflow-hidden">
-              <div className="w-full h-full flex flex-col justify-between p-2">
-                <div className="w-5 h-1 bg-white/20 rounded-full" />
-                <div className="flex justify-between items-end">
-                  <div className="space-y-0.5">
-                    <div className="w-8 h-1 bg-white/15 rounded-full" />
-                    <div className="w-5 h-1 bg-white/10 rounded-full" />
-                  </div>
-                  <div className="w-4 h-4 rounded-full bg-white/15 flex items-center justify-center">
-                    <Sparkles size={7} className="text-white/60" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating "Viral" badge */}
-            <div className="absolute top-[55%] left-[15%] bg-white/10 backdrop-blur-sm text-white/80 text-[9px] font-bold px-2 py-0.5 rounded-full border border-white/15 transition-all duration-500 group-hover:-translate-y-2 group-hover:bg-white/20">
-              ðŸ”¥ Viral
+            <div className="absolute right-[7%] top-[45%] hidden items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-2.5 py-2 text-white/75 shadow-lg backdrop-blur sm:flex transition-transform duration-500 group-hover:translate-x-1">
+              <Flame size={12} className="text-[#fb923c]" />
+              <span className="text-[9px] font-bold">Formato viral</span>
             </div>
 
             {/* Text overlay */}
@@ -635,49 +610,34 @@ export default function OperationStudio({
           onClick={() => onOpenSection('marketing')}
           className="group relative overflow-hidden rounded-[24px] border border-gray-200 bg-white text-left transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 [box-shadow:0_2px_8px_rgba(0,0,0,0.06)] hover:[box-shadow:0_8px_24px_rgba(0,0,0,0.22),0_2px_8px_rgba(0,0,0,0.08)]"
         >
-          {/* Hero area with floating chat bubbles */}
-          <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#1e3a5f] via-[#1d4ed8] to-[#1e3a5f] relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_60%,rgba(255,255,255,0.1),transparent_55%)] transition-opacity duration-500" />
-
-            {/* Floating chat bubbles */}
-            {/* Bubble 1 - bottom left */}
-            <div className="absolute bottom-[28%] left-[8%] max-w-[130px] bg-white/95 rounded-[14px] rounded-bl-[4px] shadow-lg px-3 py-2 transition-all duration-500 ease-out group-hover:-translate-y-3 group-hover:-translate-x-1">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[8px] font-bold text-white">M</div>
-                <span className="text-[9px] font-bold text-gray-500">Grupo Achados</span>
+          {/* Hero area with an organized Facebook group feed */}
+          <div className="aspect-[16/9] min-h-[300px] w-full bg-[#2453c7] relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.19),transparent_45%)]" />
+            <div className="absolute left-1/2 top-[9%] w-[78%] max-w-[360px] -translate-x-1/2 overflow-hidden rounded-2xl border border-white/20 bg-[#f8fafc] shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+              <div className="flex h-10 items-center justify-between border-b border-gray-200 bg-white px-3.5">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#1877f2] text-white"><Users size={13} /></span>
+                  <div>
+                    <p className="text-[9px] font-bold leading-none text-gray-900">Achados e ofertas</p>
+                    <p className="mt-1 text-[7px] leading-none text-gray-400">12,4 mil membros</p>
+                  </div>
+                </div>
+                <span className="rounded-md bg-[#e7f0ff] px-2 py-1 text-[8px] font-bold text-[#1769d2]">Entrar no grupo</span>
               </div>
-              <p className="text-[10px] font-medium text-gray-800 leading-snug">Alguém conhece essa loja? ðŸ‘€</p>
-              <div className="flex items-center gap-1 mt-1">
-                <span className="text-[8px] text-blue-500 font-bold">ðŸ‘ 24</span>
-                <span className="text-[8px] text-gray-400">· agora</span>
+              <div className="p-3">
+                <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f97316] text-[9px] font-bold text-white">AL</span>
+                    <div><p className="text-[9px] font-bold text-gray-900">Ana Lima</p><p className="text-[7px] text-gray-400">Agora mesmo</p></div>
+                  </div>
+                  <p className="mt-2 text-[10px] font-medium leading-snug text-gray-700">Comprei nessa loja e adorei. Vale muito a pena conferir!</p>
+                  <div className="mt-2 flex items-center gap-3 border-t border-gray-100 pt-2 text-[8px] font-semibold text-gray-500">
+                    <span className="flex items-center gap-1"><ThumbsUp size={10} className="text-[#1877f2]" /> 24</span>
+                    <span className="flex items-center gap-1"><Heart size={10} className="text-rose-500" /> 8</span>
+                    <span className="ml-auto flex items-center gap-1"><MessageCircle size={10} /> 6 comentários</span>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Bubble 2 - center */}
-            <div className="absolute top-[20%] left-[30%] max-w-[150px] bg-white/95 rounded-[14px] rounded-tl-[4px] shadow-xl px-3 py-2.5 transition-all duration-500 ease-out delay-75 group-hover:-translate-y-4 group-hover:scale-[1.04]">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center text-[8px] font-bold text-white">A</div>
-                <span className="text-[9px] font-bold text-gray-500">Ana Lima</span>
-              </div>
-              <p className="text-[10px] font-medium text-gray-800 leading-snug">Comprei aqui e amei! ðŸ”¥ Super recomendo</p>
-              <div className="flex items-center gap-1 mt-1.5">
-                <span className="text-[8px] text-blue-500 font-bold">â¤ï¸ 48</span>
-                <span className="text-[8px] text-gray-400">· 2 min</span>
-              </div>
-            </div>
-
-            {/* Bubble 3 - right */}
-            <div className="absolute top-[42%] right-[8%] max-w-[120px] bg-white/90 rounded-[14px] rounded-tr-[4px] shadow-lg px-3 py-2 transition-all duration-500 ease-out delay-100 group-hover:-translate-y-2 group-hover:translate-x-1">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-[8px] font-bold text-white">R</div>
-                <span className="text-[9px] font-bold text-gray-500">Roberto S.</span>
-              </div>
-              <p className="text-[10px] font-medium text-gray-800 leading-snug">Link do site? ðŸ›’</p>
-            </div>
-
-            {/* Members counter badge */}
-            <div className="absolute bottom-[48%] right-[22%] bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[9px] font-bold px-2 py-1 rounded-full transition-all duration-500 group-hover:translate-y-[-6px] group-hover:scale-110">
-              ðŸ‘¥ 12.4k membros
             </div>
 
             {/* Text overlay */}
@@ -734,13 +694,13 @@ export default function OperationStudio({
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { title: 'Reels virais', desc: 'Vídeos curtos de 15-30s com alto potencial de alcance orgânico.', emoji: 'ðŸŽ¬' },
-            { title: 'Grupos de nicho', desc: 'Comunidades específicas no Facebook com público qualificado.', emoji: 'ðŸ‘¥' },
-            { title: 'Influencers IA', desc: 'Gere criativos com modelos gerados por inteligência artificial.', emoji: 'ðŸ¤–' },
-            { title: 'Stories diários', desc: 'Mantenha presença constante e engajamento com seus seguidores.', emoji: 'ðŸ“±' },
+            { title: 'Reels virais', desc: 'Vídeos curtos de 15-30s com alto potencial de alcance orgânico.', icon: <Film size={18} /> },
+            { title: 'Grupos de nicho', desc: 'Comunidades específicas no Facebook com público qualificado.', icon: <Users size={18} /> },
+            { title: 'Influencers IA', desc: 'Gere criativos com modelos gerados por inteligência artificial.', icon: <Sparkles size={18} /> },
+            { title: 'Stories diários', desc: 'Mantenha presença constante e engajamento com seus seguidores.', icon: <Instagram size={18} /> },
           ].map(strat => (
             <div key={strat.title} className="rounded-[16px] border border-gray-100 bg-gray-50/50 p-4 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all duration-200">
-              <span className="text-2xl">{strat.emoji}</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-900 text-white">{strat.icon}</span>
               <h3 className="mt-2.5 text-[13px] font-bold text-gray-900">{strat.title}</h3>
               <p className="mt-1 text-[12px] leading-relaxed text-gray-500">{strat.desc}</p>
             </div>

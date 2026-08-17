@@ -40,6 +40,7 @@ export default function ProductCatalog({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'added' | 'not-added'>('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('all');
 
   // Edit states
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export default function ProductCatalog({
   const physicalProductsCount = products.filter(product => product.category === 'Achados Fisicos').length;
 
   // Filter products logic
-  const filteredProducts = useMemo(() => products.filter(product => {
+  const productsMatchingMainFilters = useMemo(() => products.filter(product => {
     // Tab category filter
     if (activeTab !== 'Todos' && product.category !== activeTab) return false;
     
@@ -76,9 +77,30 @@ export default function ProductCatalog({
     return true;
   }), [activeTab, products, searchQuery, selectedStatus, selectedSupplier]);
 
+  const availableSubcategories = useMemo(() => {
+    const counts = new Map<string, number>();
+    productsMatchingMainFilters.forEach(product => {
+      counts.set(product.subcategory, (counts.get(product.subcategory) || 0) + 1);
+    });
+    return Array.from(counts.entries())
+      .sort(([left], [right]) => left.localeCompare(right, 'pt-BR'))
+      .map(([name, count]) => ({ name, count }));
+  }, [productsMatchingMainFilters]);
+
+  const filteredProducts = useMemo(
+    () => selectedSubcategory === 'all'
+      ? productsMatchingMainFilters
+      : productsMatchingMainFilters.filter(product => product.subcategory === selectedSubcategory),
+    [productsMatchingMainFilters, selectedSubcategory]
+  );
+
+  useEffect(() => {
+    setSelectedSubcategory('all');
+  }, [activeTab]);
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, searchQuery, selectedSupplier, selectedStatus]);
+  }, [activeTab, searchQuery, selectedSupplier, selectedStatus, selectedSubcategory]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -93,18 +115,6 @@ export default function ProductCatalog({
       .filter(page => page >= 1 && page <= totalPages)
       .sort((a, b) => a - b);
   }, [safeCurrentPage, totalPages]);
-
-  // Group by subcategory
-  const subcategoriesMap: { [key: string]: Product[] } = {};
-  visibleProducts.forEach(product => {
-    if (!subcategoriesMap[product.subcategory]) {
-      subcategoriesMap[product.subcategory] = [];
-    }
-    subcategoriesMap[product.subcategory].push(product);
-  });
-
-  // Sort subcategories and their products
-  const sortedSubcategories = Object.keys(subcategoriesMap).sort();
 
   // Handle price commit
   const handleSavePrice = (productId: string) => {
@@ -154,7 +164,7 @@ export default function ProductCatalog({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in text-left max-w-[1400px] mx-auto py-6">
+    <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-6 overflow-x-hidden py-6 text-left animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
         <div>
@@ -217,12 +227,13 @@ export default function ProductCatalog({
             </div>
 
             {/* Reset Filters */}
-            {(searchQuery || selectedSupplier !== 'all' || selectedStatus !== 'all') && (
+            {(searchQuery || selectedSupplier !== 'all' || selectedStatus !== 'all' || selectedSubcategory !== 'all') && (
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedSupplier('all');
                   setSelectedStatus('all');
+                  setSelectedSubcategory('all');
                 }}
                 className="text-[13px] text-[#0f172a] hover:text-black font-semibold hover:underline cursor-pointer px-2"
               >
@@ -248,10 +259,41 @@ export default function ProductCatalog({
             </button>
           ))}
         </div>
+
+        {availableSubcategories.length > 1 && (
+          <div className="border-t border-gray-100 pt-4">
+            <div className="mb-2.5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-gray-400" />
+                <span className="text-[12px] font-bold text-gray-700">Categorias</span>
+              </div>
+              <span className="text-[11px] font-medium text-gray-400">Deslize para explorar</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <button
+                type="button"
+                onClick={() => setSelectedSubcategory('all')}
+                className={`shrink-0 rounded-lg border px-3 py-2 text-[12px] font-semibold transition-colors ${selectedSubcategory === 'all' ? 'border-[#0f172a] bg-[#0f172a] text-white' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-white'}`}
+              >
+                Todas <span className="ml-1 opacity-60">{productsMatchingMainFilters.length}</span>
+              </button>
+              {availableSubcategories.map(subcategory => (
+                <button
+                  key={subcategory.name}
+                  type="button"
+                  onClick={() => setSelectedSubcategory(subcategory.name)}
+                  className={`shrink-0 rounded-lg border px-3 py-2 text-[12px] font-semibold transition-colors ${selectedSubcategory === subcategory.name ? 'border-[#0f172a] bg-[#0f172a] text-white' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-white'}`}
+                >
+                  {subcategory.name} <span className="ml-1 opacity-60">{subcategory.count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Catalog Grouped Grid */}
-      {sortedSubcategories.length === 0 ? (
+      {/* Continuous Catalog Grid */}
+      {visibleProducts.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-16 text-center space-y-3">
           <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-500 border border-gray-200">
             <Search className="w-5 h-5" />
@@ -262,26 +304,22 @@ export default function ProductCatalog({
           </p>
         </div>
       ) : (
-        <div className="space-y-10">
-          {sortedSubcategories.map(subcategory => {
-            const items = subcategoriesMap[subcategory];
-            return (
-              <div key={subcategory} className="space-y-4">
-                {/* Subcategory Divider */}
-                <div className="flex items-center gap-4">
-                  <h2 className="text-[16px] font-bold text-gray-900 whitespace-nowrap flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-gray-400" />
-                    {subcategory}
-                  </h2>
-                  <div className="w-full h-[1px] bg-gray-200" />
-                  <span className="text-[12px] font-semibold text-gray-500 whitespace-nowrap">
-                    {items.length} {items.length === 1 ? 'item' : 'itens'}
-                  </span>
-                </div>
+        <div className="space-y-5">
+          <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600"><Tag className="h-4 w-4" /></span>
+              <div>
+                <h2 className="text-[13px] font-bold text-gray-900">{selectedSubcategory === 'all' ? 'Todos os produtos' : selectedSubcategory}</h2>
+                <p className="text-[11px] text-gray-500">Grade contínua organizada pelos filtros selecionados</p>
+              </div>
+            </div>
+            <span className="text-[12px] font-semibold text-gray-500">
+              {filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+            </span>
+          </div>
 
-                {/* Subcategory Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {items.map(product => {
+          <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {visibleProducts.map(product => {
                     // Margin calculations
                     const profitMargin = product.salePrice - product.costPrice;
                     const profitPercentNumber = product.costPrice > 0
@@ -301,7 +339,7 @@ export default function ProductCatalog({
                     return (
                       <div 
                         key={product.id}
-                        className={`bg-white rounded-xl border transition-all duration-300 flex flex-col justify-between group relative ${
+                        className={`group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-xl border bg-white transition-all duration-300 ${
                           product.addedToStore ? 'border-[#0f172a] shadow-md ring-1 ring-[#0f172a]' : 'border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md'
                         }`}
                       >
@@ -367,12 +405,12 @@ export default function ProductCatalog({
                         {/* Card Info Body */}
                         <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between text-[12px] font-medium text-gray-500">
-                              <span className="flex items-center gap-1.5 truncate">
+                            <div className="flex min-w-0 items-center justify-between gap-2 text-[12px] font-medium text-gray-500">
+                              <span className="flex min-w-0 items-center gap-1.5 truncate">
                                 <Users className="w-3.5 h-3.5" />
                                 {product.supplier}
                               </span>
-                              <span className="shrink-0 bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold text-[11px]">
+                              <span className="max-w-[58%] shrink-0 truncate rounded bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
                                 {product.deliverable}
                               </span>
                             </div>
@@ -491,11 +529,8 @@ export default function ProductCatalog({
                         </div>
                       </div>
                     );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+            })}
+          </div>
           <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
             <p className="text-[13px] font-semibold text-gray-600">
               Mostrando {pageStart + 1}-{pageStart + visibleProducts.length} de {filteredProducts.length} produtos encontrados.
