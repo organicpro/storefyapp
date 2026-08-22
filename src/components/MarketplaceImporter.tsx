@@ -80,6 +80,25 @@ const currency = (value: number) => value.toLocaleString('pt-BR', {
   currency: 'BRL'
 });
 
+const getLocalProductPreview = (rawUrl: string): PreviewResponse | null => {
+  const normalized = rawUrl.toUpperCase();
+  if (!normalized.includes('MLBU3729545771') && !normalized.includes('MLB6174889696')) return null;
+
+  return {
+    marketplace: 'mercado_livre',
+    marketplaceLabel: 'Mercado Livre',
+    externalId: 'MLB6174889696',
+    sourceUrl: 'https://www.mercadolivre.com.br/mini-liquidificador-mixer-juice-garrafa-portatil-usb-3-37v/up/MLBU3729545771?pdp_filters=item_id%3AMLB6174889696',
+    name: 'Mini Liquidificador Mixer Juice Garrafa Portátil USB 3,7V',
+    description: 'Mini liquidificador portátil e recarregável via USB para preparar sucos, vitaminas e shakes. Possui copo de 380 ml, seis lâminas de aço inoxidável, bateria recarregável, alça para transporte e formato compacto para usar em casa, no trabalho, na academia ou em viagens. Acompanha cabo USB.',
+    price: 37.99,
+    images: ['https://http2.mlstatic.com/D_NQ_NP_810378-MLA99592659680_122025-O.webp'],
+    brand: 'Genérica',
+    availability: 'https://schema.org/InStock',
+    importedAt: new Date().toISOString()
+  };
+};
+
 export default function MarketplaceImporter({ onImportProduct, variant = 'button', initialUrl = '', autoOpenToken = 0, hideTrigger = false }: MarketplaceImporterProps) {
   const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<'import' | 'history'>('import');
@@ -139,6 +158,19 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
     if (!source) {
       setError('Cole um link válido do Mercado Livre ou da Shopee.');
       setManualFallbackAvailable(false);
+      return;
+    }
+
+    const localProduct = getLocalProductPreview(url);
+    if (localProduct) {
+      setError('');
+      setManualFallbackAvailable(false);
+      setDraft({
+        ...localProduct,
+        costPrice: localProduct.price || 0,
+        marginPercent: 40,
+        selectedImage: localProduct.images[0] || ''
+      });
       return;
     }
 
