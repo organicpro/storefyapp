@@ -99,6 +99,39 @@ const getLocalProductPreview = (rawUrl: string): PreviewResponse | null => {
   };
 };
 
+const getProductNameFromUrl = (rawUrl: string) => {
+  try {
+    const segments = new URL(rawUrl).pathname.split('/').filter(Boolean);
+    const markerIndex = segments.findIndex(segment => /^(p|up|product)$/i.test(segment));
+    const rawName = markerIndex > 0
+      ? segments[markerIndex - 1]
+      : segments.find(segment => segment.includes('-') && !/^(MLB|MLBU)-?\d+/i.test(segment));
+    if (!rawName) return 'Produto importado';
+    return decodeURIComponent(rawName)
+      .replace(/[-_]+/g, ' ')
+      .replace(/\b\w/g, letter => letter.toUpperCase())
+      .trim();
+  } catch {
+    return 'Produto importado';
+  }
+};
+
+const getUrlFallbackPreview = (
+  rawUrl: string,
+  source: NonNullable<ReturnType<typeof detectMarketplaceFromUrl>>
+): PreviewResponse => ({
+  ...source,
+  externalId: rawUrl.match(/\b(MLB|MLBU)-?\d{6,}\b/i)?.[0].replace('-', '').toUpperCase() || '',
+  sourceUrl: rawUrl,
+  name: getProductNameFromUrl(rawUrl),
+  description: '',
+  price: null,
+  images: [],
+  brand: '',
+  availability: '',
+  importedAt: new Date().toISOString()
+});
+
 export default function MarketplaceImporter({ onImportProduct, variant = 'button', initialUrl = '', autoOpenToken = 0, hideTrigger = false }: MarketplaceImporterProps) {
   const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<'import' | 'history'>('import');
@@ -186,8 +219,15 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.product) {
-        setError(payload.error || 'Não foi possível analisar esse produto.');
-        setManualFallbackAvailable(Boolean(payload.manualFallback));
+        const fallback = getUrlFallbackPreview(url, source);
+        setDraft({
+          ...fallback,
+          costPrice: 0,
+          marginPercent: 40,
+          selectedImage: ''
+        });
+        setError('O marketplace ocultou alguns dados. Complete o custo e a imagem para salvar.');
+        setManualFallbackAvailable(false);
         return;
       }
       const product = payload.product as PreviewResponse;
@@ -197,9 +237,20 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
         marginPercent: 40,
         selectedImage: product.images[0] || ''
       });
+      if (!product.price || !product.images[0]) {
+        const missingFields = [!product.price && 'o custo', !product.images[0] && 'a imagem'].filter(Boolean).join(' e ');
+        setError(`Produto encontrado. Complete ${missingFields} para salvar na vitrine.`);
+      }
     } catch {
-      setError('O importador não respondeu. Verifique sua conexão e tente novamente.');
-      setManualFallbackAvailable(true);
+      const fallback = getUrlFallbackPreview(url, source);
+      setDraft({
+        ...fallback,
+        costPrice: 0,
+        marginPercent: 40,
+        selectedImage: ''
+      });
+      setError('A consulta automática não respondeu. Complete o custo e a imagem para continuar.');
+      setManualFallbackAvailable(false);
     } finally {
       setLoading(false);
     }

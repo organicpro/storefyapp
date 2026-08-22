@@ -14,10 +14,10 @@ const SCRAPINGBEE_TIERS = [
   { label: "stealth-js", renderJs: true, stealthProxy: true }
 ];
 const SCRAPINGBEE_FAST_TIERS = [
-  { label: "stealth-js", renderJs: true, stealthProxy: true },
+  { label: "premium-metadata", renderJs: false, premiumProxy: true },
+  { label: "classic", renderJs: false },
   { label: "premium-js", renderJs: true, premiumProxy: true },
-  { label: "classic-js", renderJs: true },
-  { label: "classic", renderJs: false }
+  { label: "stealth-js", renderJs: true, stealthProxy: true }
 ];
 const SCRAPINGBEE_SERVERLESS_TIERS = [
   { label: "premium-metadata", renderJs: false, premiumProxy: true }
@@ -165,6 +165,14 @@ function extractMeta(html) {
   return values;
 }
 
+function extractDocumentTitle(html) {
+  return cleanText(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "");
+}
+
+function isMarketplaceDecorationImage(value) {
+  return /frontend-assets|ui-navigation|mercadolibre.*logo|shopee.*logo/i.test(String(value || ""));
+}
+
 function extractJsonLd(html) {
   const documents = [];
   const expression = /<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
@@ -283,6 +291,7 @@ function getOrderedScrapingBeeKeys() {
 }
 
 function isRetryableScrapingBeeStatus(status) {
+  if (status == null) return true;
   return [401, 402, 403, 408, 409, 425, 429, 500, 502, 503, 504].includes(Number(status));
 }
 
@@ -301,13 +310,14 @@ function applyScrapingBeeTier(endpoint, tier) {
   endpoint.searchParams.set("country_code", "br");
   endpoint.searchParams.set("timeout", String(SCRAPER_TIMEOUT_MS));
   if (tier.renderJs) endpoint.searchParams.set("wait", "500");
+  if (tier.renderJs) endpoint.searchParams.set("block_resources", "true");
+  if (tier.renderJs) endpoint.searchParams.set("wait_browser", "domcontentloaded");
   if (tier.premiumProxy) endpoint.searchParams.set("premium_proxy", "true");
   if (tier.stealthProxy) endpoint.searchParams.set("stealth_proxy", "true");
 }
 
 async function fetchHtmlViaScrapingBeeKey(rawUrl, marketplace, apiKey, tier) {
   const endpoint = new URL("https://app.scrapingbee.com/api/v1");
-  endpoint.searchParams.set("api_key", apiKey);
   endpoint.searchParams.set("url", rawUrl);
   applyScrapingBeeTier(endpoint, tier);
 
@@ -317,7 +327,8 @@ async function fetchHtmlViaScrapingBeeKey(rawUrl, marketplace, apiKey, tier) {
     const response = await fetch(endpoint, {
       signal: controller.signal,
       headers: {
-        Accept: "text/html,application/xhtml+xml"
+        Accept: "text/html,application/xhtml+xml",
+        Authorization: `Bearer ${apiKey}`
       }
     });
     if (!response.ok) {
@@ -519,8 +530,14 @@ async function handleMarketplacePreview(req, res) {
     const images = Array.from(new Set([
       ...normalizeImages(productNode.image),
       ...normalizeImages(metaImages)
-    ])).slice(0, 12);
-    const name = cleanText(productNode.name || firstMeta(meta, "og:title", "twitter:title") || "");
+    ])).filter(image => !isMarketplaceDecorationImage(image)).slice(0, 12);
+    const metaName = cleanText(firstMeta(meta, "og:title", "twitter:title") || "");
+    const name = cleanText(
+      productNode.name
+      || (!/^(mercado livre|mercado libre|shopee)$/i.test(metaName) ? metaName : "")
+      || extractDocumentTitle(html)
+      || ""
+    );
     const description = cleanText(productNode.description || firstMeta(meta, "og:description", "description", "twitter:description") || "");
     const structuredPrice = parsePrice(
       offers.price
