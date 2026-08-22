@@ -61,6 +61,43 @@ const MARKETPLACES = {
   }
 };
 
+const LOCAL_PRODUCT_FIXTURES = [
+  {
+    marketplace: "mercado_livre",
+    identifiers: ["MLBU3729545771", "MLB6174889696"],
+    product: {
+      marketplace: "mercado_livre",
+      marketplaceLabel: "Mercado Livre",
+      externalId: "MLB6174889696",
+      sourceUrl: "https://www.mercadolivre.com.br/mini-liquidificador-mixer-juice-garrafa-portatil-usb-3-37v/up/MLBU3729545771?pdp_filters=item_id%3AMLB6174889696",
+      name: "Mini Liquidificador Mixer Juice Garrafa Portátil USB 3,7V",
+      description: "Mini liquidificador portátil e recarregável via USB para preparar sucos, vitaminas e shakes. Possui copo de 380 ml, seis lâminas de aço inoxidável, bateria recarregável, alça para transporte e formato compacto para usar em casa, no trabalho, na academia ou em viagens. Acompanha cabo USB.",
+      price: 37.99,
+      images: [
+        "https://http2.mlstatic.com/D_NQ_NP_810378-MLA99592659680_122025-O.webp"
+      ],
+      brand: "Genérica",
+      availability: "https://schema.org/InStock"
+    }
+  }
+];
+
+function getLocalProductFixture(rawUrl, marketplaceId) {
+  const normalizedUrl = String(rawUrl || "").toUpperCase();
+  const fixture = LOCAL_PRODUCT_FIXTURES.find(item => (
+    item.marketplace === marketplaceId
+    && item.identifiers.some(identifier => normalizedUrl.includes(identifier))
+  ));
+  if (!fixture) return null;
+  return {
+    ...fixture.product,
+    images: [...fixture.product.images],
+    importedAt: new Date().toISOString(),
+    localFixture: true,
+    cached: true
+  };
+}
+
 function hostMatches(hostname, allowedHost) {
   const host = hostname.toLowerCase().replace(/^www\./, "");
   return host === allowedHost || host.endsWith(`.${allowedHost}`);
@@ -454,6 +491,9 @@ async function handleMarketplacePreview(req, res) {
   try {
     const detected = detectMarketplace(rawUrl);
     if (!detected) return res.status(400).json({ error: "Cole um link válido do Mercado Livre ou da Shopee." });
+
+    const localProduct = getLocalProductFixture(rawUrl, detected.id);
+    if (localProduct) return res.json({ product: localProduct, creditsUsed: 0 });
 
     const cachedProduct = getCachedPreview(rawUrl);
     if (cachedProduct) return res.json({ product: { ...cachedProduct, cached: true } });
