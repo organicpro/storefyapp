@@ -1,10 +1,7 @@
 {
   "functions": {
-    "api/product-import/preview.js": {
+    "api/[...path].js": {
       "maxDuration": 60
-    },
-    "api/assistant/chat.js": {
-      "maxDuration": 25
     }
   },
   "rewrites": [
