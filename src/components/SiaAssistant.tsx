@@ -68,6 +68,18 @@ const CHAT_HISTORY_STORAGE_KEY = 'storefy.nala.history.v2';
 const MEMORY_STORAGE_KEY = 'storefy.nala.memory.v1';
 const FLOW_STORAGE_KEY = 'storefy.nala.store-flow.v1';
 const LEGACY_CHAT_STORAGE_KEY = 'storefy.sia.messages.v1';
+
+const createLocalReelVariants = (productName: string, storeName: string): ReelTextVariant[] => {
+  const product = productName.trim().slice(0, 72) || 'esse produto';
+  const store = storeName.trim().slice(0, 48) || 'nossa vitrine';
+  return [
+    { hook: `Você precisa ver ${product} em ação`, cta: `Veja na ${store}` },
+    { hook: 'Eu não sabia que isso facilitava tanto a rotina', cta: 'Confira na vitrine' },
+    { hook: 'Um achado útil que merece sua atenção', cta: 'Veja todos os detalhes' },
+    { hook: 'Olha esse produto funcionando de perto', cta: 'Chame no WhatsApp' },
+    { hook: 'Antes de comprar, vale a pena conhecer isso', cta: 'Acesse a loja agora' }
+  ];
+};
 const LEGACY_FLOW_STORAGE_KEY = 'storefy.sia.store-flow.v1';
 
 const GUIDED_FLOW_STEPS: Array<{ id: Exclude<StoreFlowStep, 'idle' | 'done'>; label: string }> = [
@@ -807,23 +819,36 @@ export default function SiaAssistant({
     setReelProgress(2);
     setReelError('');
     try {
-      const response = await fetch('/api/assistant/reel-captions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product: { name: product.name, description: product.descriptionText || '', price: product.salePrice },
-          store: { name: currentStore.name, niche: currentStore.niche }
-        })
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok || !Array.isArray(payload.variants) || payload.variants.length !== 5) {
-        throw new Error(payload.error || 'A Ayla não conseguiu criar as cinco frases.');
+      let variants = createLocalReelVariants(product.name, currentStore.name);
+      const captionController = new AbortController();
+      const captionTimeout = window.setTimeout(() => captionController.abort(), 9000);
+      try {
+        const response = await fetch('/api/assistant/reel-captions', {
+          method: 'POST',
+          signal: captionController.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product: { name: product.name, description: product.descriptionText || '', price: product.salePrice },
+            store: { name: currentStore.name, niche: currentStore.niche }
+          })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (response.ok && Array.isArray(payload.variants) && payload.variants.length === 5) {
+          const validVariants = payload.variants
+            .map((item: ReelTextVariant) => ({ hook: String(item?.hook || '').trim(), cta: String(item?.cta || '').trim() }))
+            .filter((item: ReelTextVariant) => item.hook && item.cta);
+          if (validVariants.length === 5) variants = validVariants;
+        }
+      } catch {
+        // The local variants keep Reel creation available when the AI service is offline.
+      } finally {
+        window.clearTimeout(captionTimeout);
       }
-      setReelVariants(payload.variants);
+      setReelVariants(variants);
       setReelProgress(8);
       const reels = await generateProductReels({
         videoFile: reelVideoFile,
-        variants: payload.variants,
+        variants,
         productName: product.name,
         profileName: currentStore.name,
         profileHandle: currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`,
