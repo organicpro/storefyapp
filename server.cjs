@@ -11,6 +11,7 @@ const {
 } = require("./api/_storefy-netlify.cjs");
 const { createCode, createRootAdminCode, deleteCode, deleteRootAdminCode, expireCode, getProfile, listCodes, redeem, rootAdminCode } = require("./api/_storefy-levels.cjs");
 const { handleMarketplacePreview } = require("./api/_storefy-marketplace-import.cjs");
+const { handleSiaChat, handleSiaReelCaptions } = require("./api/_storefy-sia.cjs");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -31,6 +32,8 @@ app.post("/api/integrations/netlify/validate", handleValidate);
 app.post("/api/integrations/netlify/save", handleSave);
 app.post("/api/projects/:projectId/publish/netlify", handlePublish);
 app.post("/api/product-import/preview", handleMarketplacePreview);
+app.post("/api/assistant/chat", handleSiaChat);
+app.post("/api/assistant/reel-captions", handleSiaReelCaptions);
 
 app.get("/api/access/profile", getProfile);
 app.post("/api/access/redeem", redeem);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Check, Copy, Crown, Flame, Plus, ShieldCheck, Trash2, Users, XCircle } from 'lucide-react';
+import { Check, Copy, Crown, Flame, Plus, ShieldCheck, Sparkles, Trash2, Users, XCircle } from 'lucide-react';
 import { deleteInviteCode, deleteRootAdminCode, expireInviteCode, generateInviteCode, generateRootAdminCode, loadInviteCodes, loadRootAdminCode } from '../lib/access';
 import { InviteCode, UserAccessProfile } from '../types';
 
@@ -79,8 +79,25 @@ export default function AdminCodes({ profile, onToast }: Props) {
     </section>
 
     {canManage && <><section className="grid gap-4 md:grid-cols-2">
-      <div className="border border-gray-200 bg-white p-6"><div className="flex items-center gap-3"><Users className="text-gray-500" /><h2 className="text-xl font-black">NIVEL 1 (NORMAL)</h2></div><ul className="mt-5 space-y-3 text-sm text-gray-600">{['Vitrine Basica', 'Produtos Limitados', 'Fornecedores Comuns', 'Sem Badge', 'Suporte Padrao'].map(item => <li key={item} className="flex gap-2"><Check size={17} />{item}</li>)}</ul></div>
-      <div className="border-2 border-amber-400 bg-gray-950 p-6 text-white"><div className="flex items-center gap-3"><Flame className="text-amber-400" /><h2 className="text-xl font-black">NIVEL 10 (SOCIO)</h2></div><ul className="mt-5 space-y-3 text-sm text-gray-200">{['Vitrine PRO', 'Catalogo Completo', 'Fornecedores PREMIUM', 'Badge SOCIO NIVEL 10', 'Suporte VIP'].map(item => <li key={item} className="flex gap-2"><Crown size={17} className="text-amber-400" />{item}</li>)}</ul></div>
-    </section><section className="bg-amber-50 px-6 py-7"><div className="flex items-center gap-3"><ShieldCheck className="text-amber-700" /><h2 className="text-xl font-black text-gray-950">Por que o Nivel 10 vende mais?</h2></div><div className="mt-5 grid gap-4 text-sm text-gray-700 md:grid-cols-3"><p><b>Fornecedor mais barato</b><br />Margem maior, lucro maior.</p><p><b>Badge de confianca</b><br />O cliente confia e compra mais.</p><p><b>Suporte VIP</b><br />Problemas resolvidos mais rapido.</p></div></section></>}
+      <div className="border border-gray-200 bg-white p-6"><div className="flex items-center gap-3"><Users className="text-gray-500" /><h2 className="text-xl font-black">NIVEL 1 (NORMAL)</h2></div><ul className="mt-5 space-y-3 text-sm text-gray-600">{['Vitrine Basica', 'Produtos Limitados', 'Fornecedores Comuns', 'Ayla Essencial: orientacoes e proximos passos', 'Suporte Padrao'].map(item => <li key={item} className="flex gap-2"><Check size={17} className="mt-0.5 shrink-0" />{item}</li>)}</ul></div>
+      <div className="border-2 border-amber-400 bg-gray-950 p-6 text-white"><div className="flex items-center gap-3"><Flame className="text-amber-400" /><h2 className="text-xl font-black">NIVEL 10 (SOCIO)</h2></div><p className="mt-4 border-l-2 border-amber-400 pl-3 text-sm font-bold text-amber-300">Ayla com acesso completo a sua operacao.</p><ul className="mt-5 space-y-3 text-sm text-gray-200">{['Vitrine PRO', 'Catalogo Completo', 'Fornecedores PREMIUM', 'Badge SOCIO NIVEL 10', 'Ayla completa: cria, analisa e executa com confirmacao', 'Suporte VIP'].map(item => <li key={item} className="flex gap-2"><Crown size={17} className="mt-0.5 shrink-0 text-amber-400" />{item}</li>)}</ul></div>
+    </section>
+
+    <section className="overflow-hidden border border-amber-200 bg-white">
+      <div className="grid md:grid-cols-[1.05fr_1.45fr]">
+        <div className="bg-amber-50 px-6 py-7">
+          <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-lg border border-amber-300 bg-white text-amber-700"><Sparkles size={20} /></span><p className="text-xs font-black uppercase tracking-[0.18em] text-amber-700">Ayla no Nivel 10</p></div>
+          <h2 className="mt-5 max-w-md text-2xl font-black leading-tight text-gray-950">Sua operacao inteira em uma unica conversa.</h2>
+          <p className="mt-3 max-w-lg text-sm leading-6 text-gray-600">No Nivel 10, a Ayla trabalha com o contexto completo da sua Storefy. Ela entende a loja atual, o catalogo e suas margens para orientar e preparar cada acao com voce.</p>
+        </div>
+        <div className="grid gap-px bg-gray-200 sm:grid-cols-3">
+          <div className="bg-white p-6"><p className="text-sm font-black text-gray-950">Entende sua loja</p><p className="mt-2 text-sm leading-6 text-gray-600">Considera historico, publico, produtos e preferencias sem misturar operacoes.</p></div>
+          <div className="bg-white p-6"><p className="text-sm font-black text-gray-950">Cria com voce</p><p className="mt-2 text-sm leading-6 text-gray-600">Ajuda a montar vitrine, ajustar margens e produzir Reels, influencer IA e divulgacao.</p></div>
+          <div className="bg-white p-6"><p className="text-sm font-black text-gray-950">Executa com controle</p><p className="mt-2 text-sm leading-6 text-gray-600">Transforma decisoes em acoes e pede sua confirmacao antes de alterar a operacao.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section className="bg-amber-50 px-6 py-7"><div className="flex items-center gap-3"><ShieldCheck className="text-amber-700" /><h2 className="text-xl font-black text-gray-950">Por que o Nivel 10 vende mais?</h2></div><div className="mt-5 grid gap-4 text-sm text-gray-700 md:grid-cols-3"><p><b>Fornecedor mais barato</b><br />Margem maior, lucro maior.</p><p><b>Badge de confianca</b><br />O cliente confia e compra mais.</p><p><b>Ayla com acesso completo</b><br />Analisa a operacao e indica a proxima melhor acao.</p></div></section></>}
   </div>;
 }

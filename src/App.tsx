@@ -36,6 +36,7 @@ import SettingsView from './components/SettingsView';
 import StorePreview from './components/StorePreview';
 import LoginScreen from './components/LoginScreen';
 import AdminCodes from './components/AdminCodes';
+import SiaAssistant, { type SiaStoreRequest } from './components/SiaAssistant';
 import { DEFAULT_STORE_CONFIG, INITIAL_PRODUCTS, INITIAL_SUPPLIERS } from './data';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { loadPublicStore, PublicStorePayload, savePublicStore } from './lib/publicStores';
@@ -1241,6 +1242,36 @@ function App() {
     setDraftStore(newSite);
   };
 
+  const handleCreateStoreWithSia = (request: SiaStoreRequest) => {
+    const nextIndex = sites.length + 1;
+    const safeProductIds = Array.from(new Set(request.productIds)).filter(productId =>
+      products.some(product => product.id === productId)
+    );
+    const subdomainBase = slugifyStore(request.name);
+    const newSite = makeSite({
+      ...DEFAULT_STORE_CONFIG,
+      id: createId('store'),
+      name: request.name.trim(),
+      whatsapp: request.whatsapp,
+      niche: request.nicheName,
+      operationNiche: request.nicheName,
+      subdomain: `${subdomainBase}-${nextIndex}`,
+      logoUrl: '',
+      primaryColor: request.primaryColor,
+      themePreset: request.themePreset,
+      heroTitle: request.name.trim(),
+      heroSubtitle: `Ofertas selecionadas de ${request.nicheName} com atendimento direto pelo WhatsApp.`,
+      welcomeMessage: `Olá! Vim pela loja ${request.name.trim()} e quero saber mais sobre estes produtos:`,
+      productIds: safeProductIds,
+      status: 'draft'
+    }, nextIndex);
+
+    setSites(current => [...current, newSite]);
+    setActiveSiteId(newSite.id);
+    setDraftStore(null);
+    showAppToast(`Loja ${newSite.name} criada pela Ayla.`);
+  };
+
   const handleCompleteWizard = (publishMode: 'draft' | 'publish') => {
     if (draftStore) {
       setSites(prev => [...prev, draftStore]);
@@ -1691,6 +1722,23 @@ function App() {
                 accountName={accountDisplayName}
                 stores={dashboardStores}
               userLevel={effectiveUserLevel}
+              />
+            )}
+
+            {activePage === 'sia' && (
+              <SiaAssistant
+                products={products}
+                currentStore={storeConfig}
+                storesCount={sites.length}
+                accountName={accountDisplayName}
+                onCreateStore={handleCreateStoreWithSia}
+                onToggleProduct={handleToggleAddProduct}
+                onUpdateProductPrice={handleUpdateSalePrice}
+                onNavigate={handleNavigate}
+                onPreviewStore={() => handleOpenGeneratedSite('sia')}
+                onUpdateStoreConfig={handleUpdateStoreConfig}
+                onPublishStore={handlePublishStore}
+                onBuildStoreHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)}
               />
             )}
 

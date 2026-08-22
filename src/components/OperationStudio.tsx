@@ -24,6 +24,8 @@ interface OperationStudioProps {
   onPublish: () => Promise<{ mode: string; url: string; error?: string }>;
   onBuildHtml: () => string;
   initialStep?: number;
+  embedded?: boolean;
+  initialVideoFormat?: VideoFormat;
 }
 
 const typeFor = (product: Product) => product.category === 'Achados Fisicos'
@@ -130,7 +132,7 @@ const INFLUENCER_LIBRARY: InfluencerModel[] = [
   }
 ] as const;
 export default function OperationStudio({
-  mode, products, storeConfig, onUpdateStoreConfig, onToggleAddProduct, onOpenSection, onPreview, onPublish, onBuildHtml, initialStep = 1
+  mode, products, storeConfig, onUpdateStoreConfig, onToggleAddProduct, onOpenSection, onPreview, onPublish, onBuildHtml, initialStep = 1, embedded = false, initialVideoFormat
 }: OperationStudioProps) {
   const profile = getOperationProfile(storeConfig);
   const niche = getOperationNiche(storeConfig);
@@ -145,8 +147,8 @@ export default function OperationStudio({
   const [videoCaption, setVideoCaption] = useState(storeConfig.videoCta ?? 'Veja a vitrine e chame no WhatsApp');
   const [showWatermark, setShowWatermark] = useState(storeConfig.videoWatermarkEnabled ?? true);
   const [generating, setGenerating] = useState<VideoFormat | null>(null);
-  const [activeVideoLibrary, setActiveVideoLibrary] = useState<VideoFormat>(storeConfig.videoFormat || 'frame');
-  const [videoLibraryPage, setVideoLibraryPage] = useState<VideoFormat | null>(null);
+  const [activeVideoLibrary, setActiveVideoLibrary] = useState<VideoFormat>(initialVideoFormat || storeConfig.videoFormat || 'frame');
+  const [videoLibraryPage, setVideoLibraryPage] = useState<VideoFormat | null>(initialVideoFormat || null);
   const [viralVideoId, setViralVideoId] = useState<string>(VIRAL_LIBRARY[0].id);
   const [influencerId, setInfluencerId] = useState<string>(INFLUENCER_LIBRARY[0].id);
   const [generatedVideo, setGeneratedVideo] = useState<{ url: string; blob: Blob; mimeType: string; fileName: string; label: string } | null>(null);
@@ -456,7 +458,7 @@ export default function OperationStudio({
   );
 
   if (mode === 'videos') return (
-    <section className="space-y-6 text-left animate-fade-in">
+    <section className={`space-y-6 text-left animate-fade-in ${embedded ? 'rounded-2xl bg-white p-4 sm:p-5' : ''}`}>
       {generating && <GenerationOverlay />}
       {generatedVideo && <GeneratedVideoPreview generatedVideo={generatedVideo} content={content} calendar={calendar} profile={profile} products={selectedProducts} onClose={() => setGeneratedVideo(null)} onDownload={() => downloadBlob(generatedVideo.fileName, generatedVideo.blob, generatedVideo.mimeType)} />}
       
@@ -473,7 +475,7 @@ export default function OperationStudio({
         </div>
       </> : <>
         <div className="mb-6">
-          <button onClick={() => { setVideoLibraryPage(null); setGeneratedVideo(null); }} className="mb-5 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors"><ChevronLeft size={14} /> Voltar aos tipos</button>
+          <button onClick={() => { setVideoLibraryPage(null); setGeneratedVideo(null); }} className="mb-5 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors"><ChevronLeft size={14} /> {embedded ? 'Escolher outro tipo' : 'Voltar aos tipos'}</button>
           <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">{videoLibraryPage === 'frame' ? 'Biblioteca de moldura' : 'Biblioteca de modelos IA'}</h1>
           <p className="text-[14px] text-gray-500 mt-1 leading-relaxed max-w-xl">{videoLibraryPage === 'frame' ? 'O vídeo base fica por baixo. A Storefy aplica apenas a moldura, @ e legenda em cima.' : 'Cada card representa uma persona. Escolha uma modelo para criar o vídeo com a legenda da sua loja.'}</p>
         </div>

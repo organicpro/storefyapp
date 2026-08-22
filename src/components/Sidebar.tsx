@@ -47,6 +47,7 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
 
   const mainItems: NavItemConfig[] = [
     { id: 'dashboard', label: t('sidebar.dashboard'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/HomeFilledIcon.svg' },
+    { id: 'sia', label: 'Ayla', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ChatIcon.svg', badge: 'IA' },
     { id: 'operation', label: t('sidebar.operation'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/StoreFilledIcon.svg' },
     { id: 'promotion', label: t('sidebar.promotion'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/MegaphoneFilledIcon.svg' },
     { id: 'academy', label: 'Academy', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/BookOpenIcon.svg' },
