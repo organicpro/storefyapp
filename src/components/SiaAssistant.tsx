@@ -6,6 +6,7 @@ import {
   Sparkles, Store, Target, UserRound, WandSparkles, X
 } from 'lucide-react';
 import { NICHES } from '../data';
+import MarketplaceImporter, { type MarketplaceImportInput } from './MarketplaceImporter';
 import OperationStudio from './OperationStudio';
 import { downloadBlob, type VideoFormat } from '../lib/operation';
 import { generateProductReels, type GeneratedProductReel, type ReelTextVariant } from '../lib/productReels';
@@ -31,7 +32,7 @@ type PendingAction =
   | { type: 'update-price'; productId: string; price: number; title: string; description: string }
   | { type: 'navigate'; page: string; title: string; description: string };
 
-type StoreFlowStep = 'idle' | 'niche' | 'name' | 'whatsapp' | 'theme' | 'products' | 'review' | 'done';
+type StoreFlowStep = 'idle' | 'niche' | 'audience' | 'name' | 'whatsapp' | 'theme' | 'products' | 'review' | 'done';
 
 type SiaStoreDraft = {
   nicheId: string;
@@ -57,6 +58,7 @@ interface SiaAssistantProps {
   onNavigate: (page: string) => void;
   onPreviewStore: () => void;
   onUpdateStoreConfig: (config: StoreConfig) => void;
+  onImportProduct: (input: MarketplaceImportInput, target: 'current' | 'draft') => string;
   onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
   onBuildStoreHtml: () => string;
 }
@@ -67,6 +69,16 @@ const MEMORY_STORAGE_KEY = 'storefy.nala.memory.v1';
 const FLOW_STORAGE_KEY = 'storefy.nala.store-flow.v1';
 const LEGACY_CHAT_STORAGE_KEY = 'storefy.sia.messages.v1';
 const LEGACY_FLOW_STORAGE_KEY = 'storefy.sia.store-flow.v1';
+
+const GUIDED_FLOW_STEPS: Array<{ id: Exclude<StoreFlowStep, 'idle' | 'done'>; label: string }> = [
+  { id: 'niche', label: 'Nicho' },
+  { id: 'audience', label: 'Público' },
+  { id: 'name', label: 'Nome' },
+  { id: 'whatsapp', label: 'WhatsApp' },
+  { id: 'theme', label: 'Visual' },
+  { id: 'products', label: 'Produtos' },
+  { id: 'review', label: 'Revisão' }
+];
 
 const emptyDraft = (): SiaStoreDraft => ({
   nicheId: '',
@@ -136,9 +148,10 @@ const readMemory = (): NalaMemory => {
 const readFlow = (): { step: StoreFlowStep; draft: SiaStoreDraft; showRecommendations: boolean; recommendationNicheId: string; recommendationQuery: string; recommendationProductIds: string[] } => {
   try {
     const stored = JSON.parse(window.localStorage.getItem(FLOW_STORAGE_KEY) || window.localStorage.getItem(LEGACY_FLOW_STORAGE_KEY) || '{}');
-    const validSteps: StoreFlowStep[] = ['idle', 'niche', 'name', 'whatsapp', 'theme', 'products', 'review', 'done'];
+    const storedStep = stored.step === 'budget' ? 'name' : stored.step;
+    const validSteps: StoreFlowStep[] = ['idle', 'niche', 'audience', 'name', 'whatsapp', 'theme', 'products', 'review', 'done'];
     return {
-      step: validSteps.includes(stored.step) ? stored.step : 'idle',
+      step: validSteps.includes(storedStep) ? storedStep : 'idle',
       draft: { ...emptyDraft(), ...(stored.draft || {}), productIds: Array.isArray(stored.draft?.productIds) ? stored.draft.productIds : [] },
       showRecommendations: Boolean(stored.showRecommendations),
       recommendationNicheId: NICHES.some(niche => niche.id === stored.recommendationNicheId) ? stored.recommendationNicheId : NICHES[0].id,
@@ -269,6 +282,7 @@ export default function SiaAssistant({
   onNavigate,
   onPreviewStore,
   onUpdateStoreConfig,
+  onImportProduct,
   onPublishStore,
   onBuildStoreHtml
 }: SiaAssistantProps) {
@@ -285,6 +299,7 @@ export default function SiaAssistant({
   const [showRecommendations, setShowRecommendations] = useState(savedFlow.showRecommendations);
   const [recommendationQuery, setRecommendationQuery] = useState(savedFlow.recommendationQuery);
   const [recommendationProductIds, setRecommendationProductIds] = useState<string[]>(savedFlow.recommendationProductIds);
+  const [guidedProductLimit, setGuidedProductLimit] = useState(8);
   const [composerFocused, setComposerFocused] = useState(false);
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [listening, setListening] = useState(false);
@@ -302,22 +317,26 @@ export default function SiaAssistant({
   const [reelError, setReelError] = useState('');
   const [reelVariants, setReelVariants] = useState<ReelTextVariant[]>([]);
   const [generatedReels, setGeneratedReels] = useState<GeneratedProductReel[]>([]);
+  const [marketplaceImportUrl, setMarketplaceImportUrl] = useState('');
+  const [marketplaceImportToken, setMarketplaceImportToken] = useState(0);
   const [processingStage, setProcessingStage] = useState('Analisando contexto');
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const conversationKey = assistantMode === 'current' ? currentStoreConversationKey : 'new-store';
   const lastConversationKeyRef = useRef(conversationKey);
   const skipNextConversationSaveRef = useRef(false);
+  const postCreateHandoffRef = useRef<{ storeName: string; productCount: number } | null>(null);
 
   const activeNicheId = draft.nicheId || recommendationNicheId;
   const activeNiche = NICHES.find(niche => niche.id === activeNicheId) || NICHES[0];
+  const guidedStepIndex = GUIDED_FLOW_STEPS.findIndex(step => step.id === flowStep);
   const recommendedProducts = useMemo(() => {
     if (recommendationProductIds.length) {
       const byId = new Map(products.map(product => [product.id, product]));
-      return recommendationProductIds.map(id => byId.get(id)).filter((product): product is Product => Boolean(product) && !memory.rejectedProductIds.includes(product.id)).slice(0, 8);
+      return recommendationProductIds.map(id => byId.get(id)).filter((product): product is Product => Boolean(product) && !memory.rejectedProductIds.includes(product.id)).slice(0, guidedProductLimit);
     }
     if (recommendationQuery.trim()) {
-      return rankProductsForQuery(products, recommendationQuery, activeNicheId).filter(product => !memory.rejectedProductIds.includes(product.id)).slice(0, 8);
+      return rankProductsForQuery(products, recommendationQuery, activeNicheId).filter(product => !memory.rejectedProductIds.includes(product.id)).slice(0, guidedProductLimit);
     }
     const category = categoryByNiche[activeNicheId];
     return products
@@ -325,14 +344,24 @@ export default function SiaAssistant({
       .filter(product => !memory.rejectedProductIds.includes(product.id))
       .filter(product => product.stockQuantity === undefined || product.stockQuantity > 0)
       .sort((a, b) => recommendationScore(b) - recommendationScore(a))
-      .slice(0, 8);
-  }, [activeNicheId, memory.rejectedProductIds, products, recommendationProductIds, recommendationQuery]);
+      .slice(0, guidedProductLimit);
+  }, [activeNicheId, guidedProductLimit, memory.rejectedProductIds, products, recommendationProductIds, recommendationQuery]);
 
   useEffect(() => {
     if (lastConversationKeyRef.current === conversationKey) return;
     saveMessages(lastConversationKeyRef.current, messages);
     skipNextConversationSaveRef.current = true;
     lastConversationKeyRef.current = conversationKey;
+    const handoff = postCreateHandoffRef.current;
+    if (handoff) {
+      postCreateHandoffRef.current = null;
+      setMessages([makeMessage('assistant', `A loja “${handoff.storeName}” foi criada com ${handoff.productCount} produtos. O que você gostaria de fazer agora?`)]);
+      setFlowStep('done');
+      setShowRecommendations(false);
+      setRecommendationQuery('');
+      setRecommendationProductIds([]);
+      return;
+    }
     setMessages(readMessages(accountName, conversationKey));
     setFlowStep('idle');
     setShowRecommendations(false);
@@ -377,8 +406,9 @@ export default function SiaAssistant({
     setRecommendationQuery('');
     setRecommendationProductIds([]);
     setDraft(emptyDraft());
+    setGuidedProductLimit(8);
     setFlowStep('niche');
-    addAssistantMessage('Perfeito. Primeiro, escolha o tipo de produto que combina mais com você.');
+    addAssistantMessage('Vamos montar sua loja em sete etapas rápidas. Primeiro, escolha o tipo de produto que combina mais com você.');
   };
 
   const selectNiche = (nicheId: string) => {
@@ -387,13 +417,51 @@ export default function SiaAssistant({
     setRecommendationNicheId(nicheId);
     setRecommendationQuery('');
     setRecommendationProductIds([]);
+    setGuidedProductLimit(8);
+    setFlowStep('audience');
+    addAssistantMessage(`Boa escolha: ${niche.name}. Para quem você quer vender? Escolha uma opção ou descreva o público com suas palavras.`);
+  };
+
+  const selectAudience = (audience: string) => {
+    setMemory(current => ({ ...current, audience }));
     setFlowStep('name');
-    addAssistantMessage(`Boa escolha: ${niche.name}. Agora me diga qual será o nome da loja.`);
+    addAssistantMessage(`Público definido: ${audience}. Agora me diga qual será o nome da loja.`);
+  };
+
+  const leaveGuidedFlow = () => {
+    setFlowStep('idle');
+    setDraft(emptyDraft());
+    setShowRecommendations(false);
+    addAssistantMessage('Modo guiado encerrado. Podemos continuar conversando ou começar novamente quando você quiser.');
+  };
+
+  const goBackGuidedFlow = () => {
+    const previousByStep: Partial<Record<StoreFlowStep, StoreFlowStep>> = {
+      audience: 'niche', name: 'audience', whatsapp: 'name',
+      theme: 'whatsapp', products: 'theme', review: 'products'
+    };
+    const previous = previousByStep[flowStep];
+    if (previous) setFlowStep(previous);
+  };
+
+  const skipGuidedStep = () => {
+    if (flowStep === 'audience') {
+      setFlowStep('name');
+      addAssistantMessage('Sem problema. Podemos definir o público depois. Qual será o nome da loja?');
+    }
   };
 
   const chooseTheme = (themeId: NonNullable<StoreConfig['themePreset']>) => {
     const theme = themeOptions.find(option => option.id === themeId) || themeOptions[0];
-    const suggestedIds = recommendedProducts.slice(0, 5).map(product => product.id);
+    const nicheCategory = categoryByNiche[activeNicheId];
+    const stableProductIds = products
+      .filter(product => product.category === nicheCategory)
+      .filter(product => !memory.rejectedProductIds.includes(product.id))
+      .filter(product => product.stockQuantity === undefined || product.stockQuantity > 0)
+      .sort((a, b) => recommendationScore(b) - recommendationScore(a))
+      .map(product => product.id);
+    const suggestedIds = stableProductIds.slice(0, 5);
+    setRecommendationProductIds(stableProductIds);
     setDraft(current => ({
       ...current,
       themePreset: theme.id,
@@ -414,6 +482,11 @@ export default function SiaAssistant({
   };
 
   const submitWorkflowText = (value: string) => {
+    if (flowStep === 'audience') {
+      selectAudience(value);
+      return true;
+    }
+
     if (flowStep === 'name') {
       if (value.length < 2) {
         addAssistantMessage('Digite um nome com pelo menos 2 caracteres.');
@@ -520,6 +593,17 @@ export default function SiaAssistant({
     setCommandMenuOpen(false);
 
     if (submitWorkflowText(value)) return;
+    const pastedMarketplaceUrl = value.match(/https?:\/\/[^\s]+/i)?.[0] || '';
+    const hasMarketplaceUrl = /(?:mercadolivre|mercadolivre\.com|meli\.la|shopee|shp\.ee)/i.test(pastedMarketplaceUrl);
+    const requestsMarketplaceImport = /(?:adicionar|colocar|importar|por|trazer|cadastrar|quero).{0,40}(?:produto|item).{0,40}(?:mercado livre|mercadolivre|\bml\b|shopee)|(?:mercado livre|mercadolivre|\bml\b|shopee).{0,40}(?:produto|item|adicionar|importar)/i.test(value);
+    if (assistantMode === 'current' && (hasMarketplaceUrl || requestsMarketplaceImport)) {
+      setMarketplaceImportUrl(hasMarketplaceUrl ? pastedMarketplaceUrl : '');
+      setMarketplaceImportToken(current => current + 1);
+      setMessages(current => [...current, makeMessage('assistant', hasMarketplaceUrl
+        ? 'Abri o importador com o link preenchido. Gere a prévia, revise as informações e confirme para adicionar o produto à loja atual.'
+        : 'Claro. Abri o importador da Storefy; cole o link do Mercado Livre ou da Shopee para gerar a prévia antes de adicionar.')]);
+      return;
+    }
     if (/criar|montar|nova loja/i.test(value) && /loja|vitrine/i.test(value)) {
       startStoreFlow();
       return;
@@ -571,9 +655,9 @@ export default function SiaAssistant({
 
   const createStore = () => {
     const niche = NICHES.find(item => item.id === draft.nicheId) || NICHES[0];
+    postCreateHandoffRef.current = { storeName: draft.name, productCount: draft.productIds.length };
     onCreateStore({ ...draft, nicheName: niche.name });
     setFlowStep('done');
-    addAssistantMessage(`A loja “${draft.name}” foi criada como rascunho com ${draft.productIds.length} produtos. Ela já está salva e pronta para você revisar.`);
   };
 
   const resetConversation = () => {
@@ -766,6 +850,22 @@ export default function SiaAssistant({
 
   return (
     <section className="relative mx-auto flex h-[calc(100vh-105px)] min-h-[560px] max-w-[1500px] overflow-hidden bg-[#f7f7f8]">
+      <MarketplaceImporter
+        hideTrigger
+        initialUrl={marketplaceImportUrl}
+        autoOpenToken={marketplaceImportToken}
+        onImportProduct={product => {
+          const target = flowStep === 'products' ? 'draft' : 'current';
+          const productId = onImportProduct(product, target);
+          if (target === 'draft') {
+            setDraft(current => ({ ...current, productIds: Array.from(new Set([...current.productIds, productId])) }));
+            setRecommendationProductIds(current => [productId, ...current.filter(id => id !== productId)]);
+          }
+          setMessages(current => [...current, makeMessage('assistant', target === 'draft'
+            ? `“${product.name}” foi importado, recebeu margem de ${product.marginPercent}% e entrou na seleção da nova loja.`
+            : `“${product.name}” foi importado e adicionado à loja atual com margem de ${product.marginPercent}%.`)]);
+        }}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 pb-44 pt-5 sm:px-6 sm:pb-48">
           <div className="mx-auto max-w-5xl space-y-7">
@@ -949,20 +1049,30 @@ export default function SiaAssistant({
                   <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-gray-500">Comece por uma ação</p>
                   <span className="text-[10px] text-gray-400">ou escreva livremente acima</span>
                 </div>
-                <div className="grid overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm sm:grid-cols-2 lg:grid-cols-3">
                   <button type="button" onClick={startStoreFlow} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-amber-50/60 sm:border-r lg:border-b-0">
                     <Store size={17} className="mt-0.5 shrink-0 text-amber-600" />
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Criar uma loja</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Estrutura completa do zero</span></span>
                     <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
                   </button>
-                  <button type="button" onClick={showProductRecommendations} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-emerald-50/60 lg:border-b-0 lg:border-r">
+                  <button type="button" onClick={showProductRecommendations} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-emerald-50/60 lg:border-r">
                     <PackageSearch size={17} className="mt-0.5 shrink-0 text-emerald-600" />
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Explorar produtos</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Oportunidades do catálogo</span></span>
                     <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
                   </button>
-                  <button type="button" onClick={() => submitPrompt('Analise minha vitrine atual e diga o que devo melhorar primeiro.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-blue-50/60 sm:border-b-0 sm:border-r">
+                  <button type="button" onClick={() => submitPrompt('Analise minha vitrine atual e diga o que devo melhorar primeiro.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-blue-50/60">
                     <WandSparkles size={17} className="mt-0.5 shrink-0 text-blue-600" />
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Analisar a vitrine</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Diagnóstico da loja atual</span></span>
+                    <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
+                  </button>
+                  <button type="button" onClick={() => submitPrompt('Quero importar um produto do Mercado Livre.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-yellow-50/70 sm:border-b-0 sm:border-r">
+                    <ShoppingBag size={17} className="mt-0.5 shrink-0 text-amber-600" />
+                    <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Importar produto</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Mercado Livre ou Shopee</span></span>
+                    <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
+                  </button>
+                  <button type="button" onClick={() => submitPrompt('Quero criar um Reel para minha loja.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-violet-50/60 sm:border-b-0 sm:border-r">
+                    <Film size={17} className="mt-0.5 shrink-0 text-violet-600" />
+                    <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Criar Reels</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Vídeos e influencer IA</span></span>
                     <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
                   </button>
                   <button type="button" onClick={() => submitPrompt('Monte um plano simples de divulgação para minha loja.')} className="group flex min-h-24 items-start gap-3 p-4 text-left transition hover:bg-rose-50/60">
@@ -986,6 +1096,25 @@ export default function SiaAssistant({
               </div>
             )}
 
+            {guidedStepIndex >= 0 && (
+              <div className="overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
+                <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-700">Modo guiado</p><strong className="mt-1 block text-sm text-gray-950">{GUIDED_FLOW_STEPS[guidedStepIndex].label}</strong></div>
+                      <span className="shrink-0 text-[11px] font-bold text-gray-500">Etapa {guidedStepIndex + 1} de {GUIDED_FLOW_STEPS.length}</span>
+                    </div>
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${((guidedStepIndex + 1) / GUIDED_FLOW_STEPS.length) * 100}%` }} /></div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={goBackGuidedFlow} disabled={guidedStepIndex === 0} className="rounded-lg border border-gray-200 px-3 py-2 text-[11px] font-bold text-gray-600 disabled:cursor-not-allowed disabled:opacity-35">Voltar</button>
+                    {flowStep === 'audience' && <button type="button" onClick={skipGuidedStep} className="rounded-lg border border-gray-200 px-3 py-2 text-[11px] font-bold text-gray-600">Pular</button>}
+                    <button type="button" onClick={leaveGuidedFlow} className="rounded-lg px-3 py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50">Sair</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {flowStep === 'niche' && (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {NICHES.map(niche => (
@@ -993,6 +1122,14 @@ export default function SiaAssistant({
                     <strong className="text-[13px] text-gray-950">{niche.name}</strong>
                     <span className="mt-1 block line-clamp-2 text-[11px] leading-relaxed text-gray-500">{niche.description}</span>
                   </button>
+                ))}
+              </div>
+            )}
+
+            {flowStep === 'audience' && (
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {['Público geral', 'Jovens e universitários', 'Mulheres', 'Homens', 'Crianças e famílias', 'Pessoas 50+'].map(audience => (
+                  <button key={audience} type="button" onClick={() => selectAudience(audience)} className="rounded-lg border border-gray-200 bg-white p-3 text-left text-[12px] font-bold text-gray-800 transition hover:border-amber-400 hover:bg-amber-50">{audience}</button>
                 ))}
               </div>
             )}
@@ -1012,16 +1149,19 @@ export default function SiaAssistant({
             {(flowStep === 'products' || showRecommendations) && (
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700">Radar de oportunidades</p>
                     <strong className="mt-1 block text-lg text-gray-950">{recommendationQuery ? `Produtos relacionados a “${recommendationQuery}”` : `Produtos indicados para ${activeNiche.name}`}</strong>
-                    <p className="mt-0.5 text-[11px] text-gray-500">Ordenados por margem, demanda, avaliação e estoque.</p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">Selecione quantos quiser e clique na margem de cada card para ajustar o preço.</p>
                   </div>
-                  {showRecommendations && (
-                    <select value={recommendationNicheId} onChange={event => { setRecommendationNicheId(event.target.value); setRecommendationQuery(''); setRecommendationProductIds([]); }} className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 outline-none">
-                      {NICHES.map(niche => <option key={niche.id} value={niche.id}>{niche.name}</option>)}
-                    </select>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {flowStep === 'products' && <button type="button" onClick={() => { setMarketplaceImportUrl(''); setMarketplaceImportToken(current => current + 1); addAssistantMessage('Cole o link do Mercado Livre ou da Shopee. Depois revise os dados e defina a margem antes de incluir na nova loja.'); }} className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-black text-amber-900 transition hover:bg-amber-100"><ShoppingBag size={14} /> Importar marketplace</button>}
+                    {showRecommendations && (
+                      <select value={recommendationNicheId} onChange={event => { setRecommendationNicheId(event.target.value); setRecommendationQuery(''); setRecommendationProductIds([]); setGuidedProductLimit(8); }} className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 outline-none">
+                        {NICHES.map(niche => <option key={niche.id} value={niche.id}>{niche.name}</option>)}
+                      </select>
+                    )}
+                  </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {recommendedProducts.map(product => {
@@ -1085,9 +1225,12 @@ export default function SiaAssistant({
                   })}
                 </div>
                 {flowStep === 'products' && (
-                  <button type="button" onClick={finishProductSelection} className="ml-auto flex items-center gap-2 rounded-lg bg-[#111827] px-4 py-2.5 text-xs font-bold text-white">
-                    Continuar com {draft.productIds.length} produtos <ArrowRight size={14} />
-                  </button>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <button type="button" onClick={() => setGuidedProductLimit(current => current + 8)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 transition hover:border-amber-300 hover:bg-amber-50"><Plus size={14} /> Mostrar mais produtos</button>
+                    <button type="button" onClick={finishProductSelection} className="flex items-center justify-center gap-2 rounded-lg bg-[#111827] px-4 py-2.5 text-xs font-bold text-white">
+                      Continuar com {draft.productIds.length} produtos <ArrowRight size={14} />
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -1114,14 +1257,16 @@ export default function SiaAssistant({
             )}
 
             {flowStep === 'done' && (
-              <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
+              <div className="overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm">
+                <div className="flex items-center gap-3 border-b border-emerald-100 bg-emerald-50 p-4">
                   <span className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-white"><Check size={18} /></span>
-                  <div><strong className="text-sm text-emerald-950">Loja salva na sua conta</strong><p className="mt-0.5 text-xs text-emerald-800">Abra a loja para editar ou visualizar a vitrine.</p></div>
+                  <div><strong className="text-sm text-emerald-950">Loja criada e salva</strong><p className="mt-0.5 text-xs text-emerald-800">Escolha o próximo passo e continue com a Ayla.</p></div>
                 </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => onNavigate('operation')} className="rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900">Abrir loja</button>
-                  <button type="button" onClick={() => onNavigate('shop-preview')} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Visualizar</button>
+                <div className="grid gap-px bg-gray-200 sm:grid-cols-2 lg:grid-cols-4">
+                  <button type="button" onClick={() => onNavigate('promotion')} className="group flex items-start gap-3 bg-white p-4 text-left transition hover:bg-amber-50"><Rocket size={17} className="mt-0.5 shrink-0 text-amber-600" /><span><strong className="block text-xs text-gray-950">Preparar divulgação</strong><span className="mt-1 block text-[10px] leading-relaxed text-gray-500">Copys, grupos e calendário</span></span></button>
+                  <button type="button" onClick={() => { setFlowStep('idle'); setCreativeMode('choose'); addAssistantMessage('Perfeito. Vamos criar o primeiro conteúdo da nova loja. Escolha o formato abaixo.'); }} className="group flex items-start gap-3 bg-white p-4 text-left transition hover:bg-violet-50"><Film size={17} className="mt-0.5 shrink-0 text-violet-600" /><span><strong className="block text-xs text-gray-950">Criar Reels</strong><span className="mt-1 block text-[10px] leading-relaxed text-gray-500">Vídeo viral ou influencer IA</span></span></button>
+                  <button type="button" onClick={onPreviewStore} className="group flex items-start gap-3 bg-white p-4 text-left transition hover:bg-emerald-50"><Paintbrush size={17} className="mt-0.5 shrink-0 text-emerald-600" /><span><strong className="block text-xs text-gray-950">Visualizar loja</strong><span className="mt-1 block text-[10px] leading-relaxed text-gray-500">Conferir a vitrine pronta</span></span></button>
+                  <button type="button" onClick={() => onNavigate('operation')} className="group flex items-start gap-3 bg-white p-4 text-left transition hover:bg-blue-50"><Store size={17} className="mt-0.5 shrink-0 text-blue-600" /><span><strong className="block text-xs text-gray-950">Continuar ajustando</strong><span className="mt-1 block text-[10px] leading-relaxed text-gray-500">Editar dados e produtos</span></span></button>
                 </div>
               </div>
             )}

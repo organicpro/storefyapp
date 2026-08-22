@@ -1128,7 +1128,7 @@ function App() {
     showAppToast('Produto próprio adicionado à loja.');
   };
 
-  const handleImportMarketplaceProduct = (input: MarketplaceImportInput) => {
+  const handleImportMarketplaceProduct = (input: MarketplaceImportInput, addToCurrentStore = true) => {
     const existing = products.find(product =>
       product.source === input.marketplace
       && ((input.externalId && product.externalId === input.externalId) || product.sourceUrl === input.sourceUrl)
@@ -1178,15 +1178,20 @@ function App() {
       : [importedProduct, ...current]
     );
 
-    setSites(current => current.map((site, index) => site.id === storeConfig.id
-      ? makeSite({
-          ...site,
-          productIds: Array.from(new Set([...(site.productIds || []), productId])),
-          status: 'draft'
-        }, index + 1)
-      : site
-    ));
-    showAppToast(existing ? 'Produto importado atualizado na vitrine.' : 'Produto importado e adicionado à vitrine.');
+    if (addToCurrentStore) {
+      setSites(current => current.map((site, index) => site.id === storeConfig.id
+        ? makeSite({
+            ...site,
+            productIds: Array.from(new Set([...(site.productIds || []), productId])),
+            status: 'draft'
+          }, index + 1)
+        : site
+      ));
+    }
+    showAppToast(addToCurrentStore
+      ? (existing ? 'Produto importado atualizado na vitrine.' : 'Produto importado e adicionado à vitrine.')
+      : 'Produto importado para a seleção da nova loja.');
+    return productId;
   };
 
   const handleUpdateProductImage = (productId: string, newUrl: string) => {
@@ -1737,6 +1742,7 @@ function App() {
                 onNavigate={handleNavigate}
                 onPreviewStore={() => handleOpenGeneratedSite('sia')}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
+                onImportProduct={(input, target) => handleImportMarketplaceProduct(input, target === 'current')}
                 onPublishStore={handlePublishStore}
                 onBuildStoreHtml={() => buildStoreHtml({ ...storeConfig, productIds: activeStoreProductIds }, products, effectiveUserLevel)}
               />

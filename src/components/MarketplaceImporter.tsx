@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowRight, Check, Clock3, ExternalLink, FileImage, History, Link2,
@@ -48,6 +48,9 @@ type ImportHistoryEntry = MarketplaceImportInput & {
 interface MarketplaceImporterProps {
   onImportProduct: (input: MarketplaceImportInput) => void;
   variant?: 'button' | 'setup';
+  initialUrl?: string;
+  autoOpenToken?: number;
+  hideTrigger?: boolean;
 }
 
 const HISTORY_KEY = 'storefy.marketplace-import-history.v1';
@@ -77,7 +80,7 @@ const currency = (value: number) => value.toLocaleString('pt-BR', {
   currency: 'BRL'
 });
 
-export default function MarketplaceImporter({ onImportProduct, variant = 'button' }: MarketplaceImporterProps) {
+export default function MarketplaceImporter({ onImportProduct, variant = 'button', initialUrl = '', autoOpenToken = 0, hideTrigger = false }: MarketplaceImporterProps) {
   const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<'import' | 'history'>('import');
   const [url, setUrl] = useState('');
@@ -86,6 +89,16 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
   const [manualFallbackAvailable, setManualFallbackAvailable] = useState(false);
   const [draft, setDraft] = useState<ImportDraft | null>(null);
   const [history, setHistory] = useState<ImportHistoryEntry[]>(readHistory);
+
+  useEffect(() => {
+    if (!autoOpenToken) return;
+    setActiveView('import');
+    setUrl(initialUrl.trim());
+    setDraft(null);
+    setError('');
+    setManualFallbackAvailable(false);
+    setOpen(true);
+  }, [autoOpenToken, initialUrl]);
 
   const salePrice = useMemo(() => {
     if (!draft) return 0;
@@ -187,7 +200,7 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
 
   return (
     <>
-      <button
+      {!hideTrigger && <button
         type="button"
         onClick={() => setOpen(true)}
         className={variant === 'setup'
@@ -210,7 +223,7 @@ export default function MarketplaceImporter({ onImportProduct, variant = 'button
             Importar por link
           </>
         )}
-      </button>
+      </button>}
 
       {open && createPortal((
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm sm:p-6">
