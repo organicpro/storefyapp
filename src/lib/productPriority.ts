@@ -1,5 +1,8 @@
 import type { Product } from '../types';
 
+export const DEFAULT_GAME_MARGIN_PERCENT = 35;
+export const GTA6_MARGIN_PERCENT = 27;
+
 function productSearchText(product: Product) {
   return [product.name, product.subcategory, product.descriptionText, ...(product.benefits || [])]
     .filter(Boolean)
@@ -21,6 +24,18 @@ export function gameProductPriority(product: Product) {
   if (isDigitalGame && isConsoleGame) return 800;
   if (isDigitalGame) return 600;
   return 200;
+}
+
+export function applyDefaultGamePricing(product: Product) {
+  if (product.category !== 'Games' || product.costPrice <= 0) return product;
+  const text = productSearchText(product);
+  const isGta6 = /gta\s*6|grand theft auto\s*vi/.test(text);
+  const marginPercent = isGta6 ? GTA6_MARGIN_PERCENT : DEFAULT_GAME_MARGIN_PERCENT;
+  if (product.marginPercent && product.marginPercent > 0) return product;
+  if (product.salePrice > product.costPrice) return product;
+  const rawPrice = product.costPrice * (1 + marginPercent / 100);
+  const salePrice = isGta6 ? Math.ceil(rawPrice / 10) * 10 - 0.1 : Math.ceil(rawPrice) - 0.01;
+  return { ...product, salePrice: Number(salePrice.toFixed(2)), marginPercent };
 }
 
 export function prioritizeGameProducts(products: Product[]) {

@@ -336,6 +336,8 @@ export default function SiaAssistant({
   const [reelVideoFile, setReelVideoFile] = useState<File | null>(null);
   const [reelVideoPreview, setReelVideoPreview] = useState('');
   const [reelProfileImage, setReelProfileImage] = useState(currentStore.logoUrl || '');
+  const [reelProfileName, setReelProfileName] = useState(currentStore.name);
+  const [reelProfileHandle, setReelProfileHandle] = useState(currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`);
   const [reelGenerating, setReelGenerating] = useState(false);
   const [reelProgress, setReelProgress] = useState(0);
   const [reelError, setReelError] = useState('');
@@ -876,8 +878,8 @@ export default function SiaAssistant({
         videoFile: reelVideoFile,
         variants,
         productName: creativeName,
-        profileName: currentStore.name,
-        profileHandle: currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`,
+        profileName: reelProfileName.trim() || currentStore.name,
+        profileHandle: reelProfileHandle.trim() || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`,
         profileImageUrl: reelProfileImage,
         accent: currentStore.primaryColor || '#dfb52d',
         overlay: { text: reelOverlayText, position: reelOverlayPosition, zoom: reelOverlayZoom, band: reelOverlayBand, cta: reelOverlayCta, bandColor: reelBandColor, textColor: reelTextColor, ctaBackground: reelCtaBackground, ctaColor: reelCtaColor, frameBackground: reelFrameBackground, frameTextColor: reelFrameTextColor, panX: reelPanX, panY: reelPanY },
@@ -1038,7 +1040,7 @@ export default function SiaAssistant({
                           <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-amber-200 text-xs font-black text-gray-900">
                             {reelProfileImage ? <img src={reelProfileImage} alt="Foto do perfil" className="h-full w-full object-cover" /> : currentStore.name.slice(0, 1).toUpperCase()}
                           </span>
-                          <div className="min-w-0 flex-1"><strong className="block truncate text-xs text-gray-900">{currentStore.name}</strong><span className="text-[10px] text-gray-500">{currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`}</span></div>
+                          <div className="min-w-0 flex-1"><strong className="block truncate text-xs text-gray-900">{reelProfileName || currentStore.name}</strong><span className="text-[10px] text-gray-500">{reelProfileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`}</span></div>
                           <label className="cursor-pointer rounded-lg border border-gray-200 px-3 py-2 text-[10px] font-bold text-gray-700 hover:bg-gray-50">Trocar foto<input type="file" accept="image/*" onChange={event => selectReelProfileImage(event.target.files?.[0])} className="hidden" /></label>
                         </div>
                       )}
@@ -1109,6 +1111,10 @@ export default function SiaAssistant({
                               <option value="bottom">Parte inferior do vídeo</option>
                             </select>
                           </div>
+                        </div>
+                        <div className="mt-3 grid gap-2 border-t border-gray-100 pt-3 sm:grid-cols-2">
+                          <input value={reelProfileName} onChange={event => { setReelProfileName(event.target.value); clearGeneratedReels(); }} placeholder="Nome do perfil no vídeo" className="h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-[11px] text-gray-900 outline-none focus:border-amber-400" />
+                          <input value={reelProfileHandle} onChange={event => { setReelProfileHandle(event.target.value); clearGeneratedReels(); }} placeholder="@usuario" className="h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-[11px] text-gray-900 outline-none focus:border-amber-400" />
                         </div>
 
                         {reelVariants.length > 0 && (

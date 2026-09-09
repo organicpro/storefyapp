@@ -42,7 +42,7 @@ import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { loadPublicStore, PublicStorePayload, savePublicStore } from './lib/publicStores';
 import { loadWorkspace, saveWorkspace } from './lib/workspaceSync';
 import { loadAccessProfile } from './lib/access';
-import { prioritizeGameProducts } from './lib/productPriority';
+import { applyDefaultGamePricing, prioritizeGameProducts } from './lib/productPriority';
 import { productFallbackImage } from './productImages';
 import { Product, StoreConfig, Supplier, UserAccessProfile } from './types';
 import { useLanguage } from './i18n/LanguageContext';
@@ -205,7 +205,7 @@ function reconcileProducts(sourceProducts?: Product[]) {
     ...customProducts,
     ...nonPhysicalProducts,
     ...baselineNonPhysical.filter(product => !knownNonPhysicalIds.has(product.id))
-  ];
+  ].map(applyDefaultGamePricing);
 
   return [
     ...mergedNonPhysical,

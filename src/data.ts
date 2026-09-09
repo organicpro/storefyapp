@@ -2,6 +2,7 @@ import { Product, Supplier, Niche, StoreConfig } from './types';
 import { VELODS_PHYSICAL_PRODUCTS } from './data/velodsPhysicalProducts';
 import { PHYSICAL_PRODUCTS_ENABLED } from './config/features';
 import { MEX_GAMES_PRODUCTS } from './data/mexGamesProducts';
+import { applyDefaultGamePricing } from './lib/productPriority';
 
 const VELODS_REMOTE_IMAGE_PRODUCTS: Product[] = VELODS_PHYSICAL_PRODUCTS.map(product => {
   const images = product.images?.map(image => ({
@@ -4508,7 +4509,7 @@ const INITIAL_PRODUCTS_BASE: Product[] = [
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
-  ...MEX_GAMES_PRODUCTS,
+  ...MEX_GAMES_PRODUCTS.map(applyDefaultGamePricing),
   ...(PHYSICAL_PRODUCTS_ENABLED
     ? VELODS_REMOTE_IMAGE_PRODUCTS
     : INITIAL_PRODUCTS_BASE.filter(product => product.category !== 'Achados Fisicos'))
