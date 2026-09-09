@@ -342,6 +342,12 @@ export default function SiaAssistant({
   const [generatedReels, setGeneratedReels] = useState<GeneratedProductReel[]>([]);
   const [reelOverlayText, setReelOverlayText] = useState('');
   const [reelOverlayPosition, setReelOverlayPosition] = useState<'top' | 'center' | 'bottom'>('center');
+  const [reelOverlayZoom, setReelOverlayZoom] = useState(1);
+  const [reelOverlayBand, setReelOverlayBand] = useState(true);
+  const [reelOverlayCta, setReelOverlayCta] = useState('Siga o perfil');
+  const [reelSourceText, setReelSourceText] = useState('');
+  const [reelTranslating, setReelTranslating] = useState(false);
+  const [reelCustomizerOpen, setReelCustomizerOpen] = useState(false);
   const [marketplaceImportUrl, setMarketplaceImportUrl] = useState('');
   const [marketplaceImportToken, setMarketplaceImportToken] = useState(0);
   const [processingStage, setProcessingStage] = useState('Analisando contexto');
@@ -865,7 +871,7 @@ export default function SiaAssistant({
         profileHandle: currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`,
         profileImageUrl: reelProfileImage,
         accent: currentStore.primaryColor || '#dfb52d',
-        overlay: reelOverlayText.trim() ? { text: reelOverlayText, position: reelOverlayPosition } : undefined,
+        overlay: { text: reelOverlayText, position: reelOverlayPosition, zoom: reelOverlayZoom, band: reelOverlayBand, cta: reelOverlayCta },
         onProgress: value => setReelProgress(Math.max(8, value))
       });
       setGeneratedReels(reels);
@@ -874,6 +880,29 @@ export default function SiaAssistant({
       setReelError(error instanceof Error ? error.message : 'Não foi possível gerar os Reels agora.');
     } finally {
       setReelGenerating(false);
+    }
+  };
+  const translateReelText = async () => {
+    if (!reelSourceText.trim()) {
+      setReelError('Cole primeiro o texto original do vídeo.');
+      return;
+    }
+    setReelTranslating(true);
+    setReelError('');
+    try {
+      const response = await fetch('/api/assistant/translate-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: reelSourceText, targetLanguage: 'português do Brasil' })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Não foi possível traduzir agora.');
+      setReelOverlayText(String(payload.translation || reelSourceText));
+      clearGeneratedReels();
+    } catch (error) {
+      setReelError(error instanceof Error ? error.message : 'Não foi possível traduzir agora.');
+    } finally {
+      setReelTranslating(false);
     }
   };
   const estimatedProfit = selectedProducts.reduce((sum, product) => sum + Math.max(0, product.salePrice - product.costPrice), 0);
@@ -1023,6 +1052,26 @@ export default function SiaAssistant({
                           )}
                           <input type="file" accept="video/*" onChange={event => selectReelVideo(event.target.files?.[0])} className="hidden" />
                         </label>
+
+                        <button type="button" onClick={() => setReelCustomizerOpen(true)} className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition hover:border-amber-300 hover:shadow-md">
+                          <span className="flex items-center gap-2"><Paintbrush size={16} className="text-amber-600" /><span><strong className="block text-xs text-gray-950">Abrir personalização do vídeo</strong><span className="mt-0.5 block text-[10px] text-gray-500">Ajuste texto, tradução, faixa e zoom antes de renderizar.</span></span></span><ChevronRight size={16} className="text-gray-400" />
+                        </button>
+
+                        {reelCustomizerOpen && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/45 p-4" role="dialog" aria-modal="true" aria-labelledby="reel-customizer-title">
+                            <div className="max-h-[min(760px,calc(100vh-32px))] w-full max-w-2xl overflow-y-auto rounded-2xl border border-amber-200 bg-white p-5 shadow-2xl">
+                              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-700">Editor de Reel</p><h3 id="reel-customizer-title" className="mt-1 text-lg font-black text-gray-950">Personalize cada detalhe</h3><p className="mt-1 text-xs text-gray-500">As escolhas serão aplicadas aos cinco vídeos.</p></div><button type="button" onClick={() => setReelCustomizerOpen(false)} aria-label="Fechar personalização" className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"><X size={18} /></button></div>
+                              <div className="mt-5 grid gap-4">
+                                <div><label className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500" htmlFor="reel-original-text">Texto original do vídeo</label><textarea id="reel-original-text" value={reelSourceText} onChange={event => setReelSourceText(event.target.value)} placeholder="Cole aqui o texto em inglês ou a legenda original..." className="mt-2 min-h-20 w-full resize-y rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-900 outline-none focus:border-amber-400" /><button type="button" onClick={() => void translateReelText()} disabled={reelTranslating} className="mt-2 inline-flex items-center gap-2 rounded-lg bg-[#111318] px-3 py-2 text-[11px] font-black text-white disabled:opacity-50"><Sparkles size={13} />{reelTranslating ? 'Traduzindo...' : 'Traduzir com a Ayla'}</button></div>
+                                <div><label className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500" htmlFor="reel-custom-text">Texto que aparecerá na faixa</label><textarea id="reel-custom-text" value={reelOverlayText} onChange={event => { setReelOverlayText(event.target.value); clearGeneratedReels(); }} placeholder="Digite a tradução ou uma nova frase..." className="mt-2 min-h-20 w-full resize-y rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-900 outline-none focus:border-amber-400" /></div>
+                                <div><label className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500" htmlFor="reel-custom-cta">Chamada para seguir o perfil</label><input id="reel-custom-cta" value={reelOverlayCta} onChange={event => { setReelOverlayCta(event.target.value); clearGeneratedReels(); }} placeholder="Ex.: Siga o perfil" className="mt-2 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-900 outline-none focus:border-amber-400" /><p className="mt-1 text-[10px] text-gray-500">Ex.: “Siga o perfil”. Deixe vazio para remover a faixa inferior.</p></div>
+                                <div className="grid gap-4 sm:grid-cols-2"><div><label className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500" htmlFor="reel-custom-position">Posição da faixa</label><select id="reel-custom-position" value={reelOverlayPosition} onChange={event => { setReelOverlayPosition(event.target.value as 'top' | 'center' | 'bottom'); clearGeneratedReels(); }} className="mt-2 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-800"><option value="top">Superior</option><option value="center">Centro</option><option value="bottom">Inferior</option></select></div><div><label className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500" htmlFor="reel-custom-zoom">Zoom do vídeo: {Math.round(reelOverlayZoom * 100)}%</label><input id="reel-custom-zoom" type="range" min="1" max="1.35" step="0.01" value={reelOverlayZoom} onChange={event => { setReelOverlayZoom(Number(event.target.value)); clearGeneratedReels(); }} className="mt-5 w-full accent-amber-500" /></div></div>
+                                <label className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-xs font-semibold text-gray-800"><input type="checkbox" checked={reelOverlayBand} onChange={event => { setReelOverlayBand(event.target.checked); clearGeneratedReels(); }} className="h-4 w-4 accent-amber-500" />Cobrir o texto original com faixa branca</label>
+                              </div>
+                              <div className="mt-5 flex justify-end"><button type="button" onClick={() => setReelCustomizerOpen(false)} className="rounded-lg bg-[#111318] px-4 py-2.5 text-xs font-black text-white">Aplicar personalização</button></div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
                           <div className="flex items-start gap-2">

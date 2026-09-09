@@ -20,7 +20,7 @@ const {
   rootAdminCode
 } = require('./_storefy-levels.cjs');
 const { handleMarketplacePreview } = require('./_storefy-marketplace-import.cjs');
-const { handleSiaChat, handleSiaReelCaptions } = require('./_storefy-sia.cjs');
+const { handleSiaChat, handleSiaReelCaptions, handleSiaTranslateText } = require('./_storefy-sia.cjs');
 
 export const config = { maxDuration: 60 };
 
@@ -111,6 +111,10 @@ export default function handler(req, res) {
   if (path === 'assistant/reel-captions') {
     if (method !== 'POST') return methodNotAllowed(res, ['POST']);
     return handleSiaReelCaptions(req, res);
+  }
+  if (path === 'assistant/translate-text') {
+    if (method !== 'POST') return methodNotAllowed(res, ['POST']);
+    return handleSiaTranslateText(req, res);
   }
 
   return res.status(404).json({ error: 'Rota nao encontrada.' });

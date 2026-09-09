@@ -21,6 +21,9 @@ type ProductReelInput = {
   overlay?: {
     text: string;
     position: 'top' | 'center' | 'bottom';
+    zoom?: number;
+    band?: boolean;
+    cta?: string;
   };
   onProgress?: (value: number) => void;
 };
@@ -69,14 +72,14 @@ function wrapText(context: CanvasRenderingContext2D, value: string, maxWidth: nu
   return lines;
 }
 
-function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoElement, x: number, y: number, width: number, height: number) {
+function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoElement, x: number, y: number, width: number, height: number, zoom = 1) {
   context.save();
   context.beginPath();
   context.roundRect(x, y, width, height, 18);
   context.clip();
   context.fillStyle = '#0b0d12';
   context.fillRect(x, y, width, height);
-  const ratio = Math.min(width / video.videoWidth, height / video.videoHeight);
+  const ratio = Math.max(width / video.videoWidth, height / video.videoHeight) * zoom;
   const drawWidth = video.videoWidth * ratio;
   const drawHeight = video.videoHeight * ratio;
   context.drawImage(video, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
@@ -120,10 +123,10 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   const videoTop = 226;
   const videoWidth = WIDTH - 48;
   const videoHeight = 570;
-  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight);
+  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight, input.overlay?.zoom || 1);
 
   const overlayText = input.overlay?.text.trim();
-  if (overlayText) {
+  if (overlayText && input.overlay?.band !== false) {
     context.font = '800 22px Arial';
     const overlayLines = wrapText(context, overlayText, WIDTH - 108, 3);
     const lineHeight = 27;
@@ -146,14 +149,17 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   context.font = '12px Arial';
   context.fillText(input.productName.slice(0, 64), 32, 834);
 
-  context.fillStyle = '#111318';
-  context.beginPath();
-  context.roundRect(32, 858, WIDTH - 64, 62, 15);
-  context.fill();
-  context.fillStyle = '#ffffff';
-  context.textAlign = 'center';
-  context.font = '700 18px Arial';
-  context.fillText(variant.cta, WIDTH / 2, 897);
+  const cta = (input.overlay?.cta ?? variant.cta).trim();
+  if (cta) {
+    context.fillStyle = '#111318';
+    context.beginPath();
+    context.roundRect(32, 858, WIDTH - 64, 62, 15);
+    context.fill();
+    context.fillStyle = '#ffffff';
+    context.textAlign = 'center';
+    context.font = '700 18px Arial';
+    context.fillText(cta.slice(0, 36), WIDTH / 2, 897);
+  }
 }
 
 export async function generateProductReels(input: ProductReelInput): Promise<GeneratedProductReel[]> {

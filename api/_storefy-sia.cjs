@@ -353,4 +353,42 @@ async function handleSiaReelCaptions(req, res) {
   }
 }
 
-module.exports = { handleSiaChat, handleSiaReelCaptions };
+async function handleSiaTranslateText(req, res) {
+  if (!hasValidOrigin(req)) return res.status(403).json({ error: "Origem não permitida." });
+  if (isRateLimited(req)) return res.status(429).json({ error: "Muitas traduções em pouco tempo. Aguarde um minuto." });
+  const text = cleanText(req.body?.text, 500);
+  const targetLanguage = cleanText(req.body?.targetLanguage, 40) || "português do Brasil";
+  if (!text) return res.status(400).json({ error: "Informe o texto que será traduzido." });
+  const apiKey = cleanText(process.env.GROQ_API_KEY, 500);
+  if (!apiKey) return res.json({ translation: text, provider: "manual", configured: false });
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  try {
+    const response = await fetch(GROQ_ENDPOINT, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: cleanText(process.env.GROQ_MODEL, 120) || DEFAULT_MODEL,
+        temperature: 0.2,
+        max_completion_tokens: 180,
+        messages: [{
+          role: "system",
+          content: `Traduza o texto para ${targetLanguage}. Preserve o sentido, o tom natural e o tamanho curto para uma legenda de Reel. Retorne somente a tradução, sem aspas ou explicações.`
+        }, { role: "user", content: text }]
+      })
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(payload?.error?.message || "A Groq não respondeu agora.");
+    const translation = cleanText(payload?.choices?.[0]?.message?.content, 500);
+    if (!translation) throw new Error("A tradução veio vazia.");
+    return res.json({ translation, provider: "groq", configured: true });
+  } catch {
+    return res.json({ translation: text, provider: "manual", configured: true, degraded: true });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+module.exports = { handleSiaChat, handleSiaReelCaptions, handleSiaTranslateText };
