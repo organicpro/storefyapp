@@ -28,6 +28,8 @@ type ProductReelInput = {
     textColor?: string;
     ctaBackground?: string;
     ctaColor?: string;
+    frameBackground?: string;
+    frameTextColor?: string;
     panX?: number;
     panY?: number;
   };
@@ -95,7 +97,7 @@ function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoE
 }
 
 function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElement, variant: ReelTextVariant, input: ProductReelInput, avatar: HTMLImageElement | null) {
-  context.fillStyle = '#ffffff';
+  context.fillStyle = input.overlay?.frameBackground || '#ffffff';
   context.fillRect(0, 0, WIDTH, HEIGHT);
   context.fillStyle = input.accent || '#dfb52d';
   context.fillRect(0, 0, WIDTH, 7);
@@ -116,14 +118,14 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   context.restore();
 
   context.textAlign = 'left';
-  context.fillStyle = '#111318';
+  context.fillStyle = input.overlay?.frameTextColor || '#111318';
   context.font = '700 16px Arial';
   context.fillText(input.profileName || 'Storefy', 86, 45);
-  context.fillStyle = '#6b7280';
+  context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
   context.font = '13px Arial';
   context.fillText(input.profileHandle || '@storefy', 86, 66);
 
-  context.fillStyle = '#111318';
+  context.fillStyle = input.overlay?.frameTextColor || '#111318';
   context.font = '800 30px Arial';
   const hookLines = wrapText(context, variant.hook, WIDTH - 64, 3);
   hookLines.forEach((line, index) => context.fillText(line, 32, 126 + index * 35));
@@ -153,7 +155,7 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
     overlayLines.forEach((line, index) => context.fillText(line, WIDTH / 2, bandY + 27 + index * lineHeight));
   }
 
-  context.fillStyle = '#6b7280';
+  context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
   context.font = '12px Arial';
   context.fillText(input.productName.slice(0, 64), 32, 834);
 
