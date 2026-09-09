@@ -18,6 +18,7 @@ import {
 import { Product, MainCategory, Supplier } from '../types';
 import { productFallbackImage } from '../productImages';
 import MarketplaceImporter, { MarketplaceImportInput } from './MarketplaceImporter';
+import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
 
 const PAGE_SIZE = 48;
 
@@ -39,7 +40,7 @@ export default function ProductCatalog({
   onImportProduct
 }: ProductCatalogProps) {
   // Filters state
-  const [activeTab, setActiveTab] = useState<MainCategory | 'Todos'>('Achados Fisicos');
+  const [activeTab, setActiveTab] = useState<MainCategory | 'Todos'>(PHYSICAL_PRODUCTS_ENABLED ? 'Achados Fisicos' : 'Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'added' | 'not-added'>('all');
@@ -54,7 +55,7 @@ export default function ProductCatalog({
   const [simulatedFileUploading, setSimulatedFileUploading] = useState(false);
   const [brokenImageIds, setBrokenImageIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
-  const physicalProductsCount = products.filter(product => product.category === 'Achados Fisicos').length;
+  const availableMainCategories = useMemo(() => Array.from(new Set(products.map(product => product.category))), [products]);
 
   // Filter products logic
   const productsMatchingMainFilters = useMemo(() => products.filter(product => {
@@ -173,11 +174,11 @@ export default function ProductCatalog({
         <div>
           <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Catálogo de Produtos</h1>
           <p className="text-[14px] text-gray-500 mt-1 leading-relaxed">
-            Escolha as melhores ofertas dos fornecedores, veja quanto você paga e defina o valor de venda da sua vitrine. {physicalProductsCount} produtos físicos carregados.
+            Escolha produtos digitais, defina sua margem e organize o que entra na vitrine. {products.length} itens disponíveis.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <MarketplaceImporter onImportProduct={onImportProduct} />
+          {PHYSICAL_PRODUCTS_ENABLED && <MarketplaceImporter onImportProduct={onImportProduct} />}
           <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 shadow-sm select-none whitespace-nowrap">
             <CheckCircle className="w-4 h-4 text-emerald-600" />
             <span className="text-[13px] font-bold text-emerald-800">{products.filter(p => p.addedToStore).length} ativos na vitrine</span>
@@ -250,8 +251,8 @@ export default function ProductCatalog({
         </div>
 
         {/* Categories Tab Navigation */}
-        <div className="border-t border-gray-100 pt-4 flex flex-wrap gap-2">
-          {(['Todos', 'Games', 'Redes Sociais', 'Assinaturas Digitais', 'Infoprodutos', 'Achados Fisicos'] as const).map((tab) => (
+        {availableMainCategories.length > 1 && <div className="border-t border-gray-100 pt-4 flex flex-wrap gap-2">
+          {(['Todos', ...availableMainCategories] as Array<MainCategory | 'Todos'>).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -264,7 +265,7 @@ export default function ProductCatalog({
               {tab}
             </button>
           ))}
-        </div>
+        </div>}
 
         {availableSubcategories.length > 1 && (
           <div className="border-t border-gray-100 pt-4">

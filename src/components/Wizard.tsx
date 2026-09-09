@@ -29,6 +29,7 @@ import {
 import { Niche, Product, StoreConfig } from '../types';
 import { NICHES } from '../data';
 import MarketplaceImporter, { MarketplaceImportInput } from './MarketplaceImporter';
+import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
 
 interface WizardProps {
   products: Product[];
@@ -490,7 +491,7 @@ export default function Wizard({
             <span className="font-sans text-gray-500">Exibindo {recommendedProducts.length} recomendações</span>
           </div>
 
-          <MarketplaceImporter onImportProduct={onImportProduct} variant="setup" />
+          {PHYSICAL_PRODUCTS_ENABLED && <MarketplaceImporter onImportProduct={onImportProduct} variant="setup" />}
 
           <form onSubmit={handleCreateCustomProduct} className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left shadow-sm">
             <div className="flex items-start gap-3">

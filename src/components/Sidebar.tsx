@@ -5,6 +5,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
 
 interface SidebarProps {
   activePage: string;
@@ -54,9 +55,13 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
   ];
 
   const productItems: NavItemConfig[] = [
-    { id: 'ranking', label: 'Ranking', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ChartVerticalFilledIcon.svg' },
+    ...(PHYSICAL_PRODUCTS_ENABLED ? [
+      { id: 'ranking', label: 'Ranking', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ChartVerticalFilledIcon.svg' },
+    ] : []),
     { id: 'products', label: t('sidebar.products'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ProductFilledIcon.svg' },
-    { id: 'suppliers', label: t('sidebar.suppliers'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/DeliveryFilledIcon.svg' },
+    ...(PHYSICAL_PRODUCTS_ENABLED ? [
+      { id: 'suppliers', label: t('sidebar.suppliers'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/DeliveryFilledIcon.svg' },
+    ] : []),
   ];
 
   const NavItem: React.FC<{ item: NavItemConfig }> = ({ item }) => {

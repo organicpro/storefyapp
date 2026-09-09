@@ -11,6 +11,7 @@ import OperationStudio from './OperationStudio';
 import { downloadBlob, type VideoFormat } from '../lib/operation';
 import { generateProductReels, type GeneratedProductReel, type ReelTextVariant } from '../lib/productReels';
 import type { Product, StoreConfig } from '../types';
+import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
 
 type ChatMessage = {
   id: string;
@@ -211,7 +212,7 @@ function inferNicheId(value: string, fallback: string) {
   if (/instagram|tiktok|seguidor|rede social|youtube/.test(text)) return 'redes-sociais';
   if (/assinatura|streaming|netflix|spotify|chatgpt|canva/.test(text)) return 'assinaturas-digitais';
   if (/ebook|curso|renda extra|infoproduto|template/.test(text)) return 'infoprodutos';
-  if (/físico|fisico|casa|beleza|eletrônico|eletronico|achado|drop/.test(text)) return 'physical-finds';
+  if (PHYSICAL_PRODUCTS_ENABLED && /físico|fisico|casa|beleza|eletrônico|eletronico|achado|drop/.test(text)) return 'physical-finds';
   return fallback;
 }
 
@@ -608,7 +609,7 @@ export default function SiaAssistant({
     const pastedMarketplaceUrl = value.match(/https?:\/\/[^\s]+/i)?.[0] || '';
     const hasMarketplaceUrl = /(?:mercadolivre|mercadolivre\.com|meli\.la|shopee|shp\.ee)/i.test(pastedMarketplaceUrl);
     const requestsMarketplaceImport = /(?:adicionar|colocar|importar|por|trazer|cadastrar|quero).{0,40}(?:produto|item).{0,40}(?:mercado livre|mercadolivre|\bml\b|shopee)|(?:mercado livre|mercadolivre|\bml\b|shopee).{0,40}(?:produto|item|adicionar|importar)/i.test(value);
-    if (assistantMode === 'current' && (hasMarketplaceUrl || requestsMarketplaceImport)) {
+    if (PHYSICAL_PRODUCTS_ENABLED && assistantMode === 'current' && (hasMarketplaceUrl || requestsMarketplaceImport)) {
       setMarketplaceImportUrl(hasMarketplaceUrl ? pastedMarketplaceUrl : '');
       setMarketplaceImportToken(current => current + 1);
       setMessages(current => [...current, makeMessage('assistant', hasMarketplaceUrl
@@ -875,7 +876,7 @@ export default function SiaAssistant({
 
   return (
     <section className="relative mx-auto flex h-[calc(100vh-105px)] min-h-[560px] max-w-[1500px] overflow-hidden bg-[#f7f7f8]">
-      <MarketplaceImporter
+      {PHYSICAL_PRODUCTS_ENABLED && <MarketplaceImporter
         hideTrigger
         initialUrl={marketplaceImportUrl}
         autoOpenToken={marketplaceImportToken}
@@ -890,7 +891,7 @@ export default function SiaAssistant({
             ? `“${product.name}” foi importado, recebeu margem de ${product.marginPercent}% e entrou na seleção da nova loja.`
             : `“${product.name}” foi importado e adicionado à loja atual com margem de ${product.marginPercent}%.`)]);
         }}
-      />
+      />}
       <div className="flex min-w-0 flex-1 flex-col">
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 pb-44 pt-5 sm:px-6 sm:pb-48">
           <div className="mx-auto max-w-5xl space-y-7">

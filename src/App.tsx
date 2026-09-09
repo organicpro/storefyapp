@@ -45,8 +45,9 @@ import { loadAccessProfile } from './lib/access';
 import { productFallbackImage } from './productImages';
 import { Product, StoreConfig, Supplier, UserAccessProfile } from './types';
 import { useLanguage } from './i18n/LanguageContext';
+import { PHYSICAL_PRODUCTS_ENABLED, isPhysicalCategory } from './config/features';
 
-const DATA_VERSION = '2026-08-16-velods-846-v2';
+const DATA_VERSION = '2026-09-08-catalogo-digital-v1';
 const STOREFY_LOGO_URL = '/storefy-logo.png';
 const LEGACY_STOREFY_LOGO_URL = 'https://i.imgur.com/nUsczZV.png';
 
@@ -54,6 +55,19 @@ function normalizeStoreLogoUrl(logoUrl?: string) {
   const value = (logoUrl || '').trim();
   if (value === LEGACY_STOREFY_LOGO_URL || value === STOREFY_LOGO_URL) return '';
   return value;
+}
+
+function compactStoreCopy(value: string | undefined, maxLength = 180) {
+  const clean = String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/^(descricao|historia do jogo|caracteristicas|ficha tecnica)\s*[:\-]?\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (clean.length <= maxLength) return clean;
+
+  const firstSentence = clean.match(/^.{40,}?\.(?=\s|$)/)?.[0];
+  if (firstSentence && firstSentence.length <= maxLength) return firstSentence;
+  return `${clean.slice(0, maxLength).replace(/\s+\S*$/, '').trim()}...`;
 }
 
 function getAccountDisplayName(session: Session | null, localAccountName = '') {
@@ -89,6 +103,8 @@ const STORAGE_KEYS = {
   localAuth: 'storefy.auth.local',
   publicStores: 'storefy.publicStores'
 };
+
+const allowUnauthenticated = import.meta.env.VITE_ALLOW_UNAUTHENTICATED === 'true';
 
 type StoreSite = StoreConfig & { id: string };
 
@@ -170,7 +186,8 @@ const physicalBaselineById = new Map(
 );
 
 function reconcileProducts(sourceProducts?: Product[]) {
-  const storedProducts = Array.isArray(sourceProducts) ? sourceProducts : [];
+  const storedProducts = (Array.isArray(sourceProducts) ? sourceProducts : [])
+    .filter(product => PHYSICAL_PRODUCTS_ENABLED || !isPhysicalCategory(product.category));
   const physicalOverrides = new Map(
     storedProducts
       .filter(product => product.category === 'Achados Fisicos' && !isCustomProduct(product))
@@ -208,7 +225,7 @@ function reconcileProducts(sourceProducts?: Product[]) {
 }
 
 function productsForPersistence(products: Product[]) {
-  return products.flatMap(product => {
+  return products.filter(product => PHYSICAL_PRODUCTS_ENABLED || !isPhysicalCategory(product.category)).flatMap(product => {
     if (isCustomProduct(product) || product.category !== 'Achados Fisicos') return [product];
 
     const baseline = physicalBaselineById.get(product.id);
@@ -430,10 +447,10 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
   const leadProductName = leadProduct?.name || primaryCollection;
   const heroCategoryLabel = storefrontVoice.label;
   const genericStoreName = /^(loja live|storefy loja|storefy digital|minha loja)$/i.test(config.name.trim());
-  const heroTitle = looksLikeGeneratedStoreCopy(rawHeroTitle) ? (genericStoreName ? primaryCollection : config.name) : rawHeroTitle;
+  const heroTitle = looksLikeGeneratedStoreCopy(rawHeroTitle) ? (genericStoreName ? primaryCollection : config.name) : compactStoreCopy(rawHeroTitle, 64);
   const heroSubtitle = looksLikeGeneratedStoreCopy(rawHeroSubtitle)
     ? storefrontVoice.subtitle(primaryCollection, activeProducts.length, leadProductName)
-    : rawHeroSubtitle;
+    : compactStoreCopy(rawHeroSubtitle, 170);
   const productCountLabel = activeProducts.length === 1 ? 'produto' : 'produtos';
   const whatsappFor = (product?: Product) => {
     const text = product ? `Ola! Quero comprar: ${product.name} - ${formatPublicPrice(product.salePrice)}` : config.welcomeMessage;
@@ -443,7 +460,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
     const importedDescription = (product.descriptionText || product.descriptionHtml?.replace(/<[^>]*>/g, ' ') || '')
       .replace(/\s+/g, ' ')
       .trim();
-    if (importedDescription) return importedDescription.slice(0, 520);
+    if (importedDescription) return compactStoreCopy(importedDescription, 190);
     if (product.category === 'Achados Fisicos') return 'Veja foto, preco e detalhes antes de chamar a loja para confirmar disponibilidade.';
     if (product.category === 'Infoprodutos') return 'Material digital com tema claro, valor visivel e entrega combinada pela loja.';
     if (product.category === 'Assinaturas Digitais') return 'Assinatura ou acesso digital com valor visivel e ativacao confirmada no atendimento.';
@@ -491,7 +508,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
     };
   });
   const firstShareImage = storefrontProducts.find(product => product.imageUrl && !product.imageUrl.startsWith('data:'))?.imageUrl || normalizedLogoUrl;
-  const seoDescription = heroSubtitle || `Catalogo da loja ${config.name} com produtos selecionados e atendimento direto.`;
+  const seoDescription = compactStoreCopy(heroSubtitle || `Catalogo da loja ${config.name} com produtos selecionados e atendimento direto.`, 170);
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -818,7 +835,7 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [accessProfile, setAccessProfile] = useState<UserAccessProfile | null>(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
-  const [localAccess, setLocalAccess] = useState(() => readStorage<boolean>(STORAGE_KEYS.localAuth, false));
+  const [localAccess, setLocalAccess] = useState(() => allowUnauthenticated || readStorage<boolean>(STORAGE_KEYS.localAuth, false));
   const [localAccountName, setLocalAccountName] = useState(() => readStorage<string>(STORAGE_KEYS.accountName, ''));
   const [workspaceReady, setWorkspaceReady] = useState(false);
   const publicStoreSlug = useMemo(() => {
@@ -1021,6 +1038,7 @@ function App() {
   };
 
   const handleNavigate = (page: string) => {
+    if (!PHYSICAL_PRODUCTS_ENABLED && (page === 'ranking' || page === 'suppliers')) page = 'products';
     const path = page === 'admin-codes' ? '/admin/codigos' : page === 'invites' ? '/convites' : '/';
     if (window.location.pathname !== path) window.history.pushState({}, '', path);
     setActivePage(page);
@@ -1477,7 +1495,7 @@ function App() {
     );
   }
 
-  if (!session && (!localAccess || isSupabaseConfigured)) {
+  if (!session && !localAccess) {
     return <LoginScreen onLocalAccess={handleLocalAccess} />;
   }
 
