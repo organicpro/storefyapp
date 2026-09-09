@@ -268,9 +268,19 @@ async function handleSiaChat(req, res) {
   }
 }
 
-function fallbackReelVariants(productName, storeName) {
+function fallbackReelVariants(productName, storeName, captionContext = '') {
   const product = cleanText(productName, 80) || "esse produto";
   const store = cleanText(storeName, 60) || "nossa vitrine";
+  const context = cleanText(captionContext, 90);
+  if (context) {
+    return [
+      { hook: context, cta: `Veja na ${store}` },
+      { hook: `Você também reparou nisso? ${context}`, cta: "Confira na vitrine" },
+      { hook: `O que essa cena mostra: ${context}`, cta: "Veja os detalhes" },
+      { hook: `Esse detalhe muda a forma de ver ${product}`, cta: "Chame no WhatsApp" },
+      { hook: `Entenda antes de escolher ${product}`, cta: "Acesse a loja agora" }
+    ].map(item => ({ ...item, hook: item.hook.slice(0, 68) }));
+  }
   return [
     { hook: `Você precisa ver o que ${product} pode fazer`, cta: `Veja na ${store}` },
     { hook: "Eu não sabia que isso existia até agora", cta: "Confira o valor na vitrine" },
@@ -289,7 +299,8 @@ async function handleSiaReelCaptions(req, res) {
   const price = Number(req.body?.product?.price || 0);
   const storeName = cleanText(req.body?.store?.name, 100);
   const niche = cleanText(req.body?.store?.niche, 100);
-  const fallback = fallbackReelVariants(productName, storeName);
+  const captionContext = cleanText(req.body?.captionContext, 240);
+  const fallback = fallbackReelVariants(productName, storeName, captionContext);
   const apiKey = cleanText(process.env.GROQ_API_KEY, 500);
 
   if (!apiKey) return res.json({ variants: fallback, provider: "local", configured: false });
@@ -320,7 +331,9 @@ async function handleSiaReelCaptions(req, res) {
             `Nicho: ${niche || "geral"}`,
             `Produto: ${productName || "oferta geral"}`,
             `Descrição disponível: ${productDescription || "não informada"}`,
-            `Preço disponível: ${price > 0 ? `R$ ${price.toFixed(2)}` : "não informado"}`
+            `Preço disponível: ${price > 0 ? `R$ ${price.toFixed(2)}` : "não informado"}`,
+            `Texto já presente no vídeo ou orientação manual: ${captionContext || "não informado"}`,
+            "Se houver texto de referência, mantenha a ideia central e crie cinco variações realmente relacionadas a ele, sem trocar o assunto."
           ].join("\n")
         }]
       })

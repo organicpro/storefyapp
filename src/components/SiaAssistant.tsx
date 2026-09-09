@@ -70,9 +70,19 @@ const MEMORY_STORAGE_KEY = 'storefy.nala.memory.v1';
 const FLOW_STORAGE_KEY = 'storefy.nala.store-flow.v1';
 const LEGACY_CHAT_STORAGE_KEY = 'storefy.sia.messages.v1';
 
-const createLocalReelVariants = (productName: string, storeName: string): ReelTextVariant[] => {
+const createLocalReelVariants = (productName: string, storeName: string, captionContext = ''): ReelTextVariant[] => {
   const product = productName.trim().slice(0, 72) || 'esse produto';
   const store = storeName.trim().slice(0, 48) || 'nossa vitrine';
+  const context = captionContext.trim().slice(0, 68);
+  if (context) {
+    return [
+      { hook: context, cta: `Veja na ${store}` },
+      { hook: `Você também reparou nisso? ${context}`.slice(0, 68), cta: 'Confira na vitrine' },
+      { hook: `O que essa cena mostra: ${context}`.slice(0, 68), cta: 'Veja os detalhes' },
+      { hook: `Esse detalhe muda a forma de ver ${product}`.slice(0, 68), cta: 'Chame no WhatsApp' },
+      { hook: `Entenda antes de escolher ${product}`.slice(0, 68), cta: 'Acesse a loja agora' }
+    ];
+  }
   return [
     { hook: `Você precisa ver ${product} em ação`, cta: `Veja na ${store}` },
     { hook: 'Eu não sabia que isso facilitava tanto a rotina', cta: 'Confira na vitrine' },
@@ -330,6 +340,8 @@ export default function SiaAssistant({
   const [reelError, setReelError] = useState('');
   const [reelVariants, setReelVariants] = useState<ReelTextVariant[]>([]);
   const [generatedReels, setGeneratedReels] = useState<GeneratedProductReel[]>([]);
+  const [reelOverlayText, setReelOverlayText] = useState('');
+  const [reelOverlayPosition, setReelOverlayPosition] = useState<'top' | 'center' | 'bottom'>('center');
   const [marketplaceImportUrl, setMarketplaceImportUrl] = useState('');
   const [marketplaceImportToken, setMarketplaceImportToken] = useState(0);
   const [processingStage, setProcessingStage] = useState('Analisando contexto');
@@ -807,10 +819,6 @@ export default function SiaAssistant({
   };
   const generateFiveProductReels = async () => {
     const product = products.find(item => item.id === creativeProductId);
-    if (!product) {
-      setReelError('Escolha o produto que aparece no vídeo.');
-      return;
-    }
     if (!reelVideoFile) {
       setReelError('Envie o vídeo original do produto.');
       return;
@@ -820,7 +828,8 @@ export default function SiaAssistant({
     setReelProgress(2);
     setReelError('');
     try {
-      let variants = createLocalReelVariants(product.name, currentStore.name);
+      const creativeName = product?.name || 'oferta da loja';
+      let variants = createLocalReelVariants(creativeName, currentStore.name, reelOverlayText);
       const captionController = new AbortController();
       const captionTimeout = window.setTimeout(() => captionController.abort(), 9000);
       try {
@@ -829,8 +838,9 @@ export default function SiaAssistant({
           signal: captionController.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            product: { name: product.name, description: product.descriptionText || '', price: product.salePrice },
-            store: { name: currentStore.name, niche: currentStore.niche }
+            product: product ? { name: product.name, description: product.descriptionText || '', price: product.salePrice } : { name: creativeName, description: '', price: 0 },
+            store: { name: currentStore.name, niche: currentStore.niche },
+            captionContext: reelOverlayText.trim()
           })
         });
         const payload = await response.json().catch(() => ({}));
@@ -850,11 +860,12 @@ export default function SiaAssistant({
       const reels = await generateProductReels({
         videoFile: reelVideoFile,
         variants,
-        productName: product.name,
+        productName: creativeName,
         profileName: currentStore.name,
         profileHandle: currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`,
         profileImageUrl: reelProfileImage,
         accent: currentStore.primaryColor || '#dfb52d',
+        overlay: reelOverlayText.trim() ? { text: reelOverlayText, position: reelOverlayPosition } : undefined,
         onProgress: value => setReelProgress(Math.max(8, value))
       });
       setGeneratedReels(reels);
@@ -978,12 +989,12 @@ export default function SiaAssistant({
                 ) : (
                   <div className="p-3 sm:p-4">
                     <div className="mb-3 rounded-xl border border-gray-200 bg-white p-3">
-                      <label htmlFor="nala-creative-product" className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500">Produto do criativo</label>
+                      <label htmlFor="nala-creative-product" className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-500">Contexto do criativo</label>
                       <select id="nala-creative-product" value={creativeProductId} onChange={event => chooseCreativeProduct(event.target.value)} className="mt-2 h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-xs font-semibold text-gray-800 outline-none focus:border-amber-400">
-                        <option value="">Oferta geral da loja</option>
+                        <option value="">Oferta geral da loja (sem produto específico)</option>
                         {currentStoreProducts.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}
                       </select>
-                      <p className="mt-2 text-[10px] text-gray-500">A Ayla usa o produto escolhido para preparar automaticamente a chamada do vídeo.</p>
+                      <p className="mt-2 text-[10px] text-gray-500">Escolha um produto para contextualizar ou use a oferta geral para criar um vídeo institucional.</p>
                       {creativeMode === 'frame' && (
                         <div className="mt-3 flex items-center gap-3 border-t border-gray-100 pt-3">
                           <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-amber-200 text-xs font-black text-gray-900">
@@ -1012,6 +1023,30 @@ export default function SiaAssistant({
                           )}
                           <input type="file" accept="video/*" onChange={event => selectReelVideo(event.target.files?.[0])} className="hidden" />
                         </label>
+
+                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                          <div className="flex items-start gap-2">
+                            <Paintbrush size={15} className="mt-0.5 shrink-0 text-amber-700" />
+                            <div>
+                              <strong className="text-xs text-gray-950">Editar texto que já está no vídeo</strong>
+                              <p className="mt-1 text-[10px] leading-relaxed text-gray-600">Digite a tradução ou a nova frase. A Ayla cobre o texto original com uma faixa branca e aplica a versão corrigida nos cinco Reels.</p>
+                            </div>
+                          </div>
+                          <input
+                            value={reelOverlayText}
+                            onChange={event => { setReelOverlayText(event.target.value); clearGeneratedReels(); }}
+                            placeholder="Ex.: Você também faria essa mudança?"
+                            className="mt-3 h-10 w-full rounded-lg border border-amber-200 bg-white px-3 text-xs text-gray-900 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100"
+                          />
+                          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <label className="text-[10px] font-bold text-gray-600" htmlFor="reel-overlay-position">Posição da faixa</label>
+                            <select id="reel-overlay-position" value={reelOverlayPosition} onChange={event => { setReelOverlayPosition(event.target.value as 'top' | 'center' | 'bottom'); clearGeneratedReels(); }} className="h-8 rounded-lg border border-amber-200 bg-white px-2 text-[11px] font-semibold text-gray-800 outline-none focus:border-amber-400">
+                              <option value="top">Parte superior do vídeo</option>
+                              <option value="center">Centro do vídeo</option>
+                              <option value="bottom">Parte inferior do vídeo</option>
+                            </select>
+                          </div>
+                        </div>
 
                         {reelVariants.length > 0 && (
                           <div className="grid gap-2 sm:grid-cols-5">

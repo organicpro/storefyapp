@@ -18,6 +18,10 @@ type ProductReelInput = {
   profileHandle: string;
   profileImageUrl?: string;
   accent: string;
+  overlay?: {
+    text: string;
+    position: 'top' | 'center' | 'bottom';
+  };
   onProgress?: (value: number) => void;
 };
 
@@ -114,7 +118,29 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   hookLines.forEach((line, index) => context.fillText(line, 32, 126 + index * 35));
 
   const videoTop = 226;
-  drawVideoContained(context, video, 24, videoTop, WIDTH - 48, 570);
+  const videoWidth = WIDTH - 48;
+  const videoHeight = 570;
+  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight);
+
+  const overlayText = input.overlay?.text.trim();
+  if (overlayText) {
+    context.font = '800 22px Arial';
+    const overlayLines = wrapText(context, overlayText, WIDTH - 108, 3);
+    const lineHeight = 27;
+    const bandHeight = overlayLines.length * lineHeight + 28;
+    const bandY = input.overlay?.position === 'top'
+      ? videoTop + 34
+      : input.overlay?.position === 'bottom'
+        ? videoTop + videoHeight - bandHeight - 34
+        : videoTop + (videoHeight - bandHeight) / 2;
+    context.fillStyle = 'rgba(255,255,255,.96)';
+    context.beginPath();
+    context.roundRect(42, bandY, WIDTH - 84, bandHeight, 14);
+    context.fill();
+    context.fillStyle = '#111318';
+    context.textAlign = 'center';
+    overlayLines.forEach((line, index) => context.fillText(line, WIDTH / 2, bandY + 27 + index * lineHeight));
+  }
 
   context.fillStyle = '#6b7280';
   context.font = '12px Arial';
