@@ -125,27 +125,21 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   context.font = '13px Arial';
   context.fillText(input.profileHandle || '@storefy', 86, 66);
 
-  context.fillStyle = input.overlay?.frameTextColor || '#111318';
-  context.font = '800 30px Arial';
-  const hookLines = wrapText(context, variant.hook, WIDTH - 64, 3);
-  hookLines.forEach((line, index) => context.fillText(line, 32, 126 + index * 35));
-
-  const videoTop = 226;
-  const videoWidth = WIDTH - 48;
-  const videoHeight = 570;
-  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight, input.overlay?.zoom || 1, input.overlay?.panX || 0, input.overlay?.panY || 0);
-
   const overlayText = input.overlay?.text.trim();
-  if (overlayText && input.overlay?.band !== false) {
+  const overlayEnabled = Boolean(overlayText && input.overlay?.band !== false);
+  const overlayAtTop = overlayEnabled && input.overlay?.position === 'top';
+  let bandHeight = 0;
+  let bandY = 0;
+  if (overlayEnabled) {
     context.font = '800 22px Arial';
     const overlayLines = wrapText(context, overlayText, WIDTH - 108, 3);
     const lineHeight = 27;
-    const bandHeight = overlayLines.length * lineHeight + 28;
-    const bandY = input.overlay?.position === 'top'
-      ? videoTop + 34
+    bandHeight = overlayLines.length * lineHeight + 28;
+    bandY = overlayAtTop
+      ? 86
       : input.overlay?.position === 'bottom'
-        ? videoTop + videoHeight - bandHeight - 34
-        : videoTop + (videoHeight - bandHeight) / 2;
+        ? 226 + 570 - bandHeight - 34
+        : 226 + (570 - bandHeight) / 2;
     context.fillStyle = input.overlay?.bandColor || 'rgba(255,255,255,.96)';
     context.beginPath();
     context.roundRect(42, bandY, WIDTH - 84, bandHeight, 14);
@@ -154,6 +148,18 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
     context.textAlign = 'center';
     overlayLines.forEach((line, index) => context.fillText(line, WIDTH / 2, bandY + 27 + index * lineHeight));
   }
+
+  context.textAlign = 'left';
+  context.fillStyle = input.overlay?.frameTextColor || '#111318';
+  context.font = '800 30px Arial';
+  const hookLines = wrapText(context, variant.hook, WIDTH - 64, 3);
+  const hookTop = overlayAtTop ? 146 + Math.min(42, bandHeight) : 126;
+  hookLines.forEach((line, index) => context.fillText(line, 32, hookTop + index * 35));
+
+  const videoTop = overlayAtTop ? 250 : 226;
+  const videoHeight = overlayAtTop ? 546 : 570;
+  const videoWidth = WIDTH - 48;
+  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight, input.overlay?.zoom || 1, input.overlay?.panX || 0, input.overlay?.panY || 0);
 
   context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
   context.font = '12px Arial';
