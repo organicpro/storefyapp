@@ -1141,6 +1141,22 @@ export default function SiaAssistant({
                                 </article>
                               ))}
                             </div>
+                            <div className="mt-5 overflow-hidden rounded-xl border border-amber-200 bg-[linear-gradient(115deg,#fffdf3_0%,#ffffff_52%,#f4fbff_100%)]">
+                              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex min-w-0 items-start gap-3">
+                                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#111318] text-amber-300"><Store size={18} /></span>
+                                  <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-700">Próximo passo recomendado</p>
+                                    <strong className="mt-1 block text-sm text-gray-950">Seu conteúdo já está pronto. Quer criar a loja agora?</strong>
+                                    <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-gray-500">A Ayla organiza a vitrine, conecta seus produtos e prepara o link para você colocar na bio do Instagram ou TikTok.</p>
+                                  </div>
+                                </div>
+                                <div className="flex shrink-0 flex-col gap-2 sm:min-w-44">
+                                  <button type="button" onClick={startStoreFlow} className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#111318] px-3 py-2.5 text-[11px] font-black text-white transition hover:bg-gray-800"><Store size={14} /> Criar minha loja</button>
+                                  <button type="button" onClick={() => onNavigate('promotion')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-[11px] font-bold text-gray-700 transition hover:border-amber-300 hover:bg-amber-50"><Rocket size={14} /> Ir para divulgação</button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
