@@ -1,5 +1,7 @@
 import { Product, Supplier, Niche, StoreConfig } from './types';
 import { VELODS_PHYSICAL_PRODUCTS } from './data/velodsPhysicalProducts';
+import { PHYSICAL_PRODUCTS_ENABLED } from './config/features';
+import { MEX_GAMES_PRODUCTS } from './data/mexGamesProducts';
 
 const VELODS_REMOTE_IMAGE_PRODUCTS: Product[] = VELODS_PHYSICAL_PRODUCTS.map(product => {
   const images = product.images?.map(image => ({
@@ -15,25 +17,7 @@ const VELODS_REMOTE_IMAGE_PRODUCTS: Product[] = VELODS_PHYSICAL_PRODUCTS.map(pro
   };
 });
 
-export const INITIAL_SUPPLIERS: Supplier[] = [
-  {
-    "id": "gamemarket",
-    "name": "GameMarket",
-    "rating": 4.8,
-    "deliveryRate": "98.7%",
-    "category": "Games, Redes Sociais, Assinaturas Digitais",
-    "productsCount": 157,
-    "featured": true
-  },
-  {
-    "id": "storefy-curadoria",
-    "name": "Storefy Curadoria",
-    "rating": 4.9,
-    "deliveryRate": "100%",
-    "category": "Infoprodutos",
-    "productsCount": 8,
-    "featured": true
-  },
+const PHYSICAL_SUPPLIERS: Supplier[] = [
   {
     "id": "c7drop",
     "name": "C7 Drop",
@@ -44,6 +28,8 @@ export const INITIAL_SUPPLIERS: Supplier[] = [
     "featured": true
   }
 ];
+
+export const INITIAL_SUPPLIERS: Supplier[] = PHYSICAL_PRODUCTS_ENABLED ? PHYSICAL_SUPPLIERS : [];
 
 export const NICHES: Niche[] = [
   {
@@ -127,7 +113,7 @@ export const NICHES: Niche[] = [
       "Beleza e Cuidados"
     ]
   }
-];
+].filter(niche => PHYSICAL_PRODUCTS_ENABLED || niche.id !== 'physical-finds');
 
 const INITIAL_PRODUCTS_BASE: Product[] = [
   {
@@ -4517,8 +4503,10 @@ const INITIAL_PRODUCTS_BASE: Product[] = [
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
-  ...INITIAL_PRODUCTS_BASE.filter(product => product.category !== 'Achados Fisicos'),
-  ...VELODS_REMOTE_IMAGE_PRODUCTS
+  ...MEX_GAMES_PRODUCTS,
+  ...(PHYSICAL_PRODUCTS_ENABLED
+    ? VELODS_REMOTE_IMAGE_PRODUCTS
+    : INITIAL_PRODUCTS_BASE.filter(product => product.category !== 'Achados Fisicos'))
 ];
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {

@@ -2,23 +2,26 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   
   /* Customized Premium High-End Palette (Obsidian & Pearl Gold) */
-  --color-brand-50: #fbf9f4;
-  --color-brand-100: #f4edd9;
-  --color-brand-200: #e8dcb8;
-  --color-brand-500: #d4af37;
-  --color-brand-600: #b8901c;
-  --color-brand-700: #997315;
+  --color-brand-50: #eef1ff;
+  --color-brand-100: #dfe5ff;
+  --color-brand-200: #c3ceff;
+  --color-brand-500: #8296ff;
+  --color-brand-600: #687cf1;
+  --color-brand-700: #5364c9;
 }
 
 /* Shopify-inspired Light Theme */
 body {
-  background-color: #f3f4f6;
-  color: #202223;
+  margin: 0;
+  background-color: #07090d;
+  color: #f4f6f8;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
 }
 
 button {
@@ -288,4 +291,446 @@ button {
 
 .animate-liquid-three {
   animation: morph-liquid 20s ease-in-out infinite, float-fluid-three 22s ease-in-out infinite;
+}
+
+/* ─── Storefy Obsidian UI ─────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+  --sf-bg: #07090d;
+  --sf-sidebar: rgba(10, 13, 19, 0.88);
+  --sf-surface: rgba(18, 23, 32, 0.78);
+  --sf-surface-raised: rgba(24, 30, 41, 0.88);
+  --sf-surface-soft: rgba(255, 255, 255, 0.035);
+  --sf-border: rgba(255, 255, 255, 0.085);
+  --sf-border-strong: rgba(255, 255, 255, 0.14);
+  --sf-text: #f4f6fb;
+  --sf-text-soft: #c8cfdb;
+  --sf-muted: #8c96a8;
+  --sf-accent: #8296ff;
+  --sf-accent-soft: rgba(130, 150, 255, 0.13);
+}
+
+::selection {
+  background: rgba(130, 150, 255, 0.32);
+  color: #fff;
+}
+
+.storefy-app-shell {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 500px at 68% -10%, rgba(111, 128, 255, 0.12), transparent 62%),
+    radial-gradient(700px 500px at 100% 76%, rgba(54, 211, 153, 0.055), transparent 66%),
+    var(--sf-bg);
+}
+
+.storefy-ambient {
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.48), transparent 68%);
+  opacity: .42;
+}
+
+.storefy-topbar {
+  min-height: 64px;
+  background: rgba(7, 9, 13, 0.76);
+  border-bottom: 1px solid var(--sf-border);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+}
+
+.storefy-store-switcher {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--sf-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 8px 24px rgba(0,0,0,.2);
+}
+
+.storefy-store-switcher:hover {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: var(--sf-border-strong);
+  transform: translateY(-1px);
+}
+
+.storefy-workspace {
+  background: transparent;
+}
+
+.storefy-main {
+  background: linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,0) 32%);
+}
+
+.storefy-main > div {
+  width: min(100%, 1520px);
+  margin-inline: auto;
+}
+
+.storefy-sidebar {
+  background: var(--sf-sidebar) !important;
+  border-color: var(--sf-border) !important;
+  box-shadow: 18px 0 55px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(26px) saturate(125%);
+  -webkit-backdrop-filter: blur(26px) saturate(125%);
+}
+
+.storefy-nav-label {
+  color: #626d80;
+}
+
+.storefy-nav-item {
+  position: relative;
+  color: #939dae;
+  border: 1px solid transparent;
+}
+
+.storefy-nav-item:hover {
+  color: #e6e9f0;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.storefy-nav-item-active {
+  color: #fff;
+  background: linear-gradient(100deg, rgba(130, 150, 255, 0.17), rgba(130, 150, 255, 0.07));
+  border-color: rgba(150, 165, 255, 0.19);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 10px 24px rgba(0,0,0,.16);
+}
+
+.storefy-nav-item-active::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  width: 2px;
+  height: 18px;
+  border-radius: 999px;
+  background: #a9b6ff;
+  box-shadow: 0 0 14px rgba(130, 150, 255, .75);
+}
+
+.storefy-nav-icon {
+  color: #7f899a;
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.045);
+}
+
+.storefy-nav-item-active .storefy-nav-icon {
+  color: #bec8ff;
+  background: rgba(130,150,255,.12);
+  border-color: rgba(130,150,255,.16);
+}
+
+.storefy-nav-badge {
+  color: #cbd3ff;
+  background: rgba(130,150,255,.13);
+  border: 1px solid rgba(130,150,255,.18);
+}
+
+.storefy-account-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
+  border-color: var(--sf-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 16px 32px rgba(0,0,0,.16);
+}
+
+.storefy-account-logo {
+  background: rgba(255,255,255,.92);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 5px 16px rgba(0,0,0,.24);
+}
+
+/* Normalize legacy light utilities inside the authenticated product. */
+.storefy-app-shell .bg-white,
+.storefy-app-shell .bg-gray-50,
+.storefy-app-shell .bg-gray-100 {
+  background-color: var(--sf-surface) !important;
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+}
+
+.storefy-app-shell [class~="bg-white/95"],
+.storefy-app-shell [class~="bg-white/90"],
+.storefy-app-shell [class~="bg-white/80"],
+.storefy-app-shell [class~="bg-white/50"] {
+  background-color: rgba(16, 21, 30, .9) !important;
+  color: var(--sf-text-soft) !important;
+  border-color: var(--sf-border) !important;
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.storefy-app-shell .bg-gray-200 {
+  background-color: rgba(255,255,255,.07) !important;
+}
+
+.storefy-app-shell .bg-emerald-50,
+.storefy-app-shell .bg-emerald-100 {
+  background-color: rgba(16,185,129,.095) !important;
+}
+
+.storefy-app-shell .bg-amber-50,
+.storefy-app-shell .bg-amber-100 {
+  background-color: rgba(245,158,11,.09) !important;
+}
+
+.storefy-app-shell .bg-rose-50,
+.storefy-app-shell .bg-red-50 {
+  background-color: rgba(244,63,94,.085) !important;
+}
+
+.storefy-app-shell .text-gray-950,
+.storefy-app-shell .text-gray-900,
+.storefy-app-shell .text-black {
+  color: var(--sf-text) !important;
+}
+
+.storefy-app-shell .text-gray-800,
+.storefy-app-shell .text-gray-700,
+.storefy-app-shell .text-gray-600 {
+  color: var(--sf-text-soft) !important;
+}
+
+.storefy-app-shell .text-gray-500,
+.storefy-app-shell .text-gray-400 {
+  color: var(--sf-muted) !important;
+}
+
+.storefy-app-shell .text-gray-300 {
+  color: #697487 !important;
+}
+
+.storefy-app-shell .border-gray-100,
+.storefy-app-shell .border-gray-200,
+.storefy-app-shell .border-gray-300,
+.storefy-app-shell .divide-gray-200 > :not(:last-child) {
+  border-color: var(--sf-border) !important;
+}
+
+.storefy-app-shell .shadow-sm,
+.storefy-app-shell .shadow-md,
+.storefy-app-shell .shadow-lg,
+.storefy-app-shell .shadow-xl,
+.storefy-app-shell .shadow-2xl {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 18px 48px rgba(0,0,0,.23) !important;
+}
+
+.storefy-app-shell .rounded-xl.border,
+.storefy-app-shell .rounded-2xl.border,
+.storefy-app-shell .rounded-3xl.border,
+.storefy-app-shell article.border {
+  border-color: var(--sf-border) !important;
+}
+
+.storefy-app-shell .rounded-xl.border:hover,
+.storefy-app-shell article.border:hover {
+  border-color: var(--sf-border-strong) !important;
+}
+
+.storefy-app-shell input,
+.storefy-app-shell textarea,
+.storefy-app-shell select {
+  color: var(--sf-text);
+  background: rgba(7,10,15,.68) !important;
+  border-color: var(--sf-border-strong) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.storefy-app-shell input::placeholder,
+.storefy-app-shell textarea::placeholder {
+  color: #687386;
+}
+
+.storefy-app-shell input:focus,
+.storefy-app-shell textarea:focus,
+.storefy-app-shell select:focus {
+  border-color: rgba(130,150,255,.72) !important;
+  box-shadow: 0 0 0 3px rgba(130,150,255,.12) !important;
+  outline: none;
+}
+
+.storefy-app-shell button,
+.storefy-app-shell a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.storefy-app-shell button:focus-visible,
+.storefy-app-shell a:focus-visible {
+  outline: 2px solid #9eacff;
+  outline-offset: 2px;
+}
+
+.storefy-app-shell .glass-premium,
+.storefy-app-shell .glass-premium-glow,
+.storefy-app-shell .storefy-panel,
+.storefy-app-shell .storefy-card {
+  background: linear-gradient(145deg, rgba(24,30,41,.8), rgba(14,18,26,.76));
+  border-color: var(--sf-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 24px 60px rgba(0,0,0,.23);
+  backdrop-filter: blur(22px) saturate(120%);
+}
+
+.storefy-app-shell .glass-premium:hover,
+.storefy-app-shell .storefy-card:hover {
+  background: linear-gradient(145deg, rgba(28,35,47,.88), rgba(17,21,30,.82));
+  border-color: rgba(130,150,255,.22);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 28px 70px rgba(0,0,0,.3);
+}
+
+.storefy-app-shell .storefy-primary-action {
+  color: #080a0f;
+  background: linear-gradient(135deg, #aebaff, #748aff);
+  box-shadow: 0 12px 30px rgba(91,110,236,.24), inset 0 1px 0 rgba(255,255,255,.38);
+}
+
+.storefy-app-shell .storefy-primary-action:hover {
+  background: linear-gradient(135deg, #c0c9ff, #8799ff);
+  box-shadow: 0 15px 38px rgba(91,110,236,.3), inset 0 1px 0 rgba(255,255,255,.44);
+}
+
+.storefy-app-shell h1,
+.storefy-app-shell h2,
+.storefy-app-shell h3 {
+  letter-spacing: -0.025em;
+}
+
+.storefy-page-heading {
+  padding: 3px 2px 2px;
+}
+
+.storefy-toolbar,
+.storefy-filter-panel,
+.storefy-data-panel,
+.storefy-metric-card,
+.storefy-product-card {
+  background: linear-gradient(145deg, rgba(22,28,38,.82), rgba(13,17,24,.78)) !important;
+  border-color: var(--sf-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 20px 52px rgba(0,0,0,.2) !important;
+  backdrop-filter: blur(22px) saturate(118%);
+  -webkit-backdrop-filter: blur(22px) saturate(118%);
+}
+
+.storefy-chart-empty,
+.storefy-chart-tooltip {
+  background: rgba(13, 18, 28, 0.96) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  color: var(--sf-text) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38) !important;
+}
+
+.storefy-chart-empty p,
+.storefy-chart-tooltip p {
+  color: var(--sf-muted) !important;
+}
+
+.storefy-store-feature,
+.storefy-store-tile,
+.storefy-store-create {
+  background: linear-gradient(145deg, rgba(22, 28, 38, 0.86), rgba(12, 17, 25, 0.92)) !important;
+  border-color: var(--sf-border) !important;
+  box-shadow: var(--sf-shadow);
+}
+
+.storefy-store-tile:hover,
+.storefy-store-create:hover {
+  border-color: rgba(130, 150, 255, 0.38) !important;
+  background: rgba(24, 31, 45, 0.96) !important;
+  transform: translateY(-2px);
+}
+
+.storefy-metric-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.storefy-login-shell {
+  background-color: #080806;
+}
+
+.storefy-login-card {
+  background: linear-gradient(145deg, #fffefa, #f5f4ef);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 34px 90px rgba(0,0,0,.34);
+}
+
+.storefy-login-shell .bg-gray-50,
+.storefy-login-shell .bg-gray-100 {
+  background-color: #f1f2f4 !important;
+}
+
+.storefy-login-shell .border-gray-200 {
+  border-color: #dfe2e7 !important;
+}
+
+.storefy-login-shell .text-gray-900,
+.storefy-login-shell .text-gray-700 {
+  color: #111827 !important;
+}
+
+.storefy-login-shell .text-gray-500 {
+  color: #667085 !important;
+}
+
+.storefy-metric-card::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255,255,255,.04), transparent 34%);
+}
+
+.storefy-product-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(130,150,255,.25) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 26px 70px rgba(0,0,0,.34) !important;
+}
+
+.storefy-product-media {
+  background: linear-gradient(145deg, #171c25, #0b0e14) !important;
+}
+
+.storefy-product-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 -28px 38px rgba(5,7,11,.24);
+}
+
+.storefy-app-shell table {
+  border-color: var(--sf-border);
+}
+
+.storefy-app-shell thead {
+  background: rgba(255,255,255,.035);
+}
+
+.storefy-app-shell tbody tr {
+  border-color: var(--sf-border);
+}
+
+.storefy-app-shell tbody tr:hover {
+  background: rgba(255,255,255,.025);
+}
+
+.main-scrollbar {
+  scrollbar-color: rgba(130,150,255,.28) transparent;
+  scrollbar-width: thin;
+}
+
+.main-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(130,150,255,.24);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }
