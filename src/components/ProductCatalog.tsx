@@ -19,6 +19,7 @@ import { Product, MainCategory, Supplier } from '../types';
 import { productFallbackImage } from '../productImages';
 import MarketplaceImporter, { MarketplaceImportInput } from './MarketplaceImporter';
 import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
+import { prioritizeGameProducts } from '../lib/productPriority';
 
 const PAGE_SIZE = 48;
 
@@ -92,10 +93,13 @@ export default function ProductCatalog({
   }, [productsMatchingMainFilters]);
 
   const filteredProducts = useMemo(
-    () => selectedSubcategory === 'all'
-      ? productsMatchingMainFilters
-      : productsMatchingMainFilters.filter(product => product.subcategory === selectedSubcategory),
-    [productsMatchingMainFilters, selectedSubcategory]
+    () => {
+      const matching = selectedSubcategory === 'all'
+        ? productsMatchingMainFilters
+        : productsMatchingMainFilters.filter(product => product.subcategory === selectedSubcategory);
+      return activeTab === 'Games' ? prioritizeGameProducts(matching) : matching;
+    },
+    [activeTab, productsMatchingMainFilters, selectedSubcategory]
   );
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import MarketplaceImporter, { type MarketplaceImportInput } from './MarketplaceI
 import OperationStudio from './OperationStudio';
 import { downloadBlob, type VideoFormat } from '../lib/operation';
 import { generateProductReels, type GeneratedProductReel, type ReelTextVariant } from '../lib/productReels';
+import { gameProductPriority } from '../lib/productPriority';
 import type { Product, StoreConfig } from '../types';
 import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
 
@@ -267,7 +268,7 @@ function rankProductsForQuery(allProducts: Product[], query: string, nicheId?: s
       return { product, relevance, quality: recommendationScore(product) };
     })
     .filter(item => item.relevance > 0)
-    .sort((a, b) => b.relevance - a.relevance || b.quality - a.quality)
+    .sort((a, b) => gameProductPriority(b.product) - gameProductPriority(a.product) || b.relevance - a.relevance || b.quality - a.quality)
     .map(item => item.product);
 }
 
@@ -382,7 +383,7 @@ export default function SiaAssistant({
       .filter(product => product.category === category)
       .filter(product => !memory.rejectedProductIds.includes(product.id))
       .filter(product => product.stockQuantity === undefined || product.stockQuantity > 0)
-      .sort((a, b) => recommendationScore(b) - recommendationScore(a))
+      .sort((a, b) => gameProductPriority(b) - gameProductPriority(a) || recommendationScore(b) - recommendationScore(a))
       .slice(0, guidedProductLimit);
   }, [activeNicheId, guidedProductLimit, memory.rejectedProductIds, products, recommendationProductIds, recommendationQuery]);
 

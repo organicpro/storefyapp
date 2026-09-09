@@ -38,6 +38,11 @@ export const NICHES: Niche[] = [
     "icon": "Gamepad2",
     "description": "Produtos digitais para jogos, contas, itens, keys, moedas, skins e servicos gamer.",
     "recommendedSubcategories": [
+      "GTA 6",
+      "PlayStation 5",
+      "PlayStation 4",
+      "Xbox Series X|S",
+      "Xbox One",
       "eFootball",
       "Steam",
       "Call of Duty",

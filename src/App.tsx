@@ -42,6 +42,7 @@ import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { loadPublicStore, PublicStorePayload, savePublicStore } from './lib/publicStores';
 import { loadWorkspace, saveWorkspace } from './lib/workspaceSync';
 import { loadAccessProfile } from './lib/access';
+import { prioritizeGameProducts } from './lib/productPriority';
 import { productFallbackImage } from './productImages';
 import { Product, StoreConfig, Supplier, UserAccessProfile } from './types';
 import { useLanguage } from './i18n/LanguageContext';
@@ -253,7 +254,8 @@ function productsForPersistence(products: Product[]) {
 
 function getSelectedProductsForStore(config: StoreConfig, products: Product[]) {
   const productIds = getStoreProductIds(config, products);
-  return applyStoreSelection(products, productIds).filter(product => product.addedToStore);
+  const selected = applyStoreSelection(products, productIds).filter(product => product.addedToStore);
+  return /game|gamer|esport|sport/i.test(config.niche || '') ? prioritizeGameProducts(selected) : selected;
 }
 
 function escapeHtml(value: string | number | undefined) {
