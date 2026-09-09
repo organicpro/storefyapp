@@ -24,6 +24,12 @@ type ProductReelInput = {
     zoom?: number;
     band?: boolean;
     cta?: string;
+    bandColor?: string;
+    textColor?: string;
+    ctaBackground?: string;
+    ctaColor?: string;
+    panX?: number;
+    panY?: number;
   };
   onProgress?: (value: number) => void;
 };
@@ -72,7 +78,7 @@ function wrapText(context: CanvasRenderingContext2D, value: string, maxWidth: nu
   return lines;
 }
 
-function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoElement, x: number, y: number, width: number, height: number, zoom = 1) {
+function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoElement, x: number, y: number, width: number, height: number, zoom = 1, panX = 0, panY = 0) {
   context.save();
   context.beginPath();
   context.roundRect(x, y, width, height, 18);
@@ -82,7 +88,9 @@ function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoE
   const ratio = Math.max(width / video.videoWidth, height / video.videoHeight) * zoom;
   const drawWidth = video.videoWidth * ratio;
   const drawHeight = video.videoHeight * ratio;
-  context.drawImage(video, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  const safePanX = Math.max(-1, Math.min(1, panX));
+  const safePanY = Math.max(-1, Math.min(1, panY));
+  context.drawImage(video, x + (width - drawWidth) * (0.5 + safePanX * 0.5), y + (height - drawHeight) * (0.5 + safePanY * 0.5), drawWidth, drawHeight);
   context.restore();
 }
 
@@ -123,7 +131,7 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   const videoTop = 226;
   const videoWidth = WIDTH - 48;
   const videoHeight = 570;
-  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight, input.overlay?.zoom || 1);
+  drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight, input.overlay?.zoom || 1, input.overlay?.panX || 0, input.overlay?.panY || 0);
 
   const overlayText = input.overlay?.text.trim();
   if (overlayText && input.overlay?.band !== false) {
@@ -136,11 +144,11 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
       : input.overlay?.position === 'bottom'
         ? videoTop + videoHeight - bandHeight - 34
         : videoTop + (videoHeight - bandHeight) / 2;
-    context.fillStyle = 'rgba(255,255,255,.96)';
+    context.fillStyle = input.overlay?.bandColor || 'rgba(255,255,255,.96)';
     context.beginPath();
     context.roundRect(42, bandY, WIDTH - 84, bandHeight, 14);
     context.fill();
-    context.fillStyle = '#111318';
+    context.fillStyle = input.overlay?.textColor || '#111318';
     context.textAlign = 'center';
     overlayLines.forEach((line, index) => context.fillText(line, WIDTH / 2, bandY + 27 + index * lineHeight));
   }
@@ -151,11 +159,11 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
 
   const cta = (input.overlay?.cta ?? variant.cta).trim();
   if (cta) {
-    context.fillStyle = '#111318';
+    context.fillStyle = input.overlay?.ctaBackground || '#111318';
     context.beginPath();
     context.roundRect(32, 858, WIDTH - 64, 62, 15);
     context.fill();
-    context.fillStyle = '#ffffff';
+    context.fillStyle = input.overlay?.ctaColor || '#ffffff';
     context.textAlign = 'center';
     context.font = '700 18px Arial';
     context.fillText(cta.slice(0, 36), WIDTH / 2, 897);
