@@ -136,7 +136,7 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
     const lineHeight = 27;
     bandHeight = overlayLines.length * lineHeight + 28;
     bandY = overlayAtTop
-      ? 86
+      ? 178
       : input.overlay?.position === 'bottom'
         ? 226 + 570 - bandHeight - 34
         : 226 + (570 - bandHeight) / 2;
@@ -153,11 +153,11 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   context.fillStyle = input.overlay?.frameTextColor || '#111318';
   context.font = '800 30px Arial';
   const hookLines = wrapText(context, variant.hook, WIDTH - 64, 3);
-  const hookTop = overlayAtTop ? 146 + Math.min(42, bandHeight) : 126;
+  const hookTop = 126;
   hookLines.forEach((line, index) => context.fillText(line, 32, hookTop + index * 35));
 
-  const videoTop = overlayAtTop ? 250 : 226;
-  const videoHeight = overlayAtTop ? 546 : 570;
+  const videoTop = 226;
+  const videoHeight = 570;
   const videoWidth = WIDTH - 48;
   drawVideoContained(context, video, 24, videoTop, videoWidth, videoHeight, input.overlay?.zoom || 1, input.overlay?.panX || 0, input.overlay?.panY || 0);
 
