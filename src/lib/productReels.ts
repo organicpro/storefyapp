@@ -89,16 +89,8 @@ function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoE
   context.clip();
   context.fillStyle = '#0b0d12';
   context.fillRect(x, y, width, height);
-  const baseRatio = Math.max(width / video.videoWidth, height / video.videoHeight);
+  const baseRatio = Math.min(width / video.videoWidth, height / video.videoHeight);
   const ratio = baseRatio * zoom;
-  if (zoom < 1) {
-    const backdropRatio = Math.max(width / video.videoWidth, height / video.videoHeight);
-    context.save();
-    context.globalAlpha = 0.3;
-    context.filter = 'blur(18px)';
-    context.drawImage(video, x + (width - video.videoWidth * backdropRatio) / 2, y + (height - video.videoHeight * backdropRatio) / 2, video.videoWidth * backdropRatio, video.videoHeight * backdropRatio);
-    context.restore();
-  }
   const drawWidth = video.videoWidth * ratio;
   const drawHeight = video.videoHeight * ratio;
   const safePanX = Math.max(-1, Math.min(1, panX));
