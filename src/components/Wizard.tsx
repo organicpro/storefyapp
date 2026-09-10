@@ -168,8 +168,10 @@ export default function Wizard({
     || (p.supplier === 'Produto próprio' && p.category === selectedProductCategory)
   );
   const prioritizedRecommendedProducts = selectedProductCategory === 'Games'
-    ? [...products.filter(product => product.category === 'Games' && gameProductPriority(product) === 1000), ...recommendedProducts]
-      .filter((product, index, list) => list.findIndex(candidate => candidate.id === product.id) === index)
+    // Games must show the complete digital catalog so the hero opportunity is
+    // never lost behind a recommendation-subcategory filter.
+    ? products
+      .filter(product => product.category === 'Games')
       .sort((a, b) => gameProductPriority(b) - gameProductPriority(a))
     : recommendedProducts;
 
