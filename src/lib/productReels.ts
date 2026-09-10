@@ -89,9 +89,7 @@ function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoE
   context.clip();
   context.fillStyle = '#0b0d12';
   context.fillRect(x, y, width, height);
-  const baseRatio = zoom < 1
-    ? Math.min(width / video.videoWidth, height / video.videoHeight)
-    : Math.max(width / video.videoWidth, height / video.videoHeight);
+  const baseRatio = Math.max(width / video.videoWidth, height / video.videoHeight);
   const ratio = baseRatio * zoom;
   if (zoom < 1) {
     const backdropRatio = Math.max(width / video.videoWidth, height / video.videoHeight);
