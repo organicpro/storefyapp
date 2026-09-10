@@ -144,7 +144,7 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   if (overlayEnabled) {
     context.font = '800 22px Arial';
     const overlayWidth = overlayAtTop ? 238 : WIDTH - 84;
-    const overlayLines = wrapText(context, overlayText, overlayAtTop ? 226 : WIDTH - 108, overlayAtTop ? 2 : 3);
+    const overlayLines = wrapText(context, overlayText, overlayAtTop ? 226 : WIDTH - 108, overlayAtTop ? 8 : 3);
     const lineHeight = overlayAtTop ? 20 : 27;
     bandHeight = overlayLines.length * lineHeight + 28;
     bandY = overlayAtTop
