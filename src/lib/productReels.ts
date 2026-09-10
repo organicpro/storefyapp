@@ -30,6 +30,7 @@ type ProductReelInput = {
     ctaColor?: string;
     frameBackground?: string;
     frameTextColor?: string;
+    profilePosition?: 'top' | 'bottom';
     panX?: number;
     panY?: number;
   };
@@ -96,34 +97,38 @@ function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoE
   context.restore();
 }
 
+function drawProfileBlock(context: CanvasRenderingContext2D, input: ProductReelInput, avatar: HTMLImageElement | null, top: number) {
+  context.save();
+  context.beginPath();
+  context.arc(48, top + 25, 25, 0, Math.PI * 2);
+  context.clip();
+  if (avatar) context.drawImage(avatar, 23, top, 50, 50);
+  else {
+    context.fillStyle = input.accent || '#dfb52d';
+    context.fillRect(23, top, 50, 50);
+    context.fillStyle = '#111318';
+    context.font = '700 18px Arial';
+    context.textAlign = 'center';
+    context.fillText((input.profileName || 'S').slice(0, 1).toUpperCase(), 48, top + 32);
+  }
+  context.restore();
+  context.textAlign = 'left';
+  context.fillStyle = input.overlay?.frameTextColor || '#111318';
+  context.font = '700 16px Arial';
+  context.fillText(input.profileName || 'Storefy', 86, top + 21);
+  context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
+  context.font = '13px Arial';
+  context.fillText(input.profileHandle || '@storefy', 86, top + 42);
+}
+
 function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElement, variant: ReelTextVariant, input: ProductReelInput, avatar: HTMLImageElement | null) {
   context.fillStyle = input.overlay?.frameBackground || '#ffffff';
   context.fillRect(0, 0, WIDTH, HEIGHT);
   context.fillStyle = input.accent || '#dfb52d';
   context.fillRect(0, 0, WIDTH, 7);
 
-  context.save();
-  context.beginPath();
-  context.arc(48, 49, 25, 0, Math.PI * 2);
-  context.clip();
-  if (avatar) context.drawImage(avatar, 23, 24, 50, 50);
-  else {
-    context.fillStyle = input.accent || '#dfb52d';
-    context.fillRect(23, 24, 50, 50);
-    context.fillStyle = '#111318';
-    context.font = '700 18px Arial';
-    context.textAlign = 'center';
-    context.fillText((input.profileName || 'S').slice(0, 1).toUpperCase(), 48, 56);
-  }
-  context.restore();
-
-  context.textAlign = 'left';
-  context.fillStyle = input.overlay?.frameTextColor || '#111318';
-  context.font = '700 16px Arial';
-  context.fillText(input.profileName || 'Storefy', 86, 45);
-  context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
-  context.font = '13px Arial';
-  context.fillText(input.profileHandle || '@storefy', 86, 66);
+  const profileAtBottom = input.overlay?.profilePosition === 'bottom';
+  if (!profileAtBottom) drawProfileBlock(context, input, avatar, 24);
 
   const overlayText = input.overlay?.text.trim();
   const overlayEnabled = Boolean(overlayText && input.overlay?.band !== false);
@@ -164,6 +169,8 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
   context.font = '12px Arial';
   context.fillText(input.productName.slice(0, 64), 32, 834);
+
+  if (profileAtBottom) drawProfileBlock(context, input, avatar, 802);
 
   const cta = (input.overlay?.cta ?? variant.cta).trim();
   if (cta) {

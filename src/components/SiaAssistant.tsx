@@ -338,6 +338,7 @@ export default function SiaAssistant({
   const [reelProfileImage, setReelProfileImage] = useState(currentStore.logoUrl || '');
   const [reelProfileName, setReelProfileName] = useState(currentStore.name);
   const [reelProfileHandle, setReelProfileHandle] = useState(currentStore.profileHandle || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`);
+  const [reelProfilePosition, setReelProfilePosition] = useState<'top' | 'bottom'>('top');
   const [reelGenerating, setReelGenerating] = useState(false);
   const [reelProgress, setReelProgress] = useState(0);
   const [reelError, setReelError] = useState('');
@@ -882,7 +883,7 @@ export default function SiaAssistant({
         profileHandle: reelProfileHandle.trim() || `@${normalizeSearch(currentStore.name).replace(/\s+/g, '')}`,
         profileImageUrl: reelProfileImage,
         accent: currentStore.primaryColor || '#dfb52d',
-        overlay: { text: reelOverlayText, position: reelOverlayPosition, zoom: reelOverlayZoom, band: reelOverlayBand, cta: reelOverlayCta, bandColor: reelBandColor, textColor: reelTextColor, ctaBackground: reelCtaBackground, ctaColor: reelCtaColor, frameBackground: reelFrameBackground, frameTextColor: reelFrameTextColor, panX: reelPanX, panY: reelPanY },
+        overlay: { text: reelOverlayText, position: reelOverlayPosition, zoom: reelOverlayZoom, band: reelOverlayBand, cta: reelOverlayCta, bandColor: reelBandColor, textColor: reelTextColor, ctaBackground: reelCtaBackground, ctaColor: reelCtaColor, frameBackground: reelFrameBackground, frameTextColor: reelFrameTextColor, profilePosition: reelProfilePosition, panX: reelPanX, panY: reelPanY },
         onProgress: value => setReelProgress(Math.max(8, value))
       });
       setGeneratedReels(reels);
@@ -1116,6 +1117,7 @@ export default function SiaAssistant({
                           <input value={reelProfileName} onChange={event => { setReelProfileName(event.target.value); clearGeneratedReels(); }} placeholder="Nome do perfil no vídeo" className="h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-[11px] text-gray-900 outline-none focus:border-amber-400" />
                           <input value={reelProfileHandle} onChange={event => { setReelProfileHandle(event.target.value); clearGeneratedReels(); }} placeholder="@usuario" className="h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-[11px] text-gray-900 outline-none focus:border-amber-400" />
                         </div>
+                        <label className="mt-2 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-[10px] font-bold text-gray-600">Posição do perfil<select value={reelProfilePosition} onChange={event => { setReelProfilePosition(event.target.value as 'top' | 'bottom'); clearGeneratedReels(); }} className="ml-3 h-8 rounded-md border border-gray-200 bg-white px-2 text-[11px] font-semibold text-gray-800 outline-none"><option value="top">Faixa superior</option><option value="bottom">Faixa inferior</option></select></label>
 
                         {reelVariants.length > 0 && (
                           <div className="grid gap-2 sm:grid-cols-5">
