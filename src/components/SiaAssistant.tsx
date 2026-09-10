@@ -126,6 +126,23 @@ const initialMessages = (name?: string): ChatMessage[] => [
   )
 ];
 
+function localAssistantReply(message: string, currentStore: StoreConfig) {
+  const value = message.toLowerCase();
+  if (/criar (uma )?(loja|site)|nova loja|começar do zero/.test(value)) {
+    return 'Perfeito. Vamos criar sua loja passo a passo. Começamos pelo nicho, depois definimos público, nome, WhatsApp, visual e produtos. Clique em Criar uma loja para iniciar o modo guiado.';
+  }
+  if (/video|vídeo|reel|conteudo|conteúdo/.test(value)) {
+    return 'Posso preparar Reels com o vídeo original, variações de legenda, faixa, perfil e chamada para seguir. Abra Criar Reels para enviar o vídeo e personalizar o resultado.';
+  }
+  if (/loja atual|minha loja|diagnostico|diagnóstico|analisar/.test(value)) {
+    return `Posso analisar a loja ${currentStore.name || 'atual'} e indicar a próxima ação: revisar produtos, ajustar margem ou montar uma divulgação.`;
+  }
+  if (/produto|vender|margem|catalogo|catálogo/.test(value)) {
+    return 'Posso encontrar produtos do catálogo, comparar margem e organizar uma seleção para sua vitrine. Diga o público ou a categoria que você quer atender.';
+  }
+  return 'Estou aqui para ajudar com sua loja, produtos, margens e conteúdo. Você pode escrever livremente ou escolher uma das ações abaixo.';
+}
+
 const readHistoryMap = (): Record<string, ChatMessage[]> => {
   try {
     const parsed = JSON.parse(window.localStorage.getItem(CHAT_HISTORY_STORAGE_KEY) || '{}');
@@ -622,7 +639,7 @@ export default function SiaAssistant({
         setRecommendationProductIds([]);
       }
     } catch {
-      setMessages(current => [...current, makeMessage('assistant', 'Estou sem conexão com o serviço de respostas, mas o criador de lojas e as recomendações continuam disponíveis.')]);
+      setMessages(current => [...current, makeMessage('assistant', localAssistantReply(value, currentStore))]);
     } finally {
       setLoading(false);
     }
