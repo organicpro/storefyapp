@@ -393,12 +393,30 @@ export default function SiaAssistant({
   const activeNiche = NICHES.find(niche => niche.id === activeNicheId) || NICHES[0];
   const guidedStepIndex = GUIDED_FLOW_STEPS.findIndex(step => step.id === flowStep);
   const recommendedProducts = useMemo(() => {
+    const sortForNiche = (items: Product[]) => activeNicheId === 'games'
+      ? [...items].sort((a, b) => gameProductPriority(b) - gameProductPriority(a) || recommendationScore(b) - recommendationScore(a))
+      : items;
+
     if (recommendationProductIds.length) {
       const byId = new Map(products.map(product => [product.id, product]));
-      return recommendationProductIds.map(id => byId.get(id)).filter((product): product is Product => Boolean(product) && !memory.rejectedProductIds.includes(product.id)).slice(0, guidedProductLimit);
+      const selected = recommendationProductIds
+        .map(id => byId.get(id))
+        .filter((product): product is Product => Boolean(product) && !memory.rejectedProductIds.includes(product.id));
+      const gta6 = activeNicheId === 'games'
+        ? products.filter(product => gameProductPriority(product) === 1000 && !memory.rejectedProductIds.includes(product.id))
+        : [];
+      return sortForNiche([...gta6, ...selected])
+        .filter((product, index, list) => list.findIndex(candidate => candidate.id === product.id) === index)
+        .slice(0, guidedProductLimit);
     }
     if (recommendationQuery.trim()) {
-      return rankProductsForQuery(products, recommendationQuery, activeNicheId).filter(product => !memory.rejectedProductIds.includes(product.id)).slice(0, guidedProductLimit);
+      const contextual = rankProductsForQuery(products, recommendationQuery, activeNicheId).filter(product => !memory.rejectedProductIds.includes(product.id));
+      const gta6 = activeNicheId === 'games'
+        ? products.filter(product => gameProductPriority(product) === 1000 && !memory.rejectedProductIds.includes(product.id))
+        : [];
+      return sortForNiche([...gta6, ...contextual])
+        .filter((product, index, list) => list.findIndex(candidate => candidate.id === product.id) === index)
+        .slice(0, guidedProductLimit);
     }
     const category = categoryByNiche[activeNicheId];
     return products

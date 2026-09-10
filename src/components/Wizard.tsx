@@ -573,11 +573,12 @@ export default function Wizard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[32rem] overflow-y-auto pr-1">
             {prioritizedRecommendedProducts.map((p) => {
               const profit = p.salePrice - p.costPrice;
+              const isSelected = Boolean(storeConfig.productIds?.includes(p.id));
               return (
                 <div 
                   key={p.id}
                   className={`p-4 rounded-xl text-left border transition-all ${
-                    p.addedToStore ? 'border-[#0f172a] bg-gray-50 ring-1 ring-[#0f172a] shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
+                    isSelected ? 'border-[#0f172a] bg-gray-50 ring-1 ring-[#0f172a] shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -602,13 +603,13 @@ export default function Wizard({
                     <button
                       onClick={() => onToggleAddProduct(p.id)}
                       className={`px-3 py-1.5 rounded-lg font-semibold text-[11px] flex items-center gap-1 shrink-0 cursor-pointer shadow-sm transition-colors ${
-                        p.addedToStore
+                        isSelected
                           ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200'
                           : 'bg-[#0f172a] text-white hover:bg-[#1e293b]'
                       }`}
                     >
-                      {p.addedToStore ? <Trash2 className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                      <span>{p.addedToStore ? 'Remover' : 'Adicionar'}</span>
+                      {isSelected ? <Trash2 className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                      <span>{isSelected ? 'Remover' : 'Adicionar'}</span>
                     </button>
                   </div>
 
