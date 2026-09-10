@@ -281,6 +281,11 @@ function getReadableTextColor(hexColor?: string) {
 function getStoreTheme(config: StoreConfig) {
   const accent = config.primaryColor || '#d4af37';
   switch (config.themePreset) {
+    case 'vice':
+      return {
+        accent: '#ef78b7', pageBg: '#170f26', text: '#fff3fa', muted: '#c9b7d5',
+        border: '#48314f', heroBg: '#170f26', surface: '#24182f', card: '#24182f'
+      };
     case 'clean':
       return {
         accent,

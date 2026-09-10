@@ -85,7 +85,7 @@ export interface StoreConfig {
   netlifySiteName?: string;
   downloadHtmlFallback?: boolean;
   productIds?: string[];
-  themePreset?: 'obsidian' | 'aurora' | 'clean' | 'market';
+  themePreset?: 'obsidian' | 'aurora' | 'clean' | 'market' | 'vice';
   heroTitle?: string;
   heroSubtitle?: string;
   ctaLabel?: string;

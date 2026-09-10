@@ -247,12 +247,17 @@ export default function StoreEditor({
                 <div className="space-y-1.5">
                   <label className="text-[13px] font-bold text-gray-900">Estilo de Layout</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {(['obsidian', 'aurora', 'clean', 'market'] as const).map(theme => {
+                    {(['vice', 'obsidian', 'aurora', 'clean', 'market'] as const).map(theme => {
                       let previewStyle = '';
                       let headerStyle = '';
                       let bodyStyle = '';
                       
                       switch (theme) {
+                        case 'vice':
+                          previewStyle = 'bg-[#170f26]';
+                          headerStyle = 'bg-[#ef78b7]';
+                          bodyStyle = 'bg-[#63ded9]';
+                          break;
                         case 'obsidian':
                           previewStyle = 'bg-[#0f172a]';
                           headerStyle = 'bg-[#1e293b]';

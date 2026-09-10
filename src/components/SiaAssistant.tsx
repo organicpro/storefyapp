@@ -201,6 +201,7 @@ const themeOptions: Array<{
   description: string;
   color: string;
 }> = [
+  { id: 'vice', name: 'Vice', description: 'Rosa neon e clima tropical', color: '#ef78b7' },
   { id: 'clean', name: 'Clean', description: 'Claro e direto', color: '#0f766e' },
   { id: 'market', name: 'Market', description: 'Foco em ofertas', color: '#2563eb' },
   { id: 'obsidian', name: 'Obsidian', description: 'Premium e escuro', color: '#d4af37' },
