@@ -1831,7 +1831,9 @@ function App() {
             )}
             {activePage === 'wizard' && (
               <Wizard
-                products={storeProducts}
+                // The guided flow must browse the full catalog. `storeProducts`
+                // only contains items already linked to the active store.
+                products={products}
                 storeConfig={storeConfig}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onToggleAddProduct={handleToggleAddProduct}
