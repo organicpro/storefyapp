@@ -33,7 +33,7 @@ import SuppliersList from './components/SuppliersList';
 import Academy from './components/Academy';
 import MarketingKit from './components/MarketingKit';
 import SettingsView from './components/SettingsView';
-import StorePreview from './components/StorePreview';
+import { storefrontDesign } from './lib/storefrontDesign';
 import LoginScreen from './components/LoginScreen';
 import AdminCodes from './components/AdminCodes';
 import SiaAssistant, { type SiaStoreRequest } from './components/SiaAssistant';
@@ -544,7 +544,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
       </div>
     </article>
   `).join('');
-  const categoryLinks = (collectionLabels.length ? collectionLabels : categories).slice(0, 5).map(category => `<a href="#produtos">${escapeHtml(category)}</a>`).join('');
+  const categoryLinks = (collectionLabels.length ? collectionLabels : categories).slice(0, 5).map(category => `<a href="#produtos" data-collection="${escapeHtml(category)}">${escapeHtml(category)}</a>`).join('');
   const leadProductPriceLabel = leadProduct?.salePrice > 0 ? formatPrice(leadProduct.salePrice) : priceFromLabel;
   const leadProductImage = leadProduct ? buildStoreProductImage(leadProduct) : '<div class="no-image">Nenhum produto selecionado</div>';
   const collectionTiles = collectionLabels.map(label => {
@@ -553,7 +553,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
     const collectionPrices = collectionProducts.map(product => product.salePrice).filter(price => price > 0);
     const minPrice = collectionPrices.length ? Math.min(...collectionPrices) : 0;
     return `
-      <a class="collection-tile" href="#produtos">
+      <a class="collection-tile" href="#produtos" data-collection="${escapeHtml(label)}">
         <div class="collection-thumb">${featuredProduct ? buildStoreProductImage(featuredProduct) : '<div class="no-image">Sem imagem</div>'}</div>
         <div>
           <span>${escapeHtml(label)}</span>
@@ -601,8 +601,8 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
     .social-proof{padding:54px 0;background:#fff;border-top:1px solid #e4e5e8}.proof-heading small{color:var(--sf-accent);letter-spacing:.08em}.proof-heading h2{margin:8px 0 5px;color:#17191d;font-size:29px;letter-spacing:0}.proof-heading p{color:#747983}.review-grid{gap:14px;margin-top:24px}.review{border:1px solid #e0e2e6;background:#fff;border-radius:6px;padding:20px}.review-stars{color:var(--sf-accent)}.review p{color:#30343a}.review b{color:#777c85}.faq details{border-color:#e0e2e6;background:#fff;color:#17191d;border-radius:6px}.faq p{color:#6e737c}
     .contact{padding:44px 0 34px;border-top:0;background:#0b0c0f}.contact-box{border:1px solid #292c32;background:#121419;border-radius:6px}.contact-box h2{color:#fff}.contact-box p{color:#aaaeb7}.footer-meta{padding-top:24px;color:#8c919b}.footer-meta a:hover{color:#fff}.floating-cart{border-color:#292c32;background:#111318;color:#fff;border-radius:6px}.drawer,.modal-card{border-radius:8px}.empty-search{border-color:#d8dadf;border-radius:6px;color:#737883}
     @media(max-width:1040px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.storefront-links{display:none}}@media(max-width:900px){.storefront-search{order:4;flex-basis:100%;max-width:none}.retail-layout{grid-template-columns:1fr;gap:28px}.hero-feature{max-width:560px}.benefit-row{grid-template-columns:repeat(2,1fr)}.benefit-row div:nth-child(2){border-right:0}.benefit-row div:nth-child(-n+2){border-bottom:1px solid #e4e5e8}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.wrap{width:min(100% - 24px,1240px)}.storefront-brand img{width:88px}.retail-hero{padding:34px 0}.retail-copy h1{font-size:39px}.retail-facts{grid-template-columns:1fr;gap:8px}.benefit-row{grid-template-columns:1fr}.benefit-row div{border-right:0;border-bottom:1px solid #e4e5e8}.grid{grid-template-columns:1fr;gap:12px}.media{aspect-ratio:16/10}}
-  </style></head>
-<body>
+  </style><style>${storefrontDesign}</style></head>
+<body data-theme="${escapeHtml(config.themePreset || 'obsidian')}">
   <div class="offer-bar">Compra segura <span>•</span> Atendimento direto <span>•</span> Ofertas selecionadas <b class="level-badge">${levelBadge}</b></div>
   <header class="storefront-header">
     <div class="wrap storefront-nav">
@@ -614,6 +614,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
   </header>
   ${categoryLinks ? `<nav class="category-nav" aria-label="Categorias"><div class="wrap category-nav-inner"><a href="#produtos">Todas as categorias</a>${categoryLinks}</div></nav>` : ''}
   <section class="retail-hero">
+    ${leadProduct && getProductImageView(leadProduct).source ? `<img class="hero-art" src="${escapeHtml(getProductImageView(leadProduct).source)}" alt="" fetchpriority="high" />` : ''}
     <div class="wrap retail-layout">
       <div class="retail-copy"><span class="retail-kicker">${escapeHtml(heroCategoryLabel)}</span><h1>${escapeHtml(heroTitle)}</h1><p>${escapeHtml(heroSubtitle)}</p><div class="retail-actions"><a class="cta" href="#produtos">Ver produtos</a><button type="button" class="secondary-btn" data-open-cart>Resumo do pedido</button></div><div class="cats retail-cats">${categoryLinks}</div></div>
       <aside class="hero-feature" aria-label="Produto em destaque"><div class="hero-feature-head"><span>${activeProducts.length} ${escapeHtml(productCountLabel)} no catalogo</span><strong>${escapeHtml(leadProductPriceLabel)}</strong></div><div class="hero-feature-media">${leadProductImage}</div><div class="hero-feature-body"><small>Produto em destaque</small><b>${leadProduct ? escapeHtml(leadProduct.name) : 'Selecione produtos para publicar'}</b><p>${leadProduct ? escapeHtml(getPublicDescription(leadProduct)) : 'Escolha os itens no painel para montar a vitrine.'}</p></div></aside>
@@ -623,7 +624,6 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
   <section class="commerce-benefits"><div class="wrap benefit-row"><div><i class="benefit-icon">✓</i><b>Compra protegida</b><span>Confira produto e valor antes de enviar o pedido.</span></div><div><i class="benefit-icon">↗</i><b>Atendimento direto</b><span>Fale com a loja pelo WhatsApp sem intermediarios.</span></div><div><i class="benefit-icon">★</i><b>Catalogo atualizado</b><span>Produtos escolhidos e organizados por categoria.</span></div><div><i class="benefit-icon">+</i><b>Pedido simples</b><span>Monte o resumo e envie tudo em poucos cliques.</span></div></div></section>
   ${collectionTiles ? `<section class="collection-strip"><div class="wrap"><div class="strip-head"><div><h2>${escapeHtml(storefrontVoice.collectionTitle)}</h2><p>${escapeHtml(storefrontVoice.collectionText)}</p></div><a class="secondary-btn" href="#produtos">Ver catalogo</a></div><div class="collection-grid">${collectionTiles}</div></div></section>` : ''}
   <main id="produtos" class="wrap"><div class="section-title"><h2>${escapeHtml(storefrontVoice.productTitle)}</h2><p>${escapeHtml(storefrontVoice.productText)}</p></div>${filterButtons ? `<nav class="filters" aria-label="Filtros de produtos">${filterButtons}</nav>` : ''}<section class="grid" id="productGrid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}<div class="empty-search" id="emptySearch">Nenhum produto encontrado para esta busca.</div></section>${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}</main>
-  <section class="social-proof"><div class="wrap"><div class="proof-heading"><small>Atendimento que gera confianca</small><h2>Uma compra simples do inicio ao fim</h2><p>Vitrine clara, produtos organizados e contato direto com a loja.</p></div><div class="review-grid"><article class="review"><div class="review-stars">★★★★★</div><p>Encontrei o produto rapido e consegui tirar minha duvida antes de fechar.</p><b>Cliente verificado</b></article><article class="review"><div class="review-stars">★★★★★</div><p>O resumo do pedido facilitou muito o atendimento pelo WhatsApp.</p><b>Compra assistida</b></article><article class="review"><div class="review-stars">★★★★★</div><p>Catalogo organizado, preco visivel e contato sem complicacao.</p><b>Atendimento direto</b></article></div></div></section>
   <footer id="contato" class="contact"><div class="wrap"><div class="contact-box"><div><h2>${escapeHtml(storefrontVoice.footerTitle)}</h2><p>${escapeHtml(storefrontVoice.footerText)}</p></div><button type="button" class="cta" data-open-cart>Ver resumo do pedido</button></div><div class="footer-meta"><span>© ${new Date().getFullYear()} ${escapeHtml(config.name)}. Todos os direitos reservados.</span><nav><a href="#produtos">Produtos</a><a href="#contato">Atendimento</a><a href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">WhatsApp</a></nav></div></div></footer>
   <button type="button" class="floating-cart" data-open-cart><span>Resumo do pedido</span><span class="cart-badge" id="cartCount">0</span></button>
   <div class="overlay" id="pageOverlay" data-close-panels></div>
@@ -734,22 +734,33 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
         if (target.hasAttribute('data-filter')) {
           var filter = target.getAttribute('data-filter');
           document.querySelectorAll('[data-filter]').forEach(function(button){ button.classList.toggle('active', button === target); });
-          document.querySelectorAll('[data-product-card]').forEach(function(card){ card.classList.toggle('is-hidden', filter !== 'Todos' && card.getAttribute('data-category') !== filter); });
+          activeFilter = filter; activeCollection = ''; filterProducts();
         }
       });
       var searchInput = document.getElementById('storeSearch');
-      if (searchInput) searchInput.addEventListener('input', function(){
-        var query = searchInput.value.trim().toLowerCase();
+      var activeFilter = 'Todos';
+      var activeCollection = '';
+      function filterProducts(){
+        var query = searchInput ? searchInput.value.trim().toLowerCase() : '';
         var visible = 0;
         document.querySelectorAll('[data-product-card]').forEach(function(card){
           var product = findProduct(card.getAttribute('data-product-id'));
           var haystack = product ? (product.name + ' ' + product.category + ' ' + product.subcategory).toLowerCase() : '';
-          var matches = !query || haystack.indexOf(query) >= 0;
+          var matches = product && (!query || haystack.indexOf(query) >= 0) && (activeFilter === 'Todos' || product.category === activeFilter) && (!activeCollection || product.subcategory === activeCollection || product.category === activeCollection);
           card.classList.toggle('is-hidden', !matches);
           if (matches) visible += 1;
         });
         var emptySearch = document.getElementById('emptySearch');
         if (emptySearch) emptySearch.style.display = visible ? 'none' : 'block';
+      }
+      if (searchInput) searchInput.addEventListener('input', filterProducts);
+      document.querySelectorAll('[data-collection]').forEach(function(link){
+        link.addEventListener('click',function(){
+          activeCollection=link.getAttribute('data-collection');activeFilter='Todos';
+          if(searchInput) searchInput.value='';
+          document.querySelectorAll('[data-filter]').forEach(function(button){button.classList.toggle('active',button.getAttribute('data-filter')==='Todos');});
+          filterProducts();
+        });
       });
       document.getElementById('sendOrder').addEventListener('click', function(){ sendOrder(); });
       document.addEventListener('keydown', function(event){ if (event.key === 'Escape') setPanels(false); });
@@ -1483,7 +1494,7 @@ function App() {
       );
     }
 
-    return <StorePreview storeConfig={publicStore.storeConfig} products={publicStore.products} />;
+    return <iframe title={publicStore.storeConfig.name} srcDoc={buildStoreHtml(publicStore.storeConfig, publicStore.products, publicStore.storeConfig.ownerLevel)} className="fixed inset-0 h-dvh w-full border-0" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" />;
   }
 
   if (!authReady) {
