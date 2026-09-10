@@ -677,7 +677,8 @@ export default function SiaAssistant({
       setMessages(current => [...current, makeMessage('assistant', 'Claro. Preparei uma prévia da sua loja atual com os produtos e o visual que estão salvos agora.')]);
       return;
     }
-    if (assistantMode === 'current' && /(?:criar|gerar|fazer|produzir|quero).{0,32}(?:reel|vídeo|video|criativo|influencer)|(?:reel|vídeo|video|criativo|influencer).{0,32}(?:criar|gerar|fazer|produzir|quero)/i.test(value)) {
+    const recentVideoIntent = messages.slice(-4).some(message => message.role === 'user' && /reel|vídeo|video|criativo|influencer/i.test(message.content));
+    if (/(?:criar|gerar|fazer|produzir|quero).{0,32}(?:reel|vídeo|video|criativo|influencer)|(?:reel|vídeo|video|criativo|influencer).{0,32}(?:criar|gerar|fazer|produzir|quero)/i.test(value) || (recentVideoIntent && /vamos começar|começar por aqui|pode ser|bora/i.test(value))) {
       const nextCreativeMode: 'choose' | VideoFormat = /influencer|modelo|persona/i.test(value)
         ? 'caption'
         : /reel|viral|moldura/i.test(value) ? 'frame' : 'choose';
@@ -1022,7 +1023,7 @@ export default function SiaAssistant({
               </div>
             )}
 
-            {creativeMode && assistantMode === 'current' && (
+            {creativeMode && (
               <div className="overflow-hidden rounded-2xl border border-amber-200 bg-[#f4f4f5] shadow-[0_18px_55px_rgba(29,35,48,0.10)]">
                 <div className="flex flex-col gap-4 border-b border-gray-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
