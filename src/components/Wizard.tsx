@@ -154,7 +154,7 @@ export default function Wizard({
   ];
 
   const themePresets = [
-    { id: 'vice', name: 'Vice', bg: '#170f26', hero: '#ef78b7', surface: '#30203e', text: '#fff3fa', muted: '#63ded9' },
+    { id: 'vice', name: 'Vice', bg: '#000000', hero: '#ef78b7', surface: '#101010', text: '#ffffff', muted: '#63ded9' },
     { id: 'obsidian', name: 'Dark premium', bg: '#050507', hero: '#111827', surface: '#18181b', text: '#ffffff', muted: '#94a3b8' },
     { id: 'aurora', name: 'Neon glass', bg: '#050312', hero: '#312e81', surface: '#111827', text: '#ffffff', muted: '#a5b4fc' },
     { id: 'clean', name: 'Clean claro', bg: '#f8fafc', hero: '#ffffff', surface: '#e2e8f0', text: '#0f172a', muted: '#64748b' },

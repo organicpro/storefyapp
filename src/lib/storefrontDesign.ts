@@ -18,15 +18,15 @@ body[data-theme="market"] .retail-hero{min-height:300px}body[data-theme="market"
 @media(max-width:1040px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.storefront-search{max-width:380px}}
 @media(max-width:760px){.wrap{width:calc(100% - 32px)}.storefront-search{order:4;flex-basis:100%;max-width:none}.storefront-nav{gap:12px;min-height:70px}.storefront-brand strong{font-size:18px;max-width:190px}.storefront-nav-cta{font-size:12px;padding:10px}.retail-layout,.retail-hero{min-height:340px}.retail-layout{padding:28px 0}.retail-copy h1,body[data-theme="market"] .retail-copy h1{font-size:36px}.retail-copy p{font-size:14px}.hero-art{object-position:60% center}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.benefit-row{grid-template-columns:repeat(2,minmax(0,1fr))}.benefit-row div{padding:14px 10px 14px 36px}.benefit-icon{left:7px;top:15px}.benefit-row span{font-size:11px}.section-title{display:block}.section-title h2{font-size:23px;margin-bottom:8px}.strip-head p{display:none}.card-body{padding:12px}.card h3{font-size:13px;min-height:40px}.card p{display:none}.media img.logo-img{padding:10px}.buy-row strong{font-size:20px}.card-actions{grid-template-columns:1fr}.card-actions .secondary-btn{min-height:32px;padding:5px}.card-actions .buy-btn{min-height:40px}.collection-tile{flex-basis:215px}.modal-card{grid-template-columns:1fr}.modal-media,.modal-media img{min-height:0;height:240px}.modal-body{padding:20px}.modal-actions{width:100%}.modal-actions button{flex:1}.contact-box .cta{margin-top:16px}.footer-meta{padding-bottom:64px}.floating-cart{bottom:max(12px,env(safe-area-inset-bottom));left:16px;right:16px}.retail-actions .secondary-btn{font-size:12px}.retail-actions .cta{font-size:13px}}
 .collection-tile small{color:var(--sf-text)}.drawer:not(.open){visibility:hidden;box-shadow:none}.drawer.open{visibility:visible}.contact-box .cta{border-radius:6px;box-shadow:none}.benefit-icon{color:var(--sf-text)}.retail-copy h1{width:fit-content;max-width:100%;text-shadow:0 2px 8px #000,0 0 24px #000}.hero-art{opacity:.65}
-body[data-theme="vice"]{--sf-bg:#170f26;--sf-text:#fff3fa;--sf-muted:#c9b7d5;--sf-border:#48314f;--sf-surface:#24182f;--sf-card:#24182f;--sf-accent:#ef78b7;--sf-accent-text:#28102e}
-body[data-theme="vice"] .storefront-header{border-top:2px solid #63ded9;background:#170f26f2}
+body[data-theme="vice"]{--sf-bg:#000000;--sf-text:#ffffff;--sf-muted:#b5b5b5;--sf-border:#292929;--sf-surface:#101010;--sf-card:#101010;--sf-accent:#ef78b7;--sf-accent-text:#28102e}
+body[data-theme="vice"] .storefront-header{border-top:2px solid #63ded9;background:#000000}
 body[data-theme="vice"] .offer-bar{background:#ef78b7;color:#28102e}
 body[data-theme="vice"] .storefront-brand strong{font-style:italic;color:#fff3fa}
-body[data-theme="vice"] .retail-hero{border-bottom:3px solid #63ded9;background:#170f26}
+body[data-theme="vice"] .retail-hero{border-bottom:3px solid #63ded9;background:#000000}
 body[data-theme="vice"] .hero-art{opacity:.65}
-body[data-theme="vice"] .retail-copy h1{font-style:italic;text-shadow:3px 3px 0 #9d306b,0 3px 18px #170f26;font-weight:900}
+body[data-theme="vice"] .retail-copy h1{font-style:italic;text-shadow:3px 3px 0 #9d306b,0 3px 18px #000000;font-weight:900}
 body[data-theme="vice"] .retail-kicker{background:#63ded9;color:#142832}
-body[data-theme="vice"] .retail-copy p{border-color:#63ded9;background:#170f26d9}
+body[data-theme="vice"] .retail-copy p{border-color:#63ded9;background:#000000d9}
 body[data-theme="vice"] .cta,body[data-theme="vice"] .buy-btn{box-shadow:0 4px 0 #8d3264;transition:transform .2s,box-shadow .2s}
 body[data-theme="vice"] .cta:hover,body[data-theme="vice"] .buy-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 #8d3264}
 body[data-theme="vice"] .benefit-icon,body[data-theme="vice"] .collection-tile small{color:#63ded9}
@@ -34,6 +34,6 @@ body[data-theme="vice"] .media,body[data-theme="vice"] .media img.logo-img{backg
 body[data-theme="vice"] .card:hover{border-color:#63ded9;box-shadow:0 12px 30px #ef78b720}
 body[data-theme="vice"] .section-title h2{border-left:3px solid #ef78b7;padding-left:12px}
 body[data-theme="vice"] .floating-cart{background:#63ded9;color:#142832}
-body[data-theme="vice"] .cart-badge{background:#170f26;color:#fff3fa}
+body[data-theme="vice"] .cart-badge{background:#000000;color:#ffffff}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
 `;

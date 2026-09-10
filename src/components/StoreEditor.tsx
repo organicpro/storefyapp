@@ -254,7 +254,7 @@ export default function StoreEditor({
                       
                       switch (theme) {
                         case 'vice':
-                          previewStyle = 'bg-[#170f26]';
+                          previewStyle = 'bg-[#000000]';
                           headerStyle = 'bg-[#ef78b7]';
                           bodyStyle = 'bg-[#63ded9]';
                           break;

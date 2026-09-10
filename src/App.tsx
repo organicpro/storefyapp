@@ -283,8 +283,8 @@ function getStoreTheme(config: StoreConfig) {
   switch (config.themePreset) {
     case 'vice':
       return {
-        accent: '#ef78b7', pageBg: '#170f26', text: '#fff3fa', muted: '#c9b7d5',
-        border: '#48314f', heroBg: '#170f26', surface: '#24182f', card: '#24182f'
+        accent: '#ef78b7', pageBg: '#000000', text: '#ffffff', muted: '#b5b5b5',
+        border: '#292929', heroBg: '#000000', surface: '#101010', card: '#101010'
       };
     case 'clean':
       return {
