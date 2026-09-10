@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef } from 'react';
+import { gameProductPriority } from '../lib/productPriority';
 import { 
   Camera,
   Gamepad2, 
@@ -166,6 +167,11 @@ export default function Wizard({
     selectedNiche.recommendedSubcategories.includes(p.subcategory)
     || (p.supplier === 'Produto próprio' && p.category === selectedProductCategory)
   );
+  const prioritizedRecommendedProducts = selectedProductCategory === 'Games'
+    ? [...products.filter(product => product.category === 'Games' && gameProductPriority(product) === 1000), ...recommendedProducts]
+      .filter((product, index, list) => list.findIndex(candidate => candidate.id === product.id) === index)
+      .sort((a, b) => gameProductPriority(b) - gameProductPriority(a))
+    : recommendedProducts;
 
   const handleCreateCustomProduct = (event: React.FormEvent) => {
     event.preventDefault();
@@ -489,7 +495,7 @@ export default function Wizard({
 
           <div className="bg-white border border-gray-200 shadow-sm p-4 rounded-xl flex items-center justify-between text-xs text-gray-800 font-sans">
             <span className="font-semibold text-gray-900">Sugestões baseadas no nicho: {selectedNiche.name}</span>
-            <span className="font-sans text-gray-500">Exibindo {recommendedProducts.length} recomendações</span>
+            <span className="font-sans text-gray-500">Exibindo {prioritizedRecommendedProducts.length} recomendações</span>
           </div>
 
           {PHYSICAL_PRODUCTS_ENABLED && <MarketplaceImporter onImportProduct={onImportProduct} variant="setup" />}
@@ -563,7 +569,7 @@ export default function Wizard({
           </form>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[32rem] overflow-y-auto pr-1">
-            {recommendedProducts.map((p) => {
+            {prioritizedRecommendedProducts.map((p) => {
               const profit = p.salePrice - p.costPrice;
               return (
                 <div 
