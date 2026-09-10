@@ -31,6 +31,7 @@ type ProductReelInput = {
     frameBackground?: string;
     frameTextColor?: string;
     profilePosition?: 'top' | 'bottom';
+    profileImageEnabled?: boolean;
     panX?: number;
     panY?: number;
   };
@@ -98,27 +99,29 @@ function drawVideoContained(context: CanvasRenderingContext2D, video: HTMLVideoE
 }
 
 function drawProfileBlock(context: CanvasRenderingContext2D, input: ProductReelInput, avatar: HTMLImageElement | null, top: number) {
-  context.save();
-  context.beginPath();
-  context.arc(48, top + 25, 25, 0, Math.PI * 2);
-  context.clip();
-  if (avatar) context.drawImage(avatar, 23, top, 50, 50);
-  else {
-    context.fillStyle = input.accent || '#dfb52d';
-    context.fillRect(23, top, 50, 50);
-    context.fillStyle = '#111318';
-    context.font = '700 18px Arial';
-    context.textAlign = 'center';
-    context.fillText((input.profileName || 'S').slice(0, 1).toUpperCase(), 48, top + 32);
+  if (input.overlay?.profileImageEnabled !== false) {
+    context.save();
+    context.beginPath();
+    context.arc(48, top + 25, 25, 0, Math.PI * 2);
+    context.clip();
+    if (avatar) context.drawImage(avatar, 23, top, 50, 50);
+    else {
+      context.fillStyle = input.accent || '#dfb52d';
+      context.fillRect(23, top, 50, 50);
+      context.fillStyle = '#111318';
+      context.font = '700 18px Arial';
+      context.textAlign = 'center';
+      context.fillText((input.profileName || 'S').slice(0, 1).toUpperCase(), 48, top + 32);
+    }
+    context.restore();
   }
-  context.restore();
   context.textAlign = 'left';
   context.fillStyle = input.overlay?.frameTextColor || '#111318';
   context.font = '700 16px Arial';
-  context.fillText(input.profileName || 'Storefy', 86, top + 21);
+  context.fillText(input.profileName || 'Storefy', input.overlay?.profileImageEnabled === false ? 32 : 86, top + 21);
   context.fillStyle = input.overlay?.frameTextColor || '#6b7280';
   context.font = '13px Arial';
-  context.fillText(input.profileHandle || '@storefy', 86, top + 42);
+  context.fillText(input.profileHandle || '@storefy', input.overlay?.profileImageEnabled === false ? 32 : 86, top + 42);
 }
 
 function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElement, variant: ReelTextVariant, input: ProductReelInput, avatar: HTMLImageElement | null) {
@@ -142,7 +145,7 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
     const lineHeight = overlayAtTop ? 20 : 27;
     bandHeight = overlayLines.length * lineHeight + 28;
     bandY = overlayAtTop
-      ? 24
+      ? 88
       : input.overlay?.position === 'bottom'
         ? 226 + 570 - bandHeight - 34
         : 226 + (570 - bandHeight) / 2;
