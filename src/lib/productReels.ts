@@ -137,21 +137,22 @@ function drawReelFrame(context: CanvasRenderingContext2D, video: HTMLVideoElemen
   let bandY = 0;
   if (overlayEnabled) {
     context.font = '800 22px Arial';
-    const overlayLines = wrapText(context, overlayText, WIDTH - 108, 3);
+    const overlayWidth = overlayAtTop ? 238 : WIDTH - 84;
+    const overlayLines = wrapText(context, overlayText, overlayAtTop ? 206 : WIDTH - 108, overlayAtTop ? 2 : 3);
     const lineHeight = 27;
     bandHeight = overlayLines.length * lineHeight + 28;
     bandY = overlayAtTop
-      ? 178
+      ? 24
       : input.overlay?.position === 'bottom'
         ? 226 + 570 - bandHeight - 34
         : 226 + (570 - bandHeight) / 2;
     context.fillStyle = input.overlay?.bandColor || 'rgba(255,255,255,.96)';
     context.beginPath();
-    context.roundRect(42, bandY, WIDTH - 84, bandHeight, 14);
+    context.roundRect(overlayAtTop ? 270 : 42, bandY, overlayWidth, bandHeight, 14);
     context.fill();
     context.fillStyle = input.overlay?.textColor || '#111318';
     context.textAlign = 'center';
-    overlayLines.forEach((line, index) => context.fillText(line, WIDTH / 2, bandY + 27 + index * lineHeight));
+    overlayLines.forEach((line, index) => context.fillText(line, (overlayAtTop ? 270 : 42) + overlayWidth / 2, bandY + 27 + index * lineHeight));
   }
 
   context.textAlign = 'left';
