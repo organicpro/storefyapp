@@ -105,7 +105,9 @@ const STORAGE_KEYS = {
   publicStores: 'storefy.publicStores'
 };
 
-const allowUnauthenticated = import.meta.env.VITE_ALLOW_UNAUTHENTICATED === 'true';
+const localPreviewAccess = import.meta.env.DEV
+  && ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+const allowUnauthenticated = localPreviewAccess || import.meta.env.VITE_ALLOW_UNAUTHENTICATED === 'true';
 
 type StoreSite = StoreConfig & { id: string };
 
@@ -1502,7 +1504,7 @@ function App() {
     return <iframe title={publicStore.storeConfig.name} srcDoc={buildStoreHtml(publicStore.storeConfig, publicStore.products, publicStore.storeConfig.ownerLevel)} className="fixed inset-0 h-dvh w-full border-0" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" />;
   }
 
-  if (!authReady) {
+  if (!authReady && !localPreviewAccess) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#f6f6f7] text-gray-900">
         <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-5 py-4 shadow-2xl backdrop-blur-xl">
@@ -1513,7 +1515,7 @@ function App() {
     );
   }
 
-  if (!session && !localAccess) {
+  if (!session && !localAccess && !localPreviewAccess) {
     return <LoginScreen onLocalAccess={handleLocalAccess} />;
   }
 
