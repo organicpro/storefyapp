@@ -13,11 +13,12 @@ interface Props {
   onNavigate: (page: string) => void;
   onPublish: () => Promise<{ mode: string; url: string; error?: string }>;
   onExport: () => void;
+  embedded?: boolean;
 }
 
 const blank = { id: '', name: '', affiliateUrl: '', imageUrl: '', description: '', price: '', commission: '' };
 const money = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-export default function AffiliateWorkspace({ products, storeConfig, onSave, onToggle, onUpdateStore, onPreview, onNavigate, onPublish, onExport }: Props) {
+export default function AffiliateWorkspace({ products, storeConfig, onSave, onToggle, onUpdateStore, onPreview, onNavigate, onPublish, onExport, embedded = false }: Props) {
   const [form, setForm] = useState(blank);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
@@ -72,24 +73,24 @@ export default function AffiliateWorkspace({ products, storeConfig, onSave, onTo
   };
   return <section className="space-y-6">
     <header className="flex flex-wrap items-start justify-between gap-4">
-      <div><p className="sf-section-label mb-2">Monetização</p><h1 className="text-[26px] font-semibold">Afiliados</h1><p className="mt-2 text-sm text-gray-500">Sua seleção de produtos. A compra acontece na Shopee ou no Mercado Livre.</p></div>
+      <div><p className="sf-section-label mb-2">{embedded ? 'Produtos' : 'Monetização'}</p><h1 className="text-[26px] font-semibold">{embedded ? 'Produtos afiliados da sua loja' : 'Afiliados'}</h1><p className="mt-2 text-sm text-gray-500">Sua seleção de produtos. A compra acontece na Shopee ou no Mercado Livre.</p></div>
       <button type="button" onClick={() => { setForm(blank); setError(''); setOpen(true); }} className="inline-flex items-center gap-2 rounded-lg bg-[#191b20] px-4 py-2.5 text-xs font-semibold text-white"><Plus size={15} /> Adicionar produto afiliado</button>
     </header>
-    <div className="flex flex-wrap items-center justify-between gap-3 border-y border-gray-200 py-4">
+    {!embedded && <div className="flex flex-wrap items-center justify-between gap-3 border-y border-gray-200 py-4">
       <div className="flex rounded-lg bg-gray-200/60 p-1" aria-label="Modo da vitrine">
         <button type="button" aria-pressed={storeConfig.commerceMode !== 'affiliate'} onClick={() => changeMode('resale')} className={`rounded-md px-4 py-2 text-xs font-semibold ${storeConfig.commerceMode !== 'affiliate' ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Revenda</button>
         <button type="button" aria-pressed={storeConfig.commerceMode === 'affiliate'} onClick={() => changeMode('affiliate')} className={`rounded-md px-4 py-2 text-xs font-semibold ${storeConfig.commerceMode === 'affiliate' ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Afiliados</button>
       </div>
       <div className="flex flex-wrap items-center gap-2"><span className="mr-2 text-xs text-gray-500">{selectedCount} {selectedCount === 1 ? 'produto na vitrine' : 'produtos na vitrine'}</span><button type="button" disabled={!canPublish} onClick={onPreview} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium disabled:opacity-40"><Eye size={15} /> Visualizar vitrine</button><button type="button" onClick={() => onNavigate('operation')} className="rounded-lg px-3 py-2 text-xs font-medium text-gray-600">Personalizar loja</button></div>
-    </div>
+    </div>}
     {saved && <p role="status" className="text-xs text-emerald-700">{saved}</p>}
-    <div className="flex flex-wrap items-center gap-3">
+    {!embedded && <div className="flex flex-wrap items-center gap-3">
       <button type="button" disabled={!canPublish || publishing} onClick={publish} className="inline-flex items-center gap-2 rounded-lg bg-[#191b20] px-4 py-2.5 text-xs font-semibold text-white disabled:opacity-40"><Globe size={15} />{publishing ? 'Publicando...' : 'Publicar vitrine'}</button>
       <button type="button" disabled={!canPublish} onClick={onExport} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-xs font-medium disabled:opacity-40"><Download size={15} />Exportar HTML</button>
       <button type="button" onClick={() => onNavigate('videos')} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-xs font-medium"><Film size={15} />Criar conteúdo</button>
       {publicUrl && <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="break-all text-xs text-emerald-700">Abrir vitrine publicada</a>}
       {publicUrl && <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(publicUrl); setSaved('Link copiado.'); } catch { setError('Não foi possível copiar. Abra a vitrine e use o endereço do navegador.'); } }} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-xs font-medium"><Copy size={15} />Copiar link da bio</button>}
-    </div>
+    </div>}
     {!open && error && <div role="alert" className="flex flex-wrap items-center gap-3"><p className="text-xs text-rose-600">{error}</p><button type="button" onClick={() => onNavigate('settings')} className="text-xs font-semibold underline">Configurar publicação</button></div>}
     {!affiliateProducts.length && <div className="py-16 text-center"><Link2 className="mx-auto mb-4 text-amber-600" size={30} /><h2 className="text-lg font-semibold">Monte sua primeira seleção</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">Use o link comissionado gerado no seu programa de afiliados. Ele será preservado em cada botão da vitrine.</p></div>}
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

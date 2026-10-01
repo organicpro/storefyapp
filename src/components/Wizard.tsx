@@ -44,6 +44,7 @@ interface WizardProps {
   onNavigateToPreview: (returnStep: number) => void;
   onPublishStore: () => Promise<{ mode: string; url: string; error?: string }>;
   onComplete?: (publishMode: 'draft' | 'publish') => void;
+  affiliateProducts?: React.ReactNode;
 }
 
 export default function Wizard({ 
@@ -57,9 +58,11 @@ export default function Wizard({
   initialStep = 1,
   onNavigateToPreview,
   onPublishStore,
-  onComplete
+  onComplete,
+  affiliateProducts
 }: WizardProps) {
   const [currentStep, setCurrentStep] = useState(initialStep);
+  const isAffiliate = storeConfig.commerceMode === 'affiliate';
   const [selectedNicheId, setSelectedNicheId] = useState(NICHES[0].id);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishProgress, setPublishProgress] = useState(0);
@@ -123,7 +126,7 @@ export default function Wizard({
   const [heroSubtitle, setHeroSubtitle] = useState(storeConfig.heroSubtitle || 'Escolha o produto, veja detalhes e envie o pedido para a loja.');
 
   const stepsList = [
-    { num: 1, label: 'Nicho' },
+    { num: 1, label: 'Tipo de loja' },
     { num: 2, label: 'Produtos' },
     { num: 3, label: 'Identidade' },
     { num: 4, label: 'Página' },
@@ -131,7 +134,7 @@ export default function Wizard({
     { num: 6, label: 'Divulgação' }
   ];
 
-  const selectedNiche = NICHES.find(n => n.id === selectedNicheId) || NICHES[0];
+  const selectedNiche = NICHES.find(n => n.id === (isAffiliate ? 'physical-finds' : selectedNicheId)) || NICHES[0];
   const selectedProductCategory: Product['category'] = ({
     games: 'Games',
     'redes-sociais': 'Redes Sociais',
@@ -163,7 +166,7 @@ export default function Wizard({
   ] as const;
 
   // Filter products matching recommendation for selected niche
-  const recommendedProducts = products.filter(p =>
+  const recommendedProducts = products.filter(p => p.salesMode !== 'affiliate').filter(p =>
     selectedNiche.recommendedSubcategories.includes(p.subcategory)
     || (selectedProductCategory === 'Achados Fisicos' && p.category === selectedProductCategory)
     || (p.supplier === 'Produto próprio' && p.category === selectedProductCategory)
@@ -172,7 +175,7 @@ export default function Wizard({
     // Games must show the complete digital catalog so the hero opportunity is
     // never lost behind a recommendation-subcategory filter.
     ? products
-      .filter(product => product.category === 'Games')
+      .filter(product => product.category === 'Games' && product.salesMode !== 'affiliate')
       .sort((a, b) => gameProductPriority(b) - gameProductPriority(a))
     : recommendedProducts;
 
@@ -212,6 +215,7 @@ export default function Wizard({
 
   const handleNext = () => {
     const normalizedSubdomain = storeSubdomain.toLowerCase().replace(/\s+/g, '-');
+    if (currentStep === 1) onUpdateStoreConfig({ ...storeConfig, niche: isAffiliate ? 'Achados Fisicos' : selectedNiche.name });
 
     if (currentStep === 3) {
       const defaultHeroTitle = storeConfig.name;
@@ -281,7 +285,7 @@ export default function Wizard({
 
     await new Promise(resolve => setTimeout(resolve, 350));
     setPublishProgress(45);
-    setPublishStatusText(`Preparando WhatsApp (${storeWhatsapp}) e catalogo selecionado...`);
+    setPublishStatusText(isAffiliate ? 'Preparando links de afiliado e catalogo selecionado...' : `Preparando WhatsApp (${storeWhatsapp}) e catalogo selecionado...`);
 
     await new Promise(resolve => setTimeout(resolve, 350));
     setPublishProgress(70);
@@ -433,6 +437,13 @@ export default function Wizard({
       {/* STEP 1: CHOOSE NICHE */}
       {currentStep === 1 && (
         <div className="space-y-6">
+          <fieldset className="border-b border-gray-200 pb-6">
+            <legend className="mb-4 text-lg font-semibold">Como você quer vender?</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {([{ id: 'resale', label: 'Revenda', description: 'Defina seu preço e receba pedidos pela loja.' }, { id: 'affiliate', label: 'Afiliados', description: 'Indique produtos com seu link. A compra acontece no marketplace.' }] as const).map(mode => <label key={mode.id} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 ${((storeConfig.commerceMode || 'resale') === mode.id) ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}><input type="radio" name="commerceMode" value={mode.id} checked={(storeConfig.commerceMode || 'resale') === mode.id} onChange={() => { onUpdateStoreConfig({ ...storeConfig, commerceMode: mode.id, status: 'draft' }); setHeroSubtitle(mode.id === 'affiliate' ? 'Confira nossas ofertas selecionadas e compre diretamente no marketplace.' : 'Escolha o produto, veja detalhes e envie o pedido para a loja.'); }} className="mt-1 accent-amber-500" /><span><strong className="block text-sm">{mode.label}</strong><span className="mt-1 block text-xs leading-5 text-gray-500">{mode.description}</span></span></label>)}
+            </div>
+          </fieldset>
+          {!isAffiliate && <>
           <div className="text-center max-w-lg mx-auto space-y-2">
             <h3 className="text-lg font-sans font-medium text-gray-900">1. Escolha seu nicho de atuação</h3>
             <p className="text-xs text-gray-500">
@@ -483,11 +494,13 @@ export default function Wizard({
               );
             })}
           </div>
+          </>}
         </div>
       )}
 
+      {currentStep === 2 && isAffiliate && affiliateProducts}
       {/* STEP 2: SELECT PRODUCTS */}
-      {currentStep === 2 && (
+      {currentStep === 2 && !isAffiliate && (
         <div className="space-y-6">
           <div className="text-center max-w-lg mx-auto space-y-2">
             <h3 className="text-lg font-sans font-medium text-gray-900">2. Adicione os produtos iniciais</h3>
@@ -648,7 +661,7 @@ export default function Wizard({
           <div className="text-center max-w-lg mx-auto space-y-2">
             <h3 className="text-lg font-sans font-medium text-gray-900">3. Configure sua identidade de loja</h3>
             <p className="text-xs text-gray-500">
-              Insira o nome da sua vitrine e o WhatsApp que receberá as mensagens prontas do carrinho.
+              {isAffiliate ? 'Defina o nome e a identidade da sua vitrine de ofertas.' : 'Insira o nome da sua vitrine e o WhatsApp que receberá as mensagens prontas do carrinho.'}
             </p>
           </div>
 
@@ -706,7 +719,7 @@ export default function Wizard({
             </div>
 
             {/* WhatsApp Input */}
-            <div className="space-y-1.5">
+            {!isAffiliate && <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider font-sans flex items-center gap-1">
                 WhatsApp de Recebimento
               </label>
@@ -718,7 +731,7 @@ export default function Wizard({
                 className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-900 placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 bg-white border border-gray-200 shadow-sm-input font-sans"
               />
               <span className="text-[10px] text-slate-500 block font-sans">DDI (55) + DDD + Telefone, somente números</span>
-            </div>
+            </div>}
 
             {/* Subdomain Input */}
             <div className="space-y-1.5 md:col-span-2">
@@ -735,7 +748,7 @@ export default function Wizard({
             </div>
 
             {/* Welcome message draft */}
-            <div className="space-y-1.5 md:col-span-2">
+            {!isAffiliate && <div className="space-y-1.5 md:col-span-2">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider font-sans">Mensagem padrão no WhatsApp</label>
               <textarea
                 rows={2}
@@ -744,7 +757,7 @@ export default function Wizard({
                 className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-900 placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 bg-white border border-gray-200 shadow-sm-input font-sans"
                 placeholder="Olá! Gostaria de comprar o produto do catálogo..."
               />
-            </div>
+            </div>}
           </div>
         </div>
       )}
@@ -1029,7 +1042,8 @@ export default function Wizard({
 
           <button
             onClick={handleNext}
-            className="px-5 py-2.5 bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold rounded-xl text-xs font-semibold flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
+            disabled={currentStep === 2 && isAffiliate && !products.some(product => product.salesMode === 'affiliate' && storeConfig.productIds?.includes(product.id))}
+            className="px-5 py-2.5 bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold rounded-xl text-xs font-semibold flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <span>Avançar</span>
             <ChevronRight className="w-4 h-4 text-white" />

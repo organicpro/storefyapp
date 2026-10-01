@@ -1335,7 +1335,7 @@ function App() {
 
   const handleCompleteWizard = (publishMode: 'draft' | 'publish') => {
     if (draftStore) {
-      setSites(prev => [...prev, draftStore]);
+      setSites(prev => prev.some(site => site.id === draftStore.id) ? prev : [...prev, draftStore]);
       setActiveSiteId(draftStore.id);
       setDraftStore(null);
       showAppToast(publishMode === 'publish' ? 'Loja criada e publicada!' : 'Loja salva como rascunho.');
@@ -1438,6 +1438,7 @@ function App() {
         ? makeSite({ ...site, productIds: targetProductIds }, index + 1)
         : site
       );
+      if (!sitesForSave.some(site => site.id === targetSite.id)) sitesForSave.push(makeSite(publishConfig, sites.length + 1));
 
       await saveWorkspace(session.user.id, {
         products,
@@ -1464,20 +1465,20 @@ function App() {
       }
 
       const netlifyUrl = data.url || publicUrl;
-      setSites(prev => prev.map(site => site.id === targetSite.id
-        ? {
-            ...site,
+      const publishedSite = makeSite({
+            ...targetSite,
             status: 'published',
             publishedUrl: netlifyUrl,
             publishedAt,
             publicSlug: slug,
             productIds: targetProductIds,
-            netlifySiteId: data.siteId || site.netlifySiteId,
-            netlifySiteName: data.siteName || site.netlifySiteName,
-            lastNetlifyDeployId: data.deployId || site.lastNetlifyDeployId
-          }
-        : site
-      ));
+            netlifySiteId: data.siteId || targetSite.netlifySiteId,
+            netlifySiteName: data.siteName || targetSite.netlifySiteName,
+            lastNetlifyDeployId: data.deployId || targetSite.lastNetlifyDeployId
+      }, sites.length + 1);
+      setSites(prev => prev.some(site => site.id === targetSite.id) ? prev.map(site => site.id === targetSite.id ? publishedSite : site) : [...prev, publishedSite]);
+      setDraftStore(prev => prev?.id === targetSite.id ? null : prev);
+      setActiveSiteId(publishedSite.id);
 
       if (targetSite.downloadHtmlFallback) {
         downloadHtml(filename, html);
@@ -1852,9 +1853,8 @@ function App() {
             )}
             {activePage === 'wizard' && (
               <Wizard
-                // The guided flow must browse the full catalog. `storeProducts`
-                // only contains items already linked to the active store.
                 products={products}
+                affiliateProducts={<AffiliateWorkspace embedded products={storeProducts} storeConfig={storeConfig} onSave={handleSaveAffiliateProduct} onToggle={handleToggleAddProduct} onUpdateStore={handleUpdateStoreConfig} onPreview={() => handleOpenGeneratedSite('wizard', 2)} onNavigate={handleNavigate} onPublish={() => handlePublishStore()} onExport={() => downloadHtml('afiliados.html', buildStoreHtml(storeConfig, products, effectiveUserLevel))} />}
                 storeConfig={storeConfig}
                 onUpdateStoreConfig={handleUpdateStoreConfig}
                 onToggleAddProduct={handleToggleAddProduct}
