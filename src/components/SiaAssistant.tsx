@@ -270,6 +270,7 @@ function rankProductsForQuery(allProducts: Product[], query: string, nicheId?: s
   const tokens = productSearchTokens(query);
   const nicheCategory = nicheId ? categoryByNiche[nicheId] : undefined;
   return allProducts
+    .filter(product => product.salesMode !== 'affiliate')
     .map(product => {
       const name = normalizeSearch(product.name);
       const subcategory = normalizeSearch(product.subcategory || '');
@@ -401,7 +402,7 @@ export default function SiaAssistant({
       const byId = new Map(products.map(product => [product.id, product]));
       const selected = recommendationProductIds
         .map(id => byId.get(id))
-        .filter((product): product is Product => Boolean(product) && !memory.rejectedProductIds.includes(product.id));
+        .filter((product): product is Product => Boolean(product) && product.salesMode !== 'affiliate' && !memory.rejectedProductIds.includes(product.id));
       const gta6 = activeNicheId === 'games'
         ? products.filter(product => gameProductPriority(product) === 1000 && !memory.rejectedProductIds.includes(product.id))
         : [];
@@ -420,7 +421,7 @@ export default function SiaAssistant({
     }
     const category = categoryByNiche[activeNicheId];
     return products
-      .filter(product => product.category === category)
+      .filter(product => product.category === category && product.salesMode !== 'affiliate')
       .filter(product => !memory.rejectedProductIds.includes(product.id))
       .filter(product => product.stockQuantity === undefined || product.stockQuantity > 0)
       .sort((a, b) => gameProductPriority(b) - gameProductPriority(a) || recommendationScore(b) - recommendationScore(a))
@@ -672,6 +673,11 @@ export default function SiaAssistant({
     setInput('');
     setCommandMenuOpen(false);
 
+    if (/afiliad|comissionad/i.test(value)) {
+      setMessages([...nextMessages, makeMessage('assistant', 'Vamos montar sua vitrine de afiliados. Cadastre o link comissionado, foto e detalhes do produto; a compra acontece no marketplace.')]);
+      onNavigate('affiliates');
+      return;
+    }
     if (submitWorkflowText(value)) return;
     const pastedMarketplaceUrl = value.match(/https?:\/\/[^\s]+/i)?.[0] || '';
     const hasMarketplaceUrl = /(?:mercadolivre|mercadolivre\.com|meli\.la|shopee|shp\.ee)/i.test(pastedMarketplaceUrl);

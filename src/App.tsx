@@ -35,6 +35,8 @@ import MarketingKit from './components/MarketingKit';
 import SettingsView from './components/SettingsView';
 import { storefrontDesign } from './lib/storefrontDesign';
 import LoginScreen from './components/LoginScreen';
+import AffiliateWorkspace from './components/AffiliateWorkspace';
+import { safeAffiliateUrl, affiliateLabel } from './lib/affiliate';
 import AdminCodes from './components/AdminCodes';
 import SiaAssistant, { type SiaStoreRequest } from './components/SiaAssistant';
 import { DEFAULT_STORE_CONFIG, INITIAL_PRODUCTS, INITIAL_SUPPLIERS } from './data';
@@ -256,7 +258,7 @@ function productsForPersistence(products: Product[]) {
 
 function getSelectedProductsForStore(config: StoreConfig, products: Product[]) {
   const productIds = getStoreProductIds(config, products);
-  const selected = applyStoreSelection(products, productIds).filter(product => product.addedToStore);
+  const selected = applyStoreSelection(products, productIds).filter(product => product.addedToStore && (config.commerceMode === 'affiliate' ? Boolean(safeAffiliateUrl(product)) : product.salesMode !== 'affiliate'));
   return /game|gamer|esport|sport/i.test(config.niche || '') ? prioritizeGameProducts(selected) : selected;
 }
 
@@ -432,7 +434,8 @@ function getAntiAiStorefrontVoice(category?: string) {
   }
 }
 function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1) {
-  const activeProducts = getSelectedProductsForStore(config, products);
+  const affiliateMode = config.commerceMode === 'affiliate';
+  const activeProducts = getSelectedProductsForStore(config, products).filter(product => affiliateMode ? Boolean(safeAffiliateUrl(product)) : product.salesMode !== 'affiliate');
   const levelBadge = userLevel === 10 ? '&#128293; SOCIO NIVEL 10' : '&#128100; NIVEL 1';
   const categories = Array.from(new Set(activeProducts.map(product => product.category)));
   const collectionLabels = Array.from(new Set(activeProducts.map(product => product.subcategory || product.category).filter(Boolean))).slice(0, 8);
@@ -513,7 +516,9 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
       imageUrl: image.source,
       imageClass: image.className,
       isPhysical: product.category === 'Achados Fisicos',
-      contactUrl: whatsappFor(product)
+      contactUrl: whatsappFor(product),
+      affiliateUrl: safeAffiliateUrl(product),
+      affiliateLabel: affiliateLabel(product)
     };
   });
   const firstShareImage = storefrontProducts.find(product => product.imageUrl && !product.imageUrl.startsWith('data:'))?.imageUrl || normalizedLogoUrl;
@@ -532,7 +537,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
         image: product.imageUrl && !product.imageUrl.startsWith('data:') ? product.imageUrl : normalizedLogoUrl,
         description: product.description,
         category: product.category,
-        offers: { '@type': 'Offer', priceCurrency: 'BRL', price: product.price.toFixed(2), availability: 'https://schema.org/InStock' }
+        offers: affiliateMode ? undefined : { '@type': 'Offer', priceCurrency: 'BRL', price: product.price.toFixed(2), availability: 'https://schema.org/InStock' }
       }
     }))
   };
@@ -545,8 +550,8 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
         <p>${escapeHtml(getPublicDescription(product))}</p>
         <ul>${getPublicBenefits(product).map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}</ul>
         <div class="buy-row">
-          <div><span>Preco</span><strong>${formatPublicPrice(product.salePrice)}</strong></div>
-          <div class="card-actions"><button type="button" class="secondary-btn" data-detail="${escapeHtml(product.id)}">Detalhes</button><button type="button" class="buy-btn" data-add="${escapeHtml(product.id)}">Comprar</button></div>
+          <div><span>${affiliateMode ? 'Preco de referencia' : 'Preco'}</span><strong>${product.salePrice > 0 ? formatPublicPrice(product.salePrice) : affiliateMode ? 'Ver oferta' : 'Consultar'}</strong></div>
+          <div class="card-actions"><button type="button" class="secondary-btn" data-detail="${escapeHtml(product.id)}">Detalhes</button>${affiliateMode ? `<a class="buy-btn" href="${escapeHtml(safeAffiliateUrl(product))}" target="_blank" rel="noopener noreferrer sponsored">${product.affiliateMarketplace === 'shopee' ? 'Ver na Shopee' : 'Ver no Mercado Livre'}</a>` : `<button type="button" class="buy-btn" data-add="${escapeHtml(product.id)}">Comprar</button>`}</div>
         </div>
       </div>
     </article>
@@ -571,7 +576,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
     `;
   }).join('');
   const filterButtons = ['Todos', ...categories].map((category, index) => `<button type="button" class="filter-btn${index === 0 ? ' active' : ''}" data-filter="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join('');
-  const faqItems = (config.faq || []).slice(0, 3).map(item => `<details><summary>${escapeHtml(item.question)}</summary><p>${escapeHtml(item.answer)}</p></details>`).join('');
+  const faqItems = (affiliateMode ? [{ question: 'Onde acontece a compra?', answer: 'Voce compra diretamente na Shopee ou no Mercado Livre. Pagamento, entrega e suporte seguem as condicoes do marketplace e do vendedor.' }, { question: 'Os precos podem mudar?', answer: 'Sim. Os valores desta vitrine sao de referencia. Confira preco, disponibilidade e frete na pagina final antes de comprar.' }, { question: 'Esta vitrine recebe comissao?', answer: 'Podemos receber uma comissao por compras elegiveis realizadas pelos links desta vitrine, conforme as regras do programa de afiliados.' }] : config.faq || []).slice(0, 3).map(item => `<details><summary>${escapeHtml(item.question)}</summary><p>${escapeHtml(item.answer)}</p></details>`).join('');
   const storefrontData = { storeName: config.name, phone, welcomeMessage: config.welcomeMessage || `Ola! Vim pela vitrine ${config.name} e gostaria de fazer um pedido.`, products: storefrontProducts };
   return `<!doctype html>
 <html lang="pt-BR">
@@ -608,9 +613,13 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
     .social-proof{padding:54px 0;background:#fff;border-top:1px solid #e4e5e8}.proof-heading small{color:var(--sf-accent);letter-spacing:.08em}.proof-heading h2{margin:8px 0 5px;color:#17191d;font-size:29px;letter-spacing:0}.proof-heading p{color:#747983}.review-grid{gap:14px;margin-top:24px}.review{border:1px solid #e0e2e6;background:#fff;border-radius:6px;padding:20px}.review-stars{color:var(--sf-accent)}.review p{color:#30343a}.review b{color:#777c85}.faq details{border-color:#e0e2e6;background:#fff;color:#17191d;border-radius:6px}.faq p{color:#6e737c}
     .contact{padding:44px 0 34px;border-top:0;background:#0b0c0f}.contact-box{border:1px solid #292c32;background:#121419;border-radius:6px}.contact-box h2{color:#fff}.contact-box p{color:#aaaeb7}.footer-meta{padding-top:24px;color:#8c919b}.footer-meta a:hover{color:#fff}.floating-cart{border-color:#292c32;background:#111318;color:#fff;border-radius:6px}.drawer,.modal-card{border-radius:8px}.empty-search{border-color:#d8dadf;border-radius:6px;color:#737883}
     @media(max-width:1040px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.storefront-links{display:none}}@media(max-width:900px){.storefront-search{order:4;flex-basis:100%;max-width:none}.retail-layout{grid-template-columns:1fr;gap:28px}.hero-feature{max-width:560px}.benefit-row{grid-template-columns:repeat(2,1fr)}.benefit-row div:nth-child(2){border-right:0}.benefit-row div:nth-child(-n+2){border-bottom:1px solid #e4e5e8}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.wrap{width:min(100% - 24px,1240px)}.storefront-brand img{width:88px}.retail-hero{padding:34px 0}.retail-copy h1{font-size:39px}.retail-facts{grid-template-columns:1fr;gap:8px}.benefit-row{grid-template-columns:1fr}.benefit-row div{border-right:0;border-bottom:1px solid #e4e5e8}.grid{grid-template-columns:1fr;gap:12px}.media{aspect-ratio:16/10}}
-  </style><style>${storefrontDesign}</style></head>
-<body data-theme="${escapeHtml(config.themePreset || 'obsidian')}">
-  <div class="offer-bar">Compra segura <span>•</span> Atendimento direto <span>•</span> Ofertas selecionadas <b class="level-badge">${levelBadge}</b></div>
+  </style><style>${storefrontDesign}
+  body[data-commerce="affiliate"] [data-open-cart],body[data-commerce="affiliate"] .commerce-benefits,body[data-commerce="affiliate"] .contact-box,body[data-commerce="affiliate"] a[href*="wa.me"]{display:none!important}
+  .card-actions a.buy-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;text-align:center}
+  .affiliate-disclosure{font-size:13px;line-height:1.6;padding:16px 0;opacity:.8}
+  </style></head>
+<body data-theme="${escapeHtml(config.themePreset || 'obsidian')}" data-commerce="${affiliateMode ? 'affiliate' : 'resale'}">
+  <div class="offer-bar">${affiliateMode ? 'Selecao de ofertas <span>•</span> Compra no marketplace' : 'Compra segura <span>•</span> Atendimento direto <span>•</span> Ofertas selecionadas'} <b class="level-badge">${levelBadge}</b></div>
   <header class="storefront-header">
     <div class="wrap storefront-nav">
       <a class="storefront-brand" href="#">${normalizedLogoUrl ? `<img src="${escapeHtml(normalizedLogoUrl)}" alt="${escapeHtml(config.name)}" />` : ''}<strong>${escapeHtml(config.name)}</strong></a>
@@ -630,7 +639,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
   </section>
   <section class="commerce-benefits"><div class="wrap benefit-row"><div><i class="benefit-icon">✓</i><b>Compra protegida</b><span>Confira produto e valor antes de enviar o pedido.</span></div><div><i class="benefit-icon">↗</i><b>Atendimento direto</b><span>Fale com a loja pelo WhatsApp sem intermediarios.</span></div><div><i class="benefit-icon">★</i><b>Catalogo atualizado</b><span>Produtos escolhidos e organizados por categoria.</span></div><div><i class="benefit-icon">+</i><b>Pedido simples</b><span>Monte o resumo e envie tudo em poucos cliques.</span></div></div></section>
   ${collectionTiles ? `<section class="collection-strip"><div class="wrap"><div class="strip-head"><div><h2>${escapeHtml(storefrontVoice.collectionTitle)}</h2><p>${escapeHtml(storefrontVoice.collectionText)}</p></div><a class="secondary-btn" href="#produtos">Ver catalogo</a></div><div class="collection-grid">${collectionTiles}</div></div></section>` : ''}
-  <main id="produtos" class="wrap"><div class="section-title"><h2>${escapeHtml(storefrontVoice.productTitle)}</h2><p>${escapeHtml(storefrontVoice.productText)}</p></div>${filterButtons ? `<nav class="filters" aria-label="Filtros de produtos">${filterButtons}</nav>` : ''}<section class="grid" id="productGrid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}<div class="empty-search" id="emptySearch">Nenhum produto encontrado para esta busca.</div></section>${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}</main>
+  <main id="produtos" class="wrap">${affiliateMode ? '<p class="affiliate-disclosure">Esta vitrine contem links de afiliado. Podemos receber comissao por compras elegiveis. Preco e disponibilidade devem ser conferidos no marketplace, onde acontecem o pagamento e a entrega.</p>' : ''}<div class="section-title"><h2>${escapeHtml(storefrontVoice.productTitle)}</h2><p>${affiliateMode ? 'Escolha uma oferta e confira as condicoes diretamente no marketplace.' : escapeHtml(storefrontVoice.productText)}</p></div>${filterButtons ? `<nav class="filters" aria-label="Filtros de produtos">${filterButtons}</nav>` : ''}<section class="grid" id="productGrid">${productCards || '<p>Nenhum produto selecionado ainda.</p>'}<div class="empty-search" id="emptySearch">Nenhum produto encontrado para esta busca.</div></section>${faqItems ? `<section class="faq"><div class="section-title"><h2>Duvidas rapidas</h2><p>Informacoes importantes antes de comprar.</p></div>${faqItems}</section>` : ''}</main>
   <footer id="contato" class="contact"><div class="wrap"><div class="contact-box"><div><h2>${escapeHtml(storefrontVoice.footerTitle)}</h2><p>${escapeHtml(storefrontVoice.footerText)}</p></div><button type="button" class="cta" data-open-cart>Ver resumo do pedido</button></div><div class="footer-meta"><span>© ${new Date().getFullYear()} ${escapeHtml(config.name)}. Todos os direitos reservados.</span><nav><a href="#produtos">Produtos</a><a href="#contato">Atendimento</a><a href="${escapeHtml(whatsappFor())}" target="_blank" rel="noreferrer">WhatsApp</a></nav></div></div></footer>
   <button type="button" class="floating-cart" data-open-cart><span>Resumo do pedido</span><span class="cart-badge" id="cartCount">0</span></button>
   <div class="overlay" id="pageOverlay" data-close-panels></div>
@@ -652,7 +661,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
       function escapeInline(value){ return String(value || '').replace(/[&<>"']/g, function(char){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]; }); }
       function showToast(message){ if (!toast) return; toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
       function setPanels(open){ document.body.classList.toggle('modal-open', open); if (!open) { overlay.classList.remove('open'); drawer.classList.remove('open'); modal.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); modal.setAttribute('aria-hidden','true'); } }
-      function openDrawer(){ overlay.classList.add('open'); drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); document.body.classList.add('modal-open'); }
+      function openDrawer(){ if(document.body.dataset.commerce === 'affiliate') return; overlay.classList.add('open'); drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); document.body.classList.add('modal-open'); }
       function openModal(product){
         if (!product) return;
         var media = document.getElementById('modalMedia');
@@ -667,7 +676,10 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
         if (product.imageUrl || product.imageClass !== 'photo') { var i = document.createElement('img'); i.src = product.imageUrl; i.className = product.imageClass; i.alt = product.name; media.appendChild(i); }
         cat.textContent = product.subcategory; title.textContent = product.name; desc.textContent = product.description; price.textContent = product.priceLabel;
         ben.innerHTML = product.benefits.map(function(b){ return '<li>' + escapeInline(b) + '</li>'; }).join('');
+        add.textContent = product.affiliateUrl ? (product.affiliateLabel === 'Shopee' ? 'Ver na Shopee' : 'Ver no Mercado Livre') : 'Comprar';
+        contact.style.display = product.affiliateUrl ? 'none' : '';
         add.onclick = function(){
+          if(product.affiliateUrl){ window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer'); return; }
           var qty = (cart.get(product.id) || 0) + 1; cart.set(product.id, qty);
           renderCart(); showToast('Produto adicionado ao pedido.');
         };
@@ -687,7 +699,7 @@ function buildStoreHtml(config: StoreConfig, products: Product[], userLevel = 1)
       });
 
 
-      function addToCart(id){ var product = findProduct(id); if (!product) return; cart.set(id, (cart.get(id) || 0) + 1); renderCart(); showToast('Adicionado ao resumo do pedido.'); }
+      function addToCart(id){ var product = findProduct(id); if (!product || product.affiliateUrl) return; cart.set(id, (cart.get(id) || 0) + 1); renderCart(); showToast('Adicionado ao resumo do pedido.'); }
       function changeQty(id, delta){ var next = (cart.get(id) || 0) + delta; if (next <= 0) cart.delete(id); else cart.set(id, next); renderCart(); }
       function cartItems(){ return Array.from(cart.entries()).map(function(entry){ return { product: findProduct(entry[0]), qty: entry[1] }; }).filter(function(item){ return item.product; }); }
       function renderCart(){
@@ -1247,6 +1259,11 @@ function App() {
       setSites(prev => prev.map(site => site.id === newConfig.id ? { ...site, ...newConfig } : site));
       showAppToast('Loja atualizada.');
     }
+  };
+
+  const handleSaveAffiliateProduct = (product: Product) => {
+    setProducts(prev => prev.some(item => item.id === product.id) ? prev.map(item => item.id === product.id ? product : item) : [product, ...prev]);
+    handleUpdateStoreConfig({ ...storeConfig, commerceMode: 'affiliate', status: 'draft', productIds: Array.from(new Set([...(storeConfig.productIds || []), product.id])) });
   };
 
   const handleUpdateAccountName = async (nextName: string) => {
@@ -2011,7 +2028,7 @@ function App() {
 
             {activePage === 'products' && (
               <ProductCatalog
-                products={storeProducts}
+                products={storeProducts.filter(product => product.salesMode !== 'affiliate')}
                 suppliers={suppliers}
                 onToggleAddProduct={handleToggleAddProduct}
                 onUpdateSalePrice={handleUpdateSalePrice}
@@ -2019,6 +2036,8 @@ function App() {
                 onImportProduct={handleImportMarketplaceProduct}
               />
             )}
+
+            {activePage === 'affiliates' && <AffiliateWorkspace products={storeProducts} storeConfig={storeConfig} onSave={handleSaveAffiliateProduct} onToggle={handleToggleAddProduct} onUpdateStore={handleUpdateStoreConfig} onPreview={() => handleOpenGeneratedSite('affiliates')} onNavigate={handleNavigate} onPublish={() => handlePublishStore()} onExport={() => downloadHtml(`${slugifyStore(storeConfig.name)}-afiliados.html`, buildStoreHtml(storeConfig, products, effectiveUserLevel))} />}
 
             {activePage === 'ranking' && (
               <ProductRanking

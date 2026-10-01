@@ -53,6 +53,10 @@ export interface Product {
   detailUrl?: string;
   importUrl?: string;
   allLocalImages?: string;
+  salesMode?: 'resale' | 'affiliate';
+  affiliateUrl?: string;
+  affiliateMarketplace?: 'shopee' | 'mercado_livre';
+  commissionPercent?: number;
 }
 
 export interface Supplier {
@@ -97,6 +101,7 @@ export interface StoreConfig {
   videoCta?: string;
   videoWatermarkEnabled?: boolean;
   ownerLevel?: number;
+  commerceMode?: 'resale' | 'affiliate';
 }
 
 export interface Niche {

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Sparkles, LayoutDashboard, Store, Megaphone, BookOpen,
-  Package, BarChart3, Truck, Settings
+  Package, BarChart3, Truck, Settings, Link2
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
@@ -41,6 +41,7 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
       { id: 'ranking', label: 'Ranking', icon: BarChart3 },
     ] : []),
     { id: 'products', label: t('sidebar.products'), icon: Package },
+    { id: 'affiliates', label: 'Afiliados', icon: Link2 },
     ...(PHYSICAL_PRODUCTS_ENABLED ? [
       { id: 'suppliers', label: t('sidebar.suppliers'), icon: Truck },
     ] : []),
