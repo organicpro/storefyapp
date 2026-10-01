@@ -1262,8 +1262,9 @@ function App() {
   };
 
   const handleSaveAffiliateProduct = (product: Product) => {
+    const isNew = !products.some(item => item.id === product.id);
     setProducts(prev => prev.some(item => item.id === product.id) ? prev.map(item => item.id === product.id ? product : item) : [product, ...prev]);
-    handleUpdateStoreConfig({ ...storeConfig, commerceMode: 'affiliate', status: 'draft', productIds: Array.from(new Set([...(storeConfig.productIds || []), product.id])) });
+    handleUpdateStoreConfig({ ...storeConfig, commerceMode: isNew ? 'affiliate' : storeConfig.commerceMode, status: 'draft', productIds: isNew ? Array.from(new Set([...(storeConfig.productIds || []), product.id])) : storeConfig.productIds });
   };
 
   const handleUpdateAccountName = async (nextName: string) => {
@@ -1424,9 +1425,6 @@ function App() {
       updatedAt: publishedAt
     };
 
-    savePublicStoreLocal(payload);
-    await savePublicStore(session?.user?.id, payload);
-
     if (!session?.user?.id) {
       const message = 'Conecte sua conta e configure a Netlify antes de publicar.';
       showAppToast(message);
@@ -1434,6 +1432,8 @@ function App() {
     }
 
     try {
+      await savePublicStore(session.user.id, payload);
+      savePublicStoreLocal(payload);
       const sitesForSave = sites.map((site, index) => site.id === targetSite.id
         ? makeSite({ ...site, productIds: targetProductIds }, index + 1)
         : site
@@ -2027,6 +2027,11 @@ function App() {
             )}
 
             {activePage === 'products' && (
+              <>
+              <div className="flex items-center gap-1 border-b border-gray-200 pb-3" aria-label="Modo da vitrine">
+                <button type="button" aria-pressed={storeConfig.commerceMode !== 'affiliate'} onClick={() => handleUpdateStoreConfig({ ...storeConfig, commerceMode: 'resale', status: 'draft' })} className={`rounded-lg px-4 py-2 text-xs font-semibold ${storeConfig.commerceMode !== 'affiliate' ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Revenda</button>
+                <button type="button" aria-pressed={storeConfig.commerceMode === 'affiliate'} onClick={() => { handleUpdateStoreConfig({ ...storeConfig, commerceMode: 'affiliate', status: 'draft' }); handleNavigate('affiliates'); }} className={`rounded-lg px-4 py-2 text-xs font-semibold ${storeConfig.commerceMode === 'affiliate' ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Afiliados</button>
+              </div>
               <ProductCatalog
                 products={storeProducts.filter(product => product.salesMode !== 'affiliate')}
                 suppliers={suppliers}
@@ -2035,6 +2040,7 @@ function App() {
                 onUpdateProductImage={handleUpdateProductImage}
                 onImportProduct={handleImportMarketplaceProduct}
               />
+              </>
             )}
 
             {activePage === 'affiliates' && <AffiliateWorkspace products={storeProducts} storeConfig={storeConfig} onSave={handleSaveAffiliateProduct} onToggle={handleToggleAddProduct} onUpdateStore={handleUpdateStoreConfig} onPreview={() => handleOpenGeneratedSite('affiliates')} onNavigate={handleNavigate} onPublish={() => handlePublishStore()} onExport={() => downloadHtml(`${slugifyStore(storeConfig.name)}-afiliados.html`, buildStoreHtml(storeConfig, products, effectiveUserLevel))} />}

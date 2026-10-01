@@ -1,5 +1,7 @@
 ﻿import { Product, StoreConfig } from '../types';
 
+import { safeAffiliateUrl } from './affiliate';
+
 export type SocialChannel = 'instagram' | 'tiktok';
 export type VideoFormat = 'frame' | 'caption';
 
@@ -49,21 +51,36 @@ export function getOperationProfile(config: StoreConfig) {
   const name = config.name || getSuggestedOperationName(niche);
   const handle = config.profileHandle || `@${slugify(name)}`;
   const channels: SocialChannel[] = config.socialChannels?.length ? config.socialChannels : ['instagram', 'tiktok'];
-  const cta = config.videoCta || 'Veja a vitrine e chame no WhatsApp';
+  const cta = config.videoCta || (config.commerceMode === 'affiliate' ? 'Confira as ofertas no link da bio' : 'Veja a vitrine e chame no WhatsApp');
   const bio = config.profileBio || `${niche.description}\n↓ ${cta}`;
   return { niche, name, handle, channels, cta, bio };
 }
 
 export function getRelevantProducts(config: StoreConfig, products: Product[]) {
   const niche = getOperationNiche(config);
-  return products.filter((product) => niche.categories.includes(product.category));
+  return getCommerceProducts(config, products).filter((product) => config.commerceMode === 'affiliate' || niche.categories.includes(product.category));
+}
+
+export function getCommerceProducts(config: StoreConfig, products: Product[]) {
+  return products.filter(product => config.commerceMode === 'affiliate' ? Boolean(safeAffiliateUrl(product)) : product.salesMode !== 'affiliate');
 }
 
 export function getContentPack(config: StoreConfig, products: Product[]) {
   const profile = getOperationProfile(config);
-  const selected = products.filter((product) => product.addedToStore);
+  const selected = getCommerceProducts(config, products).filter((product) => product.addedToStore);
   const highlight = selected[0]?.name || 'as ofertas da vitrine';
   const hashtags = [...profile.niche.hashtags, '#storefy', `#${slugify(profile.name)}`].join(' ');
+  if (config.commerceMode === 'affiliate') {
+    const disclosure = 'Publicidade: links de afiliado. Preço e disponibilidade podem mudar.';
+    return {
+      instagram: `Separei ${highlight} na ${profile.name}. Confira a oferta no link da bio e compre diretamente no marketplace.\n\n${disclosure}\n${hashtags}`,
+      tiktok: `${highlight}: confira os detalhes e a oferta no link da bio.\n\n${disclosure}\n${hashtags}`,
+      story: `${highlight}. Confira a oferta no link da bio. ${disclosure}`,
+      whatsapp: `${highlight}: confira a seleção na vitrine ${profile.name}. ${disclosure}`,
+      groups: `Seleção da ${profile.name}: ${highlight}. Veja a oferta na vitrine e confira as condições no marketplace. ${disclosure}`,
+      bioCta: `${profile.cta} ↓`, hashtags
+    };
+  }
   return {
     instagram: `Separei ${highlight} na ${profile.name}. Confira os detalhes na vitrine e me chama no WhatsApp para receber o atendimento.\n\n${hashtags}`,
     tiktok: `${profile.niche.captionPhrase} Temos novidades na vitrine da ${profile.name}.\n\n${hashtags}`,

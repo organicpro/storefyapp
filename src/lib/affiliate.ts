@@ -1,5 +1,13 @@
 import type { Product } from '../types';
 
+export function parseAffiliateNumber(raw: string): number {
+  const value = raw.trim().replace(/^R\$\s*/, '').replace(/\s/g, '');
+  if (!value) return NaN;
+  if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(value)) return Number(value.replace(/\./g, '').replace(',', '.'));
+  if (!/^\d+([.,]\d{1,2})?$/.test(value)) return NaN;
+  return Number(value.replace(',', '.'));
+}
+
 export function affiliateMarketplace(rawUrl: string): 'shopee' | 'mercado_livre' | null {
   try {
     const url = new URL(rawUrl);

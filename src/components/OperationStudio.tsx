@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Product, StoreConfig } from '../types';
 import {
-  buildZip, downloadBlob, getContentPack, getOperationNiche, getOperationProfile,
+  buildZip, downloadBlob, getContentPack, getCommerceProducts, getOperationNiche, getOperationProfile,
   getPostingCalendar, getRelevantProducts, getSuggestedOperationName, OPERATION_NICHES, slugify,
   SocialChannel, VideoFormat
 } from '../lib/operation';
@@ -139,12 +139,12 @@ export default function OperationStudio({
   const content = getContentPack(storeConfig, products);
   const calendar = getPostingCalendar(storeConfig);
   const relevantProducts = useMemo(() => getRelevantProducts(storeConfig, products), [storeConfig, products]);
-  const selectedProducts = products.filter((product) => product.addedToStore);
+  const selectedProducts = getCommerceProducts(storeConfig, products).filter((product) => product.addedToStore);
   const [step, setStep] = useState(initialStep);
   const [name, setName] = useState(storeConfig.name || getSuggestedOperationName(niche));
   const [whatsapp, setWhatsapp] = useState(storeConfig.whatsapp || '');
   const [channels, setChannels] = useState<SocialChannel[]>(storeConfig.socialChannels?.length ? storeConfig.socialChannels : ['instagram', 'tiktok']);
-  const [videoCaption, setVideoCaption] = useState(storeConfig.videoCta ?? 'Veja a vitrine e chame no WhatsApp');
+  const [videoCaption, setVideoCaption] = useState(storeConfig.videoCta ?? profile.cta);
   const [showWatermark, setShowWatermark] = useState(storeConfig.videoWatermarkEnabled ?? true);
   const [generating, setGenerating] = useState<VideoFormat | null>(null);
   const [activeVideoLibrary, setActiveVideoLibrary] = useState<VideoFormat>(initialVideoFormat || storeConfig.videoFormat || 'frame');
@@ -171,7 +171,7 @@ export default function OperationStudio({
       socialChannels: overrides.socialChannels ?? channels,
       primaryColor: overrides.primaryColor ?? nextNiche.accent,
       profileHandle: overrides.profileHandle ?? `@${slugify(nextName)}`,
-      profileBio: overrides.profileBio ?? `${nextNiche.description}\nVeja a vitrine e chame no WhatsApp`,
+      profileBio: overrides.profileBio ?? `${nextNiche.description}\n${profile.cta}`,
       videoCta: Object.prototype.hasOwnProperty.call(overrides, 'videoCta') ? overrides.videoCta : videoCaption,
       videoWatermarkEnabled: Object.prototype.hasOwnProperty.call(overrides, 'videoWatermarkEnabled') ? overrides.videoWatermarkEnabled : showWatermark
     });
@@ -187,7 +187,7 @@ export default function OperationStudio({
       primaryColor: next.accent,
       name: getSuggestedOperationName(next),
       profileHandle: `@${slugify(getSuggestedOperationName(next))}`,
-      profileBio: `${next.description}\n↓ Veja a vitrine e chame no WhatsApp`,
+      profileBio: `${next.description}\n↓ ${profile.cta}`,
       socialChannels: channels
     });
   };

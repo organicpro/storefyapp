@@ -179,7 +179,7 @@ export default function ProductCatalog({
           <p className="sf-section-label mb-2">Catálogo</p>
           <h1 className="text-[26px] font-semibold text-gray-900">Produtos</h1>
           <p className="text-[14px] text-gray-500 mt-1 leading-relaxed">
-            Escolha produtos digitais, defina sua margem e organize o que entra na vitrine. {products.length} itens disponíveis.
+            Produtos físicos e digitais. {products.length} itens disponíveis.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

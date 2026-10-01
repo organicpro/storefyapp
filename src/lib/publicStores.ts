@@ -11,7 +11,7 @@ export interface PublicStorePayload {
 export async function savePublicStore(userId: string | undefined, payload: PublicStorePayload) {
   if (!supabase || !userId) return;
 
-  await supabase
+  const { error } = await supabase
     .from('storefy_public_stores')
     .upsert({
       slug: payload.slug,
@@ -20,6 +20,7 @@ export async function savePublicStore(userId: string | undefined, payload: Publi
       products: payload.products,
       updated_at: payload.updatedAt
     }, { onConflict: 'slug' });
+  if (error) throw new Error(`Nao foi possivel salvar a vitrine: ${error.message}`);
 }
 
 export async function loadPublicStore(slug: string): Promise<PublicStorePayload | null> {
