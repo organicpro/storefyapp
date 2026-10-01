@@ -4510,9 +4510,8 @@ const INITIAL_PRODUCTS_BASE: Product[] = [
 
 export const INITIAL_PRODUCTS: Product[] = [
   ...MEX_GAMES_PRODUCTS.map(applyDefaultGamePricing),
-  ...(PHYSICAL_PRODUCTS_ENABLED
-    ? VELODS_REMOTE_IMAGE_PRODUCTS
-    : INITIAL_PRODUCTS_BASE.filter(product => product.category !== 'Achados Fisicos'))
+  ...INITIAL_PRODUCTS_BASE.filter(product => PHYSICAL_PRODUCTS_ENABLED || product.category !== 'Achados Fisicos'),
+  ...(PHYSICAL_PRODUCTS_ENABLED ? VELODS_REMOTE_IMAGE_PRODUCTS : [])
 ];
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {

@@ -165,6 +165,7 @@ export default function Wizard({
   // Filter products matching recommendation for selected niche
   const recommendedProducts = products.filter(p =>
     selectedNiche.recommendedSubcategories.includes(p.subcategory)
+    || (selectedProductCategory === 'Achados Fisicos' && p.category === selectedProductCategory)
     || (p.supplier === 'Produto próprio' && p.category === selectedProductCategory)
   );
   const prioritizedRecommendedProducts = selectedProductCategory === 'Games'

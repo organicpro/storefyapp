@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
 import {defineConfig} from 'vite';
-import { PHYSICAL_PRODUCTS_ENABLED } from './src/config/features';
 
 function copyVisiblePublicAssets() {
   const publicRoot = path.resolve(__dirname, 'public');
@@ -30,10 +29,11 @@ export default defineConfig(() => {
     plugins: [
       react(),
       tailwindcss(),
-      ...(!PHYSICAL_PRODUCTS_ENABLED ? [copyVisiblePublicAssets()] : [])
+      copyVisiblePublicAssets()
     ],
     build: {
-      copyPublicDir: PHYSICAL_PRODUCTS_ENABLED
+      // Catalog images use their official remote URLs; omit the local archive.
+      copyPublicDir: false
     },
     resolve: {
       alias: {
