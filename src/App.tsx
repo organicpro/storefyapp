@@ -1529,7 +1529,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-gray-900 font-sans flex flex-col">
+    <div className="sf-shell min-h-screen text-gray-900 font-sans flex flex-col">
       <div className="fixed inset-0 pointer-events-none" />
 
       {mobileSidebarOpen && (
@@ -1556,7 +1556,7 @@ function App() {
       )}
 
       {/* Global Top Bar (Shopify style) */}
-      <header className="sticky top-0 z-50 w-full bg-black px-4 py-2.5 sm:px-6 shadow-sm flex items-center justify-between">
+      <header className="sf-topbar sticky top-0 z-50 w-full bg-black px-4 py-2.5 sm:px-6 flex items-center justify-between">
         {/* Left section: Logo */}
         <div className="flex items-center gap-3 flex-1">
           <button
@@ -1586,7 +1586,9 @@ function App() {
               className="group flex w-full items-center gap-2 rounded-xl bg-[#282828]/90 backdrop-blur-md border border-white/5 px-2.5 py-1.5 text-left transition-all duration-200 shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.08)] hover:bg-[#323232]/90 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:-translate-y-[1px]"
             >
               <span className="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded bg-white">
-                <img src={normalizeStoreLogoUrl(storeConfig.logoUrl)} alt="" className="h-4 w-4 object-contain" />
+                {normalizeStoreLogoUrl(storeConfig.logoUrl)
+                  ? <img src={normalizeStoreLogoUrl(storeConfig.logoUrl)} alt="" className="h-4 w-4 object-contain" />
+                  : <span className="text-[11px] font-semibold text-gray-900">{storeConfig.name.slice(0, 1)}</span>}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-white">{storeConfig.name}</span>
@@ -1738,8 +1740,8 @@ function App() {
       </header>
 
       {/* Content area below top bar - single white container with rounded top corners (Shopify-style) */}
-      <div className="relative z-10 flex flex-1 overflow-hidden rounded-tl-[20px] rounded-tr-[20px] bg-[#f1f1f1]">
-        <div className="hidden shrink-0 lg:flex lg:flex-col lg:h-[calc(100vh-56px)] bg-[#e8e8e8] border-r border-gray-200">
+      <div className="sf-workspace relative z-10 flex flex-1 overflow-hidden">
+        <div className="hidden shrink-0 lg:flex lg:flex-col lg:h-[calc(100dvh-64px)]">
           <Sidebar
             activePage={activePage}
             onPageChange={handleNavigate}
@@ -1752,8 +1754,8 @@ function App() {
           />
         </div>
 
-        <main className="min-w-0 flex-1 overflow-y-auto h-[calc(100vh-56px)] main-scrollbar">
-          <div key={activePage} className={`page-transition ${activePage === 'academy' ? '' : 'p-4 sm:p-6'}`}>
+        <main className="sf-content min-w-0 flex-1 overflow-y-auto main-scrollbar">
+          <div key={activePage} data-page={activePage} className={`page-transition ${activePage === 'academy' ? '' : 'sf-page'}`}>
             {activePage === 'dashboard' && (
               <Dashboard
                 storeConfig={storeConfig}

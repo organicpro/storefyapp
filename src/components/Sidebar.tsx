@@ -1,8 +1,7 @@
 import React from 'react';
 import {
-  Sparkles,
-  ExternalLink,
-  ChevronRight
+  Sparkles, LayoutDashboard, Store, Megaphone, BookOpen,
+  Package, BarChart3, Truck, Settings
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { PHYSICAL_PRODUCTS_ENABLED } from '../config/features';
@@ -21,46 +20,29 @@ interface SidebarProps {
 type NavItemConfig = {
   id: string;
   label: React.ReactNode;
-  iconUrl: string;
+  icon: React.ElementType;
   badge?: string;
 };
 
-
-// Helper: renders a polaris icon using CSS mask
-const PolarisIcon = ({ url, className = '' }: { url: string; className?: string }) => (
-  <span 
-    className={`inline-block ${className}`}
-    style={{
-      maskImage: `url(${url})`,
-      WebkitMaskImage: `url(${url})`,
-      maskSize: 'contain',
-      WebkitMaskSize: 'contain',
-      maskRepeat: 'no-repeat',
-      WebkitMaskRepeat: 'no-repeat',
-      maskPosition: 'center',
-      WebkitMaskPosition: 'center',
-    }}
-  />
-);
 
 export default function Sidebar({ activePage, onPageChange, storeName, storePrimaryColor, accountName, logoUrl, userLevel = 1, isAdmin = false }: SidebarProps) {
   const { t } = useLanguage();
 
   const mainItems: NavItemConfig[] = [
-    { id: 'dashboard', label: t('sidebar.dashboard'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/HomeFilledIcon.svg' },
-    { id: 'sia', label: 'Ayla', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ChatIcon.svg', badge: 'IA' },
-    { id: 'operation', label: t('sidebar.operation'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/StoreFilledIcon.svg' },
-    { id: 'promotion', label: t('sidebar.promotion'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/MegaphoneFilledIcon.svg' },
-    { id: 'academy', label: 'Academy', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/BookOpenIcon.svg' },
+    { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
+    { id: 'sia', label: 'Ayla', icon: Sparkles, badge: 'IA' },
+    { id: 'operation', label: t('sidebar.operation'), icon: Store },
+    { id: 'promotion', label: t('sidebar.promotion'), icon: Megaphone },
+    { id: 'academy', label: 'Academy', icon: BookOpen },
   ];
 
   const productItems: NavItemConfig[] = [
     ...(PHYSICAL_PRODUCTS_ENABLED ? [
-      { id: 'ranking', label: 'Ranking', iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ChartVerticalFilledIcon.svg' },
+      { id: 'ranking', label: 'Ranking', icon: BarChart3 },
     ] : []),
-    { id: 'products', label: t('sidebar.products'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/ProductFilledIcon.svg' },
+    { id: 'products', label: t('sidebar.products'), icon: Package },
     ...(PHYSICAL_PRODUCTS_ENABLED ? [
-      { id: 'suppliers', label: t('sidebar.suppliers'), iconUrl: 'https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/DeliveryFilledIcon.svg' },
+      { id: 'suppliers', label: t('sidebar.suppliers'), icon: Truck },
     ] : []),
   ];
 
@@ -70,19 +52,17 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
       <li>
         <button
           onClick={() => onPageChange(item.id)}
-          className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13.5px] transition-all duration-150 text-left ${
+          aria-current={isActive ? 'page' : undefined}
+          className={`sf-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-colors duration-150 text-left ${
             isActive
-              ? 'bg-white text-[#333333] font-medium shadow-sm border border-gray-200/80'
-              : 'text-[#333333] hover:bg-white/50 font-normal'
+              ? 'bg-[#eeeeef] text-[#191b20] font-semibold'
+              : 'text-[#646871] hover:bg-[#f0f0f1] hover:text-[#191b20] font-medium'
           }`}
         >
-          <PolarisIcon
-            url={item.iconUrl}
-            className={`w-5 h-5 bg-[#4A4A4A] ${isActive ? 'nav-icon-active' : ''}`}
-          />
+          <item.icon size={18} strokeWidth={isActive ? 2 : 1.7} className={`shrink-0 ${item.id === 'sia' ? 'text-[#a17b00]' : ''}`} />
           <span className="flex-1 truncate">{item.label}</span>
           {item.badge && (
-            <span className="px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-700 rounded font-medium leading-none">
+            <span className="px-1.5 py-1 text-[9px] bg-[#fff1b3] text-[#886500] rounded font-semibold leading-none">
               {item.badge}
             </span>
           )}
@@ -92,21 +72,21 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
   };
 
   return (
-    <aside className="w-[270px] flex flex-col h-full select-none rounded-tl-[20px] border-r border-gray-200/60" style={{ backgroundColor: '#e8e8e8' }}>
+    <aside className="sf-sidebar flex flex-col h-full select-none">
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+      <nav aria-label="Navegação principal" className="flex-1 overflow-y-auto px-3 py-6 space-y-7">
 
         {/* Main items */}
-        <ul className="space-y-0.5">
+        <p className="sf-section-label px-3 mb-3">Workspace</p>
+        <ul className="space-y-1">
           {mainItems.map(item => <NavItem key={item.id} item={item} />)}
         </ul>
 
         {/* Produtos section */}
         <div className="space-y-1">
           <div className="flex items-center gap-1 px-3 mb-1.5 mt-2">
-            <span className="text-[13px] font-bold text-[#333333]">{t('sidebar.productsHeader')}</span>
-            <ChevronRight size={14} className="text-[#333333] opacity-70" />
+            <span className="sf-section-label">{t('sidebar.productsHeader')}</span>
           </div>
           <ul className="space-y-0.5">
             {productItems.map(item => <NavItem key={item.id} item={item} />)}
@@ -126,15 +106,12 @@ export default function Sidebar({ activePage, onPageChange, storeName, storePrim
               : 'text-[#333333] hover:bg-white/50 font-normal'
           }`}
         >
-          <PolarisIcon
-            url="https://unpkg.com/@shopify/polaris-icons@latest/dist/svg/SettingsFilledIcon.svg"
-            className="w-5 h-5 bg-[#4A4A4A]"
-          />
+          <Settings size={18} strokeWidth={1.7} className="text-gray-500" />
           <span>{t('sidebar.settings')}</span>
         </button>
 
         {/* Store pill with Account Name */}
-        <div className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
+        <div className="rounded-lg overflow-hidden bg-white border border-gray-200">
           <div className="px-3 py-3 flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold text-white shrink-0 shadow-inner overflow-hidden bg-white border border-gray-100"

@@ -61,12 +61,13 @@ export default function StoresHub({
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto py-8 font-sans animate-fade-in">
+    <div className="max-w-[1200px] mx-auto font-sans animate-fade-in">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <p className="sf-section-label mb-2">Vitrines</p>
+          <h1 className="text-[26px] font-semibold text-gray-900 flex items-center gap-2">
             Suas Lojas
           </h1>
           <p className="text-gray-500 mt-2 text-[14px]">
@@ -82,8 +83,8 @@ export default function StoresHub({
           >
             Ver loja
           </button>
-          <button className="p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors">
-            <MoreHorizontal className="w-5 h-5" />
+          <button type="button" onClick={onCreateStore} className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-white bg-[#191b20] hover:bg-black rounded-lg transition-colors">
+            <Plus size={15} /> Nova loja
           </button>
         </div>
       </div>
@@ -91,7 +92,7 @@ export default function StoresHub({
       {activeSite ? (
         <>
           {/* Main Active Store Card */}
-          <div className="bg-white rounded-[24px] border border-gray-200 overflow-hidden shadow-sm mb-12">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
             {/* Mockup Area */}
             <div className="bg-[#f8f9fa] w-full h-[360px] flex items-center justify-center p-8 relative overflow-hidden group">
               
@@ -171,9 +172,9 @@ export default function StoresHub({
             <div className="px-6 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">{activeSite.name}</h3>
-                <a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 mt-0.5 mb-1.5">
-                  {slugify(activeSite.name)}.netlify <ExternalLink className="w-3 h-3" />
-                </a>
+                <button type="button" onClick={() => onViewStore(activeSite.id)} className="text-[12px] text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1.5 mt-1">
+                  Visualizar vitrine <ExternalLink className="w-3 h-3" />
+                </button>
               </div>
               <div className="flex items-center gap-2">
                 <button 

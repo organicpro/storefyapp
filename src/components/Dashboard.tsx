@@ -84,11 +84,11 @@ type MetricCardProps = {
 function MetricCard({ title, value, helper, icon: Icon, series, color, delayClass }: MetricCardProps) {
   const hasData = series.some(item => item !== 0);
   return (
-    <article className={`card-enter ${delayClass} min-h-36 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md`}>
+    <article className={`sf-metric card-enter ${delayClass} min-h-40 border bg-white p-5 transition-all`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[12px] font-semibold text-gray-500">{title}</p>
-          <p className="mt-2 text-[22px] font-bold tracking-tight text-gray-950">{value}</p>
+          <p className="mt-3 text-[26px] font-semibold tabular-nums text-gray-950">{value}</p>
         </div>
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${color}16`, color }}>
           <Icon size={17} />
@@ -412,14 +412,16 @@ export default function Dashboard({ storeConfig, products, onNavigate, metricsSc
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="mb-1 flex flex-wrap items-center gap-2 sm:gap-3">
-        <div className="flex items-center justify-center p-1.5 rounded-lg bg-gray-100">
-          <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
+      <div className="sf-dashboard-heading">
+        <div>
+          <p className="sf-section-label mb-2">Sua operação</p>
+          <h1>Visão geral</h1>
+          <p className="mt-2 text-[13px] leading-relaxed text-gray-500">Resultados e próximos passos de {storeConfig.name}.</p>
         </div>
-        <h1 className="whitespace-nowrap font-sans text-xl font-semibold tracking-tight text-gray-900">Visão geral</h1><span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${userLevel === 10 ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'}`}>{userLevel === 10 ? <><span aria-hidden>&#128293;</span> SÓCIO NÍVEL 10</> : <><span aria-hidden>&#128100;</span> NÍVEL 1</>}</span>
-        <span className="basis-full text-[12px] font-medium text-gray-500 sm:ml-1 sm:mt-0.5 sm:basis-auto">Última atualização: {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <span className={`rounded-md px-2.5 py-1.5 text-[10px] font-semibold ${userLevel === 10 ? 'bg-[#fff1b3] text-[#886500]' : 'bg-white border border-gray-200 text-gray-500'}`}>Nível {userLevel}</span>
+          <span className="hidden text-[11px] text-gray-400 sm:block">Atualizado às {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
       </div>
 
       {/* Filters and Actions */}

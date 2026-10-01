@@ -176,7 +176,8 @@ export default function ProductCatalog({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Catálogo de Produtos</h1>
+          <p className="sf-section-label mb-2">Catálogo</p>
+          <h1 className="text-[26px] font-semibold text-gray-900">Produtos</h1>
           <p className="text-[14px] text-gray-500 mt-1 leading-relaxed">
             Escolha produtos digitais, defina sua margem e organize o que entra na vitrine. {products.length} itens disponíveis.
           </p>
@@ -191,7 +192,7 @@ export default function ProductCatalog({
       </div>
 
       {/* Main Filter Panel */}
-      <div className="sticky top-2 z-40 bg-white/80 backdrop-blur-xl border border-gray-200 shadow-sm rounded-xl p-5 space-y-4 transition-all">
+      <div className="sticky top-0 z-40 bg-[#f5f6f7]/95 backdrop-blur-xl border-y border-gray-200 py-4 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search bar */}
           <div className="relative flex-1">
@@ -316,12 +317,11 @@ export default function ProductCatalog({
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600"><Tag className="h-4 w-4" /></span>
               <div>
                 <h2 className="text-[13px] font-bold text-gray-900">{selectedSubcategory === 'all' ? 'Todos os produtos' : selectedSubcategory}</h2>
-                <p className="text-[11px] text-gray-500">Grade contínua organizada pelos filtros selecionados</p>
               </div>
             </div>
             <span className="text-[12px] font-semibold text-gray-500">
@@ -350,7 +350,7 @@ export default function ProductCatalog({
                     return (
                       <div 
                         key={product.id}
-                        className={`group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-xl border bg-white transition-all duration-300 ${
+                        className={`group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-lg border bg-white transition-all duration-200 ${
                           product.addedToStore ? 'border-[#0f172a] shadow-md ring-1 ring-[#0f172a]' : 'border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md'
                         }`}
                       >

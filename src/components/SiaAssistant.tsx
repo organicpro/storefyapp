@@ -965,7 +965,7 @@ export default function SiaAssistant({
   }, [currentStore.productIds, currentStore.status, currentStore.whatsapp]);
 
   return (
-    <section className="relative mx-auto flex h-[calc(100vh-105px)] min-h-[560px] max-w-[1500px] overflow-hidden bg-[#f7f7f8]">
+    <section className="sf-assistant relative mx-auto flex max-w-[1500px] overflow-hidden">
       {PHYSICAL_PRODUCTS_ENABLED && <MarketplaceImporter
         hideTrigger
         initialUrl={marketplaceImportUrl}
@@ -983,10 +983,10 @@ export default function SiaAssistant({
         }}
       />}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 pb-44 pt-5 sm:px-6 sm:pb-48">
+        <div ref={scrollRef} className="sf-assistant-scroll flex-1 overflow-y-auto px-4 pb-44 pt-5 sm:px-8 sm:pb-48">
           <div className="mx-auto max-w-5xl space-y-7">
             {messages.length === 1 && flowStep === 'idle' && !showRecommendations && (
-              <div className="mx-auto max-w-3xl pb-3 pt-5 text-center sm:pt-9">
+              <div className="sf-assistant-intro mx-auto max-w-3xl pb-3 pt-5 text-center sm:pt-14">
                 <p className="flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.16em] text-amber-700"><span className="h-px w-7 bg-amber-400" /> Inteligência comercial Storefy <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /></p>
                 <h2 className="mt-3 text-2xl font-black tracking-normal text-gray-950 sm:text-4xl">O que vamos colocar para vender hoje?</h2>
                 <p className="mx-auto mt-3 max-w-xl text-xs leading-relaxed text-gray-500 sm:text-sm">Converse naturalmente. Eu encontro oportunidades, comparo margens, estruturo sua vitrine e salvo a loja na sua conta.</p>
@@ -1236,7 +1236,7 @@ export default function SiaAssistant({
                   <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-gray-500">Comece por uma ação</p>
                   <span className="text-[10px] text-gray-400">ou escreva livremente acima</span>
                 </div>
-                <div className="grid overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+                <div className="sf-action-grid grid overflow-hidden border border-gray-200 bg-white sm:grid-cols-2 lg:grid-cols-3">
                   <button type="button" onClick={startStoreFlow} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-amber-50/60 sm:border-r lg:border-b-0">
                     <Store size={17} className="mt-0.5 shrink-0 text-amber-600" />
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Criar uma loja</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Estrutura completa do zero</span></span>
@@ -1252,11 +1252,11 @@ export default function SiaAssistant({
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Analisar a vitrine</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Diagnóstico da loja atual</span></span>
                     <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
                   </button>
-                  <button type="button" onClick={() => submitPrompt('Quero importar um produto do Mercado Livre.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-yellow-50/70 sm:border-b-0 sm:border-r">
+                  {PHYSICAL_PRODUCTS_ENABLED && <button type="button" onClick={() => submitPrompt('Quero importar um produto do Mercado Livre.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-yellow-50/70 sm:border-b-0 sm:border-r">
                     <ShoppingBag size={17} className="mt-0.5 shrink-0 text-amber-600" />
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Importar produto</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Mercado Livre ou Shopee</span></span>
                     <ChevronRight size={14} className="mt-0.5 text-gray-300 transition group-hover:translate-x-0.5" />
-                  </button>
+                  </button>}
                   <button type="button" onClick={() => submitPrompt('Quero criar um Reel para minha loja.')} className="group flex min-h-24 items-start gap-3 border-b border-gray-100 p-4 text-left transition hover:bg-violet-50/60 sm:border-b-0 sm:border-r">
                     <Film size={17} className="mt-0.5 shrink-0 text-violet-600" />
                     <span className="min-w-0 flex-1"><strong className="block text-xs text-gray-950">Criar Reels</strong><span className="mt-1 block text-[11px] leading-relaxed text-gray-500">Vídeos e influencer IA</span></span>
@@ -1464,7 +1464,7 @@ export default function SiaAssistant({
           </div>
         </div>
 
-        <footer className={`pointer-events-none absolute inset-x-0 z-20 p-3 sm:p-5 ${messages.length === 1 && flowStep === 'idle' && !showRecommendations ? 'bottom-0 sm:bottom-auto sm:top-[300px]' : 'bottom-0'}`}>
+        <footer className={`sf-chat-footer pointer-events-none absolute inset-x-0 z-20 p-3 sm:p-5 ${messages.length === 1 && flowStep === 'idle' && !showRecommendations ? 'bottom-0 sm:bottom-auto sm:top-[300px]' : 'bottom-0'}`}>
           <div className="pointer-events-auto relative mx-auto max-w-4xl">
             {commandMenuOpen && (
               <div className="absolute bottom-[calc(100%+10px)] left-0 w-72 overflow-hidden rounded-lg border border-gray-200/80 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.14)]">
@@ -1485,7 +1485,7 @@ export default function SiaAssistant({
               </div>
             )}
             <div
-              className={`rounded-2xl border-2 border-transparent p-2 transition-all duration-200 ${composerFocused ? 'shadow-[0_20px_60px_rgba(211,166,34,0.24)] ring-4 ring-amber-100/70' : 'shadow-[0_18px_45px_rgba(15,23,42,0.13)]'}`}
+              className="sf-composer border border-transparent p-3 transition-shadow duration-200"
               style={{
                 background: 'linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(120deg, #fff1a8 0%, #e5b82d 42%, #f6d96f 72%, #fff7cf 100%) border-box'
               }}
